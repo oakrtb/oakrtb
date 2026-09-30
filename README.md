@@ -3,24 +3,63 @@
 [![CI](https://github.com/oakrtb/oakrtb/actions/workflows/ci.yml/badge.svg)](https://github.com/oakrtb/oakrtb/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 
-**面向实时广告竞价的协议定义与 Java、Go、Rust SDK。**
+**面向 SSP、Exchange 和 DSP 的 OpenRTB 协议定义与 Java、Go、Rust SDK。**
 
-OakRTB provides OpenRTB-aligned protocol definitions and typed SDKs for Java, Go, and Rust, with builders, JSON codecs, query views, and validation.
+OakRTB provides OpenRTB-aligned protocol definitions and SDKs for Java, Go, and Rust, with typed models, JSON/Protobuf encoding, builders, query views, and bid validation.
 
-OakRTB 将请求与响应的结构、编码和校验规则放在同一个仓库维护，帮助 SSP、Exchange 和 DSP 团队对接竞价协议。你可以使用 SDK 构建报文、解析请求、查询展示位、检查出价与请求是否匹配，也可以直接使用 JSON Schema 和 OpenAPI 对接其他语言的服务。
+OakRTB 是实时广告竞价系统共用的协议基础库。它将请求与响应模型、编解码和校验规则集中维护，帮助供给方与买方完成协议接入，并减少多语言实现中的字段映射、数据语义和检查规则差异。
 
-当前项目版本为 **0.2.0**，字段与对象语义对齐 **OpenRTB 2.6-202606**，HTTP 版本头使用 `x-openrtb-version: 2.6`。OakRTB 是独立项目，标准来源与署名见 [NOTICE](NOTICE)。
+通过 OakRTB，你可以构建竞价请求、解析买方响应、查询广告展示机会、检查出价与请求是否匹配，也可以直接使用 JSON Schema 和 OpenAPI 接入其他语言的服务。
 
-[快速开始](#快速开始) · [接入指南](docs/getting-started.md) · [完整示例](examples/README.md) · [SDK 架构](docs/sdk.md) · [协议规范](docs/spec.md)
+当前项目版本为 **0.2.0**，字段与对象语义对齐 **OpenRTB 2.6-202606**，HTTP 版本头使用 `x-openrtb-version: 2.6`。OakRTB 是独立项目，并非 IAB Tech Lab 官方产品；标准来源与署名见 [NOTICE](NOTICE)。
 
-## 可以用来做什么
+[项目定位](#项目定位) · [快速开始](#快速开始) · [接入指南](docs/getting-started.md) · [完整示例](examples/README.md) · [SDK 架构](docs/sdk.md) · [协议规范](docs/spec.md)
 
-- **SSP / Exchange 接入**：构建网站、应用和数字户外库存的竞价请求，解析并检查买方响应。
-- **DSP 接入**：读取展示位、底价、格式和交易信息，生成出价或结构化 no-bid 响应。
-- **协议联调**：使用 JSON Schema 检查报文结构，通过统一诊断定位缺失字段、类型错误和竞价约束冲突。
-- **多语言协作**：以同一份 protobuf 定义生成模型，用共享测试数据验证三种 SDK 的数据语义与检查结果。
+## 项目定位
 
-HTTP 服务、广告选择、预算控制、拍卖结算和通知回调由接入方实现。SDK 提供协议处理能力；端点、状态码与压缩约定见 [传输文档](docs/transport.md)。
+OakRTB 聚焦于**竞价系统之间的协议交互**，作为应用中的依赖库使用。协议定义描述双方交换什么数据，SDK 帮助应用构建、读取和检查这些数据，业务系统据此执行广告选择与拍卖决策。
+
+典型接入链路如下；媒体接入服务、SSP 和 Exchange 可以根据业务规模合并部署，也可以分别建设：
+
+```mermaid
+flowchart LR
+    media[媒体 App / 网站 / 广告屏] -->|媒体接入请求| access[媒体接入服务]
+    config[媒体与广告位配置] --> access
+    access --> supply[SSP / Exchange]
+    supply -->|OakRTB BidRequest| demand[DSP / Bidder]
+    demand -->|BidResponse / no-bid| supply
+    supply -->|广告结果| access
+    access -->|媒体侧响应| media
+```
+
+OakRTB SDK 可被接入服务、SSP、Exchange 或 DSP 嵌入使用。图中的节点代表业务职责，仓库本身不部署这些服务。
+
+媒体设备通常只提供广告位标识和本次展示环境。接入服务读取媒体、广告位及竞价策略配置，合并设备信息后组装完整请求。因此，设备侧广告接口与服务端竞价协议可以分别演进；上图中的媒体接入接口需要由业务系统定义。
+
+| 层次 | OakRTB 提供 | 接入方负责 |
+|---|---|---|
+| 协议与模型 | JSON Schema、OpenAPI、protobuf 定义及生成模型 | 确定双方支持的字段、扩展和交易约定 |
+| 报文处理 | Builder、JSON codec、请求/响应查询视图 | HTTP 收发、鉴权、压缩、路由与超时控制 |
+| 校验与诊断 | 基础校验、格式就绪、完整 JSON 合同及竞价关联检查 | 根据诊断结果执行接受、拒投或降级策略 |
+| 媒体接入 | 承载媒体、设备、库存和隐私信号的协议对象 | 配置后台、设备信息采集、隐私策略和数据补全 |
+| 广告业务 | 承载出价、素材与通知地址的响应对象 | 广告选择、预算、拍卖执行、渲染、通知及结算 |
+
+## 适用场景
+
+- **SSP / Exchange 对接买方**：构建网站、应用和数字户外库存的竞价请求，读取买方出价并检查请求关联、底价和交易约束。
+- **DSP 接入供给方**：解析请求，查询展示位与格式信息，将业务决策转换为出价或结构化 no-bid 响应。
+- **媒体接入服务组装报文**：将后台媒体配置、广告位配置与设备现场信息映射为统一的 BidRequest。
+- **协议联调与回归验证**：使用 JSON 样例、Schema 和诊断结果检查报文，通过共享测试数据验证三语言行为。
+
+如果你需要一套可直接运营的 SSP 后台、广告投放系统或移动端广告渲染 SDK，这些业务能力需要在 OakRTB 协议层之上建设。
+
+## 设计重点
+
+- **同一份模型定义**：三种语言从共享 protobuf 定义生成强类型模型，JSON 与 protobuf 编码进入同一套构建、查询与检查流程。
+- **校验职责分开**：基础结构、广告格式就绪、完整 JSON 合同和请求—响应关系分别检查，调用方按处理阶段选择。
+- **数据语义明确**：区分数值字段缺失与显式零值，通过 codec 处理 OpenRTB JSON 与模型中的 `ext` 表示差异。
+- **诊断与决策分开**：SDK 返回 ERROR / WARN 等发现项，业务系统决定如何处理；校验通过不代表已经完成广告准入或竞价选优。
+- **示例与实现一起验证**：仓库维护可运行的三语言接入示例，以及全字段、非法报文和跨语言一致性测试数据。
 
 ## 主要能力
 
