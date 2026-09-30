@@ -2494,7 +2494,7 @@ type Imp struct {
 	Secure *int32 `protobuf:"varint,15,opt,name=secure,proto3,oneof" json:"secure,omitempty"`
 	// Supported iframe-buster vendor names for rich media that can escape an iframe.
 	Iframebuster []string `protobuf:"bytes,16,rep,name=iframebuster,proto3" json:"iframebuster,omitempty"`
-	// Rewarded ad flag (FlagBool): 0=no, 1=reward after completion; distinguishes rewarded video from ordinary in-stream ads.
+	// Rewarded ad flag (FlagBool): 0=no reward, 1=reward for viewing the ad; applies across creative formats.
 	Rwdd *int32 `protobuf:"varint,17,opt,name=rwdd,proto3,oneof" json:"rwdd,omitempty"`
 	// Ad insertion mode (Ssai): 0=unknown, 1=client-side, 2=server-side, 3=hybrid; used for CTV/live SSAI.
 	Ssai *int32 `protobuf:"varint,18,opt,name=ssai,proto3,oneof" json:"ssai,omitempty"`
@@ -2785,9 +2785,9 @@ type Banner struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// Accepted sizes for flexible/multi-size placements; takes precedence over standalone w/h.
 	Format []*Format `protobuf:"bytes,1,rep,name=format,proto3" json:"format,omitempty"`
-	// Width in pixels for fixed-size banners, paired with h.
+	// Width in device-independent pixels (DIPs) for fixed-size banners, paired with h.
 	W *int32 `protobuf:"varint,2,opt,name=w,proto3,oneof" json:"w,omitempty"`
-	// Height in pixels.
+	// Height in device-independent pixels (DIPs).
 	H *int32 `protobuf:"varint,3,opt,name=h,proto3,oneof" json:"h,omitempty"`
 	// Blocked banner types (BannerAdType): 1=XHTML text, 2=XHTML banner, 3=JavaScript, 4=iframe.
 	Btype []int32 `protobuf:"varint,4,rep,packed,name=btype,proto3" json:"btype,omitempty"`
@@ -2938,11 +2938,11 @@ func (x *Banner) GetExt() string {
 // Use wratio/hratio for responsive placements and w/h for fixed placements.
 type Format struct {
 	state  protoimpl.MessageState `protogen:"open.v1"`
-	W      *int32                 `protobuf:"varint,1,opt,name=w,proto3,oneof" json:"w,omitempty"`           // Width in pixels.
-	H      *int32                 `protobuf:"varint,2,opt,name=h,proto3,oneof" json:"h,omitempty"`           // Height in pixels.
+	W      *int32                 `protobuf:"varint,1,opt,name=w,proto3,oneof" json:"w,omitempty"`           // Width in device-independent pixels (DIPs).
+	H      *int32                 `protobuf:"varint,2,opt,name=h,proto3,oneof" json:"h,omitempty"`           // Height in device-independent pixels (DIPs).
 	Wratio *int32                 `protobuf:"varint,3,opt,name=wratio,proto3,oneof" json:"wratio,omitempty"` // Width ratio; together with hratio defines the aspect ratio.
 	Hratio *int32                 `protobuf:"varint,4,opt,name=hratio,proto3,oneof" json:"hratio,omitempty"` // Height ratio.
-	Wmin   *int32                 `protobuf:"varint,5,opt,name=wmin,proto3,oneof" json:"wmin,omitempty"`     // Minimum width for flexible layouts.
+	Wmin   *int32                 `protobuf:"varint,5,opt,name=wmin,proto3,oneof" json:"wmin,omitempty"`     // Minimum width in device-independent pixels (DIPs) for flexible layouts.
 	// Extension JSON object string.
 	Ext           string `protobuf:"bytes,99,opt,name=ext,proto3" json:"ext,omitempty"`
 	unknownFields protoimpl.UnknownFields
@@ -3041,9 +3041,9 @@ type Video struct {
 	Poddur *int32 `protobuf:"varint,6,opt,name=poddur,proto3,oneof" json:"poddur,omitempty"`
 	// Supported video protocols (Protocol): 1-3=VAST1-3, 4-6=corresponding wrappers, 7-8=VAST4, 9-10=DAAST, 11-16=VAST4.1-4.3 and wrappers.
 	Protocols []int32 `protobuf:"varint,7,rep,packed,name=protocols,proto3" json:"protocols,omitempty"`
-	// Player width in pixels.
+	// Player width in device-independent pixels (DIPs).
 	W *int32 `protobuf:"varint,8,opt,name=w,proto3,oneof" json:"w,omitempty"`
-	// Player height in pixels.
+	// Player height in device-independent pixels (DIPs).
 	H *int32 `protobuf:"varint,9,opt,name=h,proto3,oneof" json:"h,omitempty"`
 	// Ad pod ID, shared by Imps within the same dynamic pod for scheduling.
 	Podid string `protobuf:"bytes,10,opt,name=podid,proto3" json:"podid,omitempty"`
@@ -5381,10 +5381,10 @@ type Device struct {
 	Os         string   `protobuf:"bytes,11,opt,name=os,proto3" json:"os,omitempty"`                    // Operating system.
 	Osv        string   `protobuf:"bytes,12,opt,name=osv,proto3" json:"osv,omitempty"`                  // OS version.
 	Hwv        string   `protobuf:"bytes,13,opt,name=hwv,proto3" json:"hwv,omitempty"`                  // Hardware version.
-	H          *int32   `protobuf:"varint,14,opt,name=h,proto3,oneof" json:"h,omitempty"`               // Screen height in pixels.
-	W          *int32   `protobuf:"varint,15,opt,name=w,proto3,oneof" json:"w,omitempty"`               // Screen width in pixels.
+	H          *int32   `protobuf:"varint,14,opt,name=h,proto3,oneof" json:"h,omitempty"`               // Physical screen height in pixels.
+	W          *int32   `protobuf:"varint,15,opt,name=w,proto3,oneof" json:"w,omitempty"`               // Physical screen width in pixels.
 	Ppi        *int32   `protobuf:"varint,16,opt,name=ppi,proto3,oneof" json:"ppi,omitempty"`           // Pixel density.
-	Pxratio    *float64 `protobuf:"fixed64,17,opt,name=pxratio,proto3,oneof" json:"pxratio,omitempty"`  // Physical pixel ratio, such as Retina scaling.
+	Pxratio    *float64 `protobuf:"fixed64,17,opt,name=pxratio,proto3,oneof" json:"pxratio,omitempty"`  // Ratio of physical pixels to device-independent pixels (DIPs).
 	Js         *int32   `protobuf:"varint,18,opt,name=js,proto3,oneof" json:"js,omitempty"`             // JavaScript support (FlagBool): 0=no, 1=yes.
 	Geofetch   *int32   `protobuf:"varint,19,opt,name=geofetch,proto3,oneof" json:"geofetch,omitempty"` // Whether the creative may obtain location (FlagBool): 0=no, 1=yes.
 	Language   string   `protobuf:"bytes,20,opt,name=language,proto3" json:"language,omitempty"`        // Device language (ISO-639-1).
@@ -6919,9 +6919,9 @@ type Bid struct {
 	Langb string `protobuf:"bytes,22,opt,name=langb,proto3" json:"langb,omitempty"`
 	// Selected Deal.id; a corresponding deal is required for PMP bids.
 	Dealid string `protobuf:"bytes,23,opt,name=dealid,proto3" json:"dealid,omitempty"`
-	// Actual creative width.
+	// Actual creative width in device-independent pixels (DIPs).
 	W *int32 `protobuf:"varint,24,opt,name=w,proto3,oneof" json:"w,omitempty"`
-	// Actual creative height.
+	// Actual creative height in device-independent pixels (DIPs).
 	H *int32 `protobuf:"varint,25,opt,name=h,proto3,oneof" json:"h,omitempty"`
 	// Creative width ratio for native/flexible layouts.
 	Wratio *int32 `protobuf:"varint,26,opt,name=wratio,proto3,oneof" json:"wratio,omitempty"`
@@ -6931,8 +6931,7 @@ type Bid struct {
 	Exp *int32 `protobuf:"varint,28,opt,name=exp,proto3,oneof" json:"exp,omitempty"`
 	// Video/audio duration in seconds.
 	Dur *int32 `protobuf:"varint,29,opt,name=dur,proto3,oneof" json:"dur,omitempty"`
-	// Creative format; strongly recommended for multi-format Imps to avoid ambiguity.
-	// Creative format (MarkupType): 1=Banner, 2=Video, 3=Audio, 4=Native; strongly recommended for multi-format Imps.
+	// Creative format (MarkupType): 1=Banner, 2=Video, 3=Audio, 4=Native; required by BidCheck for multi-format Imps.
 	// JSON Schema forbids zero; protobuf UNSPECIFIED=0 means unset. Set 1-4 before emitting an explicit mtype in JSON.
 	Mtype MarkupType `protobuf:"varint,30,opt,name=mtype,proto3,enum=oakrtb.v2.MarkupType" json:"mtype,omitempty"`
 	// Requested pod slot (SlotInPod); special value -1=last slot; used for CTV pod bidding.

@@ -1,4 +1,4 @@
-.PHONY: validate install-dev check-copies check-architecture sync-schemas proto-check proto-go proto-java proto-rust proto \
+.PHONY: validate install-dev check-copies check-architecture check-field-docs sync-schemas proto-check proto-go proto-java proto-rust proto \
 	sdk-test sdk-test-go sdk-test-java sdk-test-rust jar \
 	publish-rust-dry publish-java-dry
 
@@ -15,7 +15,10 @@ check-architecture:
 check-copies:
 	python3 scripts/check_copies.py
 
-validate: check-copies check-architecture
+check-field-docs:
+	python3 scripts/field_docs.py --check
+
+validate: check-copies check-architecture check-field-docs
 	python3 scripts/validate.py
 
 # Copy canonical schema/proto files into vendored SDK directories for package distribution (go get, crates.io and Maven).

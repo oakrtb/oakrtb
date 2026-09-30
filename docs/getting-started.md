@@ -154,3 +154,7 @@ make sdk-test
 `make validate` 需要先安装 `scripts/requirements.txt`。`make sdk-test` 需要三种语言的工具链，也可选择对应的 `sdk-test-go`、`sdk-test-java` 或 `sdk-test-rust`。
 
 JSON 接入样例在 `examples/bid-request/` 与 `examples/bid-response/`；全字段、非法报文和跨语言一致性数据在 `testdata/`。修改 SDK 行为时，应同步检查受影响的样例与测试。
+
+## 查询协议字段
+
+字段用途、类型、必填性、尺寸单位和 Native 内嵌属性见 [完整字段手册](fields.md)；常用对象摘要见 [对象字典](objects.md)。

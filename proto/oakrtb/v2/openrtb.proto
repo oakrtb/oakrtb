@@ -490,7 +490,7 @@ message Imp {
   optional int32 secure = 15;
   // Supported iframe-buster vendor names for rich media that can escape an iframe.
   repeated string iframebuster = 16;
-  // Rewarded ad flag (FlagBool): 0=no, 1=reward after completion; distinguishes rewarded video from ordinary in-stream ads.
+  // Rewarded ad flag (FlagBool): 0=no reward, 1=reward for viewing the ad; applies across creative formats.
   optional int32 rwdd = 17;
   // Ad insertion mode (Ssai): 0=unknown, 1=client-side, 2=server-side, 3=hybrid; used for CTV/live SSAI.
   optional int32 ssai = 18;
@@ -526,9 +526,9 @@ message Metric {
 message Banner {
   // Accepted sizes for flexible/multi-size placements; takes precedence over standalone w/h.
   repeated Format format = 1;
-  // Width in pixels for fixed-size banners, paired with h.
+  // Width in device-independent pixels (DIPs) for fixed-size banners, paired with h.
   optional int32 w = 2;
-  // Height in pixels.
+  // Height in device-independent pixels (DIPs).
   optional int32 h = 3;
   // Blocked banner types (BannerAdType): 1=XHTML text, 2=XHTML banner, 3=JavaScript, 4=iframe.
   repeated int32 btype = 4;
@@ -555,11 +555,11 @@ message Banner {
 // Format: an accepted display size or aspect ratio.
 // Use wratio/hratio for responsive placements and w/h for fixed placements.
 message Format {
-  optional int32 w = 1;       // Width in pixels.
-  optional int32 h = 2;       // Height in pixels.
+  optional int32 w = 1;       // Width in device-independent pixels (DIPs).
+  optional int32 h = 2;       // Height in device-independent pixels (DIPs).
   optional int32 wratio = 3;  // Width ratio; together with hratio defines the aspect ratio.
   optional int32 hratio = 4;  // Height ratio.
-  optional int32 wmin = 5;    // Minimum width for flexible layouts.
+  optional int32 wmin = 5;    // Minimum width in device-independent pixels (DIPs) for flexible layouts.
   // Extension JSON object string.
   string ext = 99;
 }
@@ -583,9 +583,9 @@ message Video {
   optional int32 poddur = 6;
   // Supported video protocols (Protocol): 1-3=VAST1-3, 4-6=corresponding wrappers, 7-8=VAST4, 9-10=DAAST, 11-16=VAST4.1-4.3 and wrappers.
   repeated int32 protocols = 7;
-  // Player width in pixels.
+  // Player width in device-independent pixels (DIPs).
   optional int32 w = 8;
-  // Player height in pixels.
+  // Player height in device-independent pixels (DIPs).
   optional int32 h = 9;
   // Ad pod ID, shared by Imps within the same dynamic pod for scheduling.
   string podid = 10;
@@ -1001,10 +1001,10 @@ message Device {
   string os = 11;                // Operating system.
   string osv = 12;               // OS version.
   string hwv = 13;               // Hardware version.
-  optional int32 h = 14;                  // Screen height in pixels.
-  optional int32 w = 15;                  // Screen width in pixels.
+  optional int32 h = 14;                  // Physical screen height in pixels.
+  optional int32 w = 15;                  // Physical screen width in pixels.
   optional int32 ppi = 16;                // Pixel density.
-  optional double pxratio = 17;           // Physical pixel ratio, such as Retina scaling.
+  optional double pxratio = 17;           // Ratio of physical pixels to device-independent pixels (DIPs).
   optional int32 js = 18;                 // JavaScript support (FlagBool): 0=no, 1=yes.
   optional int32 geofetch = 19;           // Whether the creative may obtain location (FlagBool): 0=no, 1=yes.
   string language = 20;          // Device language (ISO-639-1).
@@ -1260,9 +1260,9 @@ message Bid {
   string langb = 22;
   // Selected Deal.id; a corresponding deal is required for PMP bids.
   string dealid = 23;
-  // Actual creative width.
+  // Actual creative width in device-independent pixels (DIPs).
   optional int32 w = 24;
-  // Actual creative height.
+  // Actual creative height in device-independent pixels (DIPs).
   optional int32 h = 25;
   // Creative width ratio for native/flexible layouts.
   optional int32 wratio = 26;
@@ -1272,8 +1272,7 @@ message Bid {
   optional int32 exp = 28;
   // Video/audio duration in seconds.
   optional int32 dur = 29;
-  // Creative format; strongly recommended for multi-format Imps to avoid ambiguity.
-  // Creative format (MarkupType): 1=Banner, 2=Video, 3=Audio, 4=Native; strongly recommended for multi-format Imps.
+  // Creative format (MarkupType): 1=Banner, 2=Video, 3=Audio, 4=Native; required by BidCheck for multi-format Imps.
   // JSON Schema forbids zero; protobuf UNSPECIFIED=0 means unset. Set 1-4 before emitting an explicit mtype in JSON.
   MarkupType mtype = 30;
   // Requested pod slot (SlotInPod); special value -1=last slot; used for CTV pod bidding.

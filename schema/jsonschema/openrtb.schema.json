@@ -28,52 +28,52 @@
       "additionalProperties": true,
       "required": ["type", "value"],
       "properties": {
-        "type": { "$ref": "#/$defs/NonEmptyString" },
-        "value": { "type": "number" },
-        "vendor": { "type": "string" },
-        "ext": { "$ref": "#/$defs/Ext" }
+        "type": { "description": "Metric type, such as \"viewability\" or \"completion_rate\".", "$ref": "#/$defs/NonEmptyString" },
+        "value": { "description": "Metric value, typically a probability or ratio in 0-1.", "type": "number" },
+        "vendor": { "description": "Measurement provider, such as IAS, MOAT or publisher measurement.", "type": "string" },
+        "ext": { "description": "Extension JSON object string.", "$ref": "#/$defs/Ext" }
       }
     },
     "Format": {
       "type": "object",
       "additionalProperties": true,
       "properties": {
-        "w": { "type": "integer", "minimum": 1 },
-        "h": { "type": "integer", "minimum": 1 },
-        "wratio": { "type": "integer", "minimum": 1 },
-        "hratio": { "type": "integer", "minimum": 1 },
-        "wmin": { "type": "integer", "minimum": 1 },
-        "ext": { "$ref": "#/$defs/Ext" }
+        "w": { "description": "Width in device-independent pixels (DIPs).", "type": "integer", "minimum": 1 },
+        "h": { "description": "Height in device-independent pixels (DIPs).", "type": "integer", "minimum": 1 },
+        "wratio": { "description": "Width ratio; together with hratio defines the aspect ratio.", "type": "integer", "minimum": 1 },
+        "hratio": { "description": "Height ratio.", "type": "integer", "minimum": 1 },
+        "wmin": { "description": "Minimum width in device-independent pixels (DIPs) for flexible layouts.", "type": "integer", "minimum": 1 },
+        "ext": { "description": "Extension JSON object string.", "$ref": "#/$defs/Ext" }
       }
     },
     "Banner": {
       "type": "object",
       "additionalProperties": true,
       "properties": {
-        "format": { "type": "array", "items": { "$ref": "#/$defs/Format" } },
-        "w": { "type": "integer", "minimum": 1 },
-        "h": { "type": "integer", "minimum": 1 },
-        "btype": { "type": "array", "items": { "type": "integer" } },
-        "battr": { "type": "array", "items": { "type": "integer" } },
-        "pos": { "type": "integer" },
-        "mimes": { "type": "array", "items": { "type": "string" } },
-        "topframe": { "type": "integer", "enum": [0, 1] },
-        "expdir": { "type": "array", "items": { "type": "integer" } },
-        "api": { "type": "array", "items": { "type": "integer" } },
-        "id": { "type": "string" },
-        "vcm": { "type": "integer", "enum": [0, 1] },
-        "ext": { "$ref": "#/$defs/Ext" }
+        "format": { "description": "Accepted sizes for flexible/multi-size placements; takes precedence over standalone w/h.", "type": "array", "items": { "$ref": "#/$defs/Format" } },
+        "w": { "description": "Width in device-independent pixels (DIPs) for fixed-size banners, paired with h.", "type": "integer", "minimum": 1 },
+        "h": { "description": "Height in device-independent pixels (DIPs).", "type": "integer", "minimum": 1 },
+        "btype": { "description": "Blocked banner types (BannerAdType): 1=XHTML text, 2=XHTML banner, 3=JavaScript, 4=iframe.", "type": "array", "items": { "type": "integer" } },
+        "battr": { "description": "Blocked creative attributes (CreativeAttribute): 1-18 as defined in the enum, >=500 vendor-specific; for example, blocking autoplay audio.", "type": "array", "items": { "type": "integer" } },
+        "pos": { "description": "Ad position (AdPosition): 0=unknown, 1=above fold, 2=locked, 3=below fold, 4=header, 5=footer, 6=sidebar, 7=fullscreen.", "type": "integer" },
+        "mimes": { "description": "Supported MIME types, such as image/jpeg, image/png or text/javascript.", "type": "array", "items": { "type": "string" } },
+        "topframe": { "description": "Top-frame flag (FlagBool): 0=inside iframe, 1=top frame; relevant to expansion or escaping the frame.", "type": "integer", "enum": [0, 1] },
+        "expdir": { "description": "Allowed expansion directions (ExpandableDirection): 1=left, 2=right, 3=up, 4=down, 5=fullscreen, 6=resize.", "type": "array", "items": { "type": "integer" } },
+        "api": { "description": "Supported APIs (ApiFramework): 1=VPAID1, 2=VPAID2, 3=MRAID1, 4=ORMMA, 5=MRAID2, 6=MRAID3, 7=OMID, 8-9=SIMID; >=500 vendor-specific.", "type": "array", "items": { "type": "integer" } },
+        "id": { "description": "Banner ID for correlating multiple video companion banners.", "type": "string" },
+        "vcm": { "description": "Video companion mode (VideoCompanionMode): 0=concurrent with video, 1=end card after completion.", "type": "integer", "enum": [0, 1] },
+        "ext": { "description": "Extension JSON object string.", "$ref": "#/$defs/Ext" }
       }
     },
     "DurFloors": {
       "type": "object",
       "additionalProperties": true,
       "properties": {
-        "mindur": { "type": "integer", "minimum": 0 },
-        "maxdur": { "type": "integer", "minimum": 0 },
-        "bidfloor": { "type": "number" },
-        "bidfloorcur": { "$ref": "#/$defs/Iso4217" },
-        "ext": { "$ref": "#/$defs/Ext" }
+        "mindur": { "description": "Minimum interval duration in seconds, inclusive.", "type": "integer", "minimum": 0 },
+        "maxdur": { "description": "Maximum interval duration in seconds, inclusive; omit for no upper bound.", "type": "integer", "minimum": 0 },
+        "bidfloor": { "description": "CPM floor for this duration interval.", "type": "number" },
+        "bidfloorcur": { "description": "Floor currency (ISO-4217).", "$ref": "#/$defs/Iso4217" },
+        "ext": { "description": "Extension JSON object string.", "$ref": "#/$defs/Ext" }
       }
     },
     "Video": {
@@ -81,45 +81,45 @@
       "additionalProperties": true,
       "required": ["mimes"],
       "properties": {
-        "mimes": { "type": "array", "minItems": 1, "items": { "type": "string" } },
-        "minduration": { "type": "integer", "minimum": 0 },
-        "maxduration": { "type": "integer", "minimum": 0 },
-        "startdelay": { "type": "integer" },
-        "maxseq": { "type": "integer", "minimum": 1 },
-        "poddur": { "type": "integer", "minimum": 1 },
-        "protocols": { "type": "array", "items": { "type": "integer" } },
-        "w": { "type": "integer", "minimum": 1 },
-        "h": { "type": "integer", "minimum": 1 },
-        "podid": { "type": "string" },
-        "podseq": { "type": "integer" },
-        "rqddurs": { "type": "array", "items": { "type": "integer" } },
-        "plcmt": { "type": "integer" },
-        "placement": { "type": "integer", "description": "Deprecated; use plcmt." },
-        "linearity": { "type": "integer" },
-        "skip": { "type": "integer", "enum": [0, 1] },
-        "skipmin": { "type": "integer", "minimum": 0 },
-        "skipafter": { "type": "integer", "minimum": 0 },
-        "slotinpod": { "type": "integer" },
-        "mincpmpersec": { "type": "number" },
-        "battr": { "type": "array", "items": { "type": "integer" } },
-        "maxextended": { "type": "integer" },
-        "minbitrate": { "type": "integer", "minimum": 0 },
-        "maxbitrate": { "type": "integer", "minimum": 0 },
-        "boxingallowed": { "type": "integer", "enum": [0, 1] },
-        "playbackmethod": { "type": "array", "items": { "type": "integer" } },
-        "playbackend": { "type": "integer" },
-        "delivery": { "type": "array", "items": { "type": "integer" } },
-        "pos": { "type": "integer" },
-        "companionad": { "type": "array", "items": { "$ref": "#/$defs/Banner" } },
-        "api": { "type": "array", "items": { "type": "integer" } },
-        "companiontype": { "type": "array", "items": { "type": "integer" } },
+        "mimes": { "description": "Supported video MIME types. Required; for example video/mp4 or video/webm.", "type": "array", "minItems": 1, "items": { "type": "string" } },
+        "minduration": { "description": "Minimum duration in seconds; filters creatives that are too short.", "type": "integer", "minimum": 0 },
+        "maxduration": { "description": "Maximum duration in seconds; filters creatives that are too long.", "type": "integer", "minimum": 0 },
+        "startdelay": { "description": "Start delay in seconds: 0=pre-roll, -1=generic mid-roll, -2=post-roll, >0=mid-roll after that many seconds.", "type": "integer" },
+        "maxseq": { "description": "Maximum ads within a pod, defining CTV ad-pod capacity.", "type": "integer", "minimum": 1 },
+        "poddur": { "description": "Total pod duration in seconds, shared by its ads.", "type": "integer", "minimum": 1 },
+        "protocols": { "description": "Supported video protocols (Protocol): 1-3=VAST1-3, 4-6=corresponding wrappers, 7-8=VAST4, 9-10=DAAST, 11-16=VAST4.1-4.3 and wrappers.", "type": "array", "items": { "type": "integer" } },
+        "w": { "description": "Player width in device-independent pixels (DIPs).", "type": "integer", "minimum": 1 },
+        "h": { "description": "Player height in device-independent pixels (DIPs).", "type": "integer", "minimum": 1 },
+        "podid": { "description": "Ad pod ID, shared by Imps within the same dynamic pod for scheduling.", "type": "string" },
+        "podseq": { "description": "Pod sequence (PodSequence): 0=any, 1=first; special value -1=last pod.", "type": "integer" },
+        "rqddurs": { "description": "Required exact durations in seconds, such as standard 15s/30s creatives.", "type": "array", "items": { "type": "integer" } },
+        "plcmt": { "description": "Video placement type replacing placement (VideoPlcmt): 1=instream, 2=accompanying content, 3=interstitial, 4=no content, 5=pause, 6=screensaver, 7=overlay, 8=squeezeback, 9=in-scene.", "type": "integer" },
+        "placement": { "type": "integer", "description": "Deprecated placement; use plcmt (OpenRTB 2.6-202303+)." },
+        "linearity": { "description": "Linearity (VideoLinearity): 1=linear in-stream, 2=non-linear/overlay.", "type": "integer" },
+        "skip": { "description": "Skippable flag (FlagBool): 0=not skippable, 1=skippable; distinguishes skippable and non-skippable pre-roll.", "type": "integer", "enum": [0, 1] },
+        "skipmin": { "description": "Minimum video duration in seconds for skipping to be allowed.", "type": "integer", "minimum": 0 },
+        "skipafter": { "description": "Seconds before the skip button appears.", "type": "integer", "minimum": 0 },
+        "slotinpod": { "description": "Pod slot (SlotInPod): 0=any, 1=first, 2=first/last, 3=first/middle/last; special value -1=last slot.", "type": "integer" },
+        "mincpmpersec": { "description": "Minimum CPM per second for duration-based floor pricing.", "type": "number" },
+        "battr": { "description": "Blocked creative attributes (CreativeAttribute): 1-18 as defined in the enum; >=500 vendor-specific.", "type": "array", "items": { "type": "integer" } },
+        "maxextended": { "description": "Maximum seconds beyond maxduration; -1 means unlimited.", "type": "integer" },
+        "minbitrate": { "description": "Minimum bitrate in Kbps.", "type": "integer", "minimum": 0 },
+        "maxbitrate": { "description": "Maximum bitrate in Kbps.", "type": "integer", "minimum": 0 },
+        "boxingallowed": { "description": "Letterboxing allowed (FlagBool): 0=no, 1=yes; permits black bars for mismatched aspect ratios.", "type": "integer", "enum": [0, 1] },
+        "playbackmethod": { "description": "Playback method (PlaybackMethod): 1=load/sound on, 2=load/muted, 3=click/sound on, 4=hover/sound on, 5=viewport/sound on, 6=viewport/muted, 7=continuous.", "type": "array", "items": { "type": "integer" } },
+        "playbackend": { "description": "Playback cessation (PlaybackCessationMode): 1=completion/user, 2=leave viewport/user, 3=float after leaving viewport until completion.", "type": "integer" },
+        "delivery": { "description": "Delivery method (DeliveryMethod): 1=streaming, 2=progressive, 3=download.", "type": "array", "items": { "type": "integer" } },
+        "pos": { "description": "Ad position (AdPosition), as in Banner.pos.", "type": "integer" },
+        "companionad": { "description": "Companion banner specifications, such as banners beside or below a video.", "type": "array", "items": { "$ref": "#/$defs/Banner" } },
+        "api": { "description": "Supported APIs; see ApiFramework.", "type": "array", "items": { "type": "integer" } },
+        "companiontype": { "description": "Companion types (CompanionType): 1=static, 2=HTML, 3=iframe.", "type": "array", "items": { "type": "integer" } },
         "poddedupe": {
           "type": "array",
           "items": { "type": "integer" },
-          "description": "Pod deduplication settings (OpenRTB 2.6-202402+). Refer to AdCOM List: Pod Deduplication."
+          "description": "Pod deduplication policy (OpenRTB 2.6-202402+); see AdCOM Pod Deduplication. Pod deduplication (OpenRTB 2.6-202402+, PodDeduplication): 1=adomain, 2=IAB Content Taxonomy, 3=creative ID, 4=mediafile URL; multiple values allowed."
         },
-        "durfloors": { "type": "array", "items": { "$ref": "#/$defs/DurFloors" } },
-        "ext": { "$ref": "#/$defs/Ext" }
+        "durfloors": { "description": "Duration-based floor tiers. Duration-based floor tiers, such as different CPM floors for 15s/30s creatives.", "type": "array", "items": { "$ref": "#/$defs/DurFloors" } },
+        "ext": { "description": "Extension JSON object string.", "$ref": "#/$defs/Ext" }
       }
     },
     "Audio": {
@@ -127,31 +127,31 @@
       "additionalProperties": true,
       "required": ["mimes"],
       "properties": {
-        "mimes": { "type": "array", "minItems": 1, "items": { "type": "string" } },
-        "minduration": { "type": "integer", "minimum": 0 },
-        "maxduration": { "type": "integer", "minimum": 0 },
-        "poddur": { "type": "integer", "minimum": 1 },
-        "protocols": { "type": "array", "items": { "type": "integer" } },
-        "startdelay": { "type": "integer" },
-        "rqddurs": { "type": "array", "items": { "type": "integer" } },
-        "podid": { "type": "string" },
-        "podseq": { "type": "integer" },
-        "slotinpod": { "type": "integer" },
-        "mincpmpersec": { "type": "number" },
-        "battr": { "type": "array", "items": { "type": "integer" } },
-        "maxextended": { "type": "integer" },
-        "minbitrate": { "type": "integer" },
-        "maxbitrate": { "type": "integer" },
-        "delivery": { "type": "array", "items": { "type": "integer" } },
-        "companionad": { "type": "array", "items": { "$ref": "#/$defs/Banner" } },
-        "api": { "type": "array", "items": { "type": "integer" } },
-        "companiontype": { "type": "array", "items": { "type": "integer" } },
-        "maxseq": { "type": "integer" },
-        "feed": { "type": "integer" },
-        "stitched": { "type": "integer", "enum": [0, 1] },
-        "nvol": { "type": "integer" },
-        "durfloors": { "type": "array", "items": { "$ref": "#/$defs/DurFloors" } },
-        "ext": { "$ref": "#/$defs/Ext" }
+        "mimes": { "description": "Supported audio MIME types. Required.", "type": "array", "minItems": 1, "items": { "type": "string" } },
+        "minduration": { "description": "Minimum duration in seconds.", "type": "integer", "minimum": 0 },
+        "maxduration": { "description": "Maximum duration in seconds.", "type": "integer", "minimum": 0 },
+        "poddur": { "description": "Total pod duration.", "type": "integer", "minimum": 1 },
+        "protocols": { "description": "Audio protocols (Protocol), including DAAST 9/10 and VAST; see enum.", "type": "array", "items": { "type": "integer" } },
+        "startdelay": { "description": "Start delay, as in Video: 0=pre-roll, -1=mid-roll, -2=post-roll, >0=mid-roll delay in seconds.", "type": "integer" },
+        "rqddurs": { "description": "Required exact durations.", "type": "array", "items": { "type": "integer" } },
+        "podid": { "description": "Audio pod ID.", "type": "string" },
+        "podseq": { "description": "Pod sequence (PodSequence): 0=any, 1=first; special value -1=last pod.", "type": "integer" },
+        "slotinpod": { "description": "Pod slot (SlotInPod); special value -1=last slot.", "type": "integer" },
+        "mincpmpersec": { "description": "Minimum CPM per second for duration-based floor pricing.", "type": "number" },
+        "battr": { "description": "Blocked creative attributes; see CreativeAttribute.", "type": "array", "items": { "type": "integer" } },
+        "maxextended": { "description": "Maximum seconds beyond maxduration; -1 means unlimited.", "type": "integer" },
+        "minbitrate": { "description": "Minimum bitrate in Kbps.", "type": "integer" },
+        "maxbitrate": { "description": "Maximum bitrate in Kbps.", "type": "integer" },
+        "delivery": { "description": "Delivery method (DeliveryMethod): 1=streaming, 2=progressive, 3=download.", "type": "array", "items": { "type": "integer" } },
+        "companionad": { "description": "Visual companions.", "type": "array", "items": { "$ref": "#/$defs/Banner" } },
+        "api": { "description": "Supported APIs; see ApiFramework.", "type": "array", "items": { "type": "integer" } },
+        "companiontype": { "description": "Companion types (CompanionType): 1=static, 2=HTML, 3=iframe.", "type": "array", "items": { "type": "integer" } },
+        "maxseq": { "description": "Maximum ads in the pod.", "type": "integer" },
+        "feed": { "description": "Audio feed type (FeedType): 1=music service, 2=FM/AM, 3=podcast.", "type": "integer" },
+        "stitched": { "description": "Whether stitched into content (FlagBool): 0=no, 1=yes.", "type": "integer", "enum": [0, 1] },
+        "nvol": { "description": "Volume normalization (VolumeNormalizationMode): 0=none, 1=average, 2=peak, 3=loudness, 4=custom.", "type": "integer" },
+        "durfloors": { "description": "Duration-based floor tiers.", "type": "array", "items": { "$ref": "#/$defs/DurFloors" } },
+        "ext": { "description": "Extension JSON object string.", "$ref": "#/$defs/Ext" }
       }
     },
     "Native": {
@@ -162,12 +162,12 @@
         "request": {
           "type": "string",
           "minLength": 1,
-          "description": "JSON-encoded Native markup request (Native Ads spec 1.1+ root object, or 1.0 wrapped in native)."
+          "description": "Required Native request JSON string, including assets[]; validate against Native 1.2."
         },
-        "ver": { "type": "string" },
-        "api": { "type": "array", "items": { "type": "integer" } },
-        "battr": { "type": "array", "items": { "type": "integer" } },
-        "ext": { "$ref": "#/$defs/Ext" }
+        "ver": { "description": "Native specification version, such as \"1.2\", indicating which markup version the DSP should parse.", "type": "string" },
+        "api": { "description": "Supported APIs; see ApiFramework.", "type": "array", "items": { "type": "integer" } },
+        "battr": { "description": "Blocked creative attributes; see CreativeAttribute enum.", "type": "array", "items": { "type": "integer" } },
+        "ext": { "description": "Extension JSON object string.", "$ref": "#/$defs/Ext" }
       }
     },
     "Deal": {
@@ -175,35 +175,35 @@
       "additionalProperties": true,
       "required": ["id"],
       "properties": {
-        "id": { "$ref": "#/$defs/NonEmptyString" },
-        "bidfloor": { "type": "number", "minimum": 0 },
-        "bidfloorcur": { "$ref": "#/$defs/Iso4217" },
-        "at": { "$ref": "#/$defs/AuctionType" },
-        "wseat": { "type": "array", "items": { "type": "string" } },
-        "wadomain": { "type": "array", "items": { "type": "string" } },
-        "guar": { "type": "integer", "enum": [0, 1] },
-        "mincpmpersec": { "type": "number" },
-        "durfloors": { "type": "array", "items": { "$ref": "#/$defs/DurFloors" } },
-        "ext": { "$ref": "#/$defs/Ext" }
+        "id": { "description": "Required Deal ID, echoed in Bid.dealid for a deal bid.", "$ref": "#/$defs/NonEmptyString" },
+        "bidfloor": { "description": "Deal floor in CPM.", "type": "number", "minimum": 0 },
+        "bidfloorcur": { "description": "Floor currency.", "$ref": "#/$defs/Iso4217" },
+        "at": { "description": "Deal auction type (AuctionType): 1=first price, 2=second price plus, 3=fixed price, >=500=custom; overrides BidRequest.at.", "$ref": "#/$defs/AuctionType" },
+        "wseat": { "description": "Allowed buyer seat IDs.", "type": "array", "items": { "type": "string" } },
+        "wadomain": { "description": "Allowed advertiser domains.", "type": "array", "items": { "type": "string" } },
+        "guar": { "description": "Guaranteed flag (FlagBool): 0=no, 1=guaranteed Deal; used for programmatic guaranteed delivery.", "type": "integer", "enum": [0, 1] },
+        "mincpmpersec": { "description": "Minimum CPM per second for duration-priced video.", "type": "number" },
+        "durfloors": { "description": "Duration-based floor tiers for video/audio deals.", "type": "array", "items": { "$ref": "#/$defs/DurFloors" } },
+        "ext": { "description": "Extension JSON object string.", "$ref": "#/$defs/Ext" }
       }
     },
     "Pmp": {
       "type": "object",
       "additionalProperties": true,
       "properties": {
-        "private_auction": { "type": "integer", "enum": [0, 1] },
-        "deals": { "type": "array", "items": { "$ref": "#/$defs/Deal" } },
-        "ext": { "$ref": "#/$defs/Ext" }
+        "private_auction": { "description": "Private-auction flag (FlagBool): 0=open market permitted, 1=private only; used for closed PDB trading.", "type": "integer", "enum": [0, 1] },
+        "deals": { "description": "Available deal terms; one Imp may offer multiple Deals for DSP selection.", "type": "array", "items": { "$ref": "#/$defs/Deal" } },
+        "ext": { "description": "Extension JSON object string.", "$ref": "#/$defs/Ext" }
       }
     },
     "Qty": {
       "type": "object",
       "additionalProperties": true,
       "properties": {
-        "multiplier": { "type": "number" },
-        "sourcetype": { "type": "integer" },
-        "vendor": { "type": "string" },
-        "ext": { "$ref": "#/$defs/Ext" }
+        "multiplier": { "description": "Quantity multiplier relative to one standard impression.", "type": "number" },
+        "sourcetype": { "description": "Multiplier source (QtySourceType): 0=measurement provider method, 1=publisher/vendor-specific method.", "type": "integer" },
+        "vendor": { "description": "Vendor supplying the multiplier.", "type": "string" },
+        "ext": { "description": "Extension JSON object string.", "$ref": "#/$defs/Ext" }
       }
     },
     "RefSettings": {
@@ -211,18 +211,18 @@
       "additionalProperties": true,
       "description": "Imp.refresh.refsettings[] entry. Refresh count lives on Refresh.count, not here.",
       "properties": {
-        "reftype": { "type": "integer" },
-        "minint": { "type": "integer" },
-        "ext": { "$ref": "#/$defs/Ext" }
+        "reftype": { "description": "Refresh trigger (AutoRefreshTrigger): 0=unknown, 1=user action, 2=event, 3=timed interval.", "type": "integer" },
+        "minint": { "description": "Minimum refresh interval in seconds, limiting refresh frequency.", "type": "integer" },
+        "ext": { "description": "Extension JSON object string.", "$ref": "#/$defs/Ext" }
       }
     },
     "Refresh": {
       "type": "object",
       "additionalProperties": true,
       "properties": {
-        "refsettings": { "type": "array", "items": { "$ref": "#/$defs/RefSettings" } },
-        "count": { "type": "integer" },
-        "ext": { "$ref": "#/$defs/Ext" }
+        "refsettings": { "description": "Refresh triggers and intervals.", "type": "array", "items": { "$ref": "#/$defs/RefSettings" } },
+        "count": { "description": "Refresh count since the last full page load.", "type": "integer" },
+        "ext": { "description": "Extension JSON object string.", "$ref": "#/$defs/Ext" }
       }
     },
     "Imp": {
@@ -236,344 +236,344 @@
         { "required": ["native"] }
       ],
       "properties": {
-        "id": { "$ref": "#/$defs/NonEmptyString" },
-        "metric": { "type": "array", "items": { "$ref": "#/$defs/Metric" } },
-        "banner": { "$ref": "#/$defs/Banner" },
-        "video": { "$ref": "#/$defs/Video" },
-        "audio": { "$ref": "#/$defs/Audio" },
-        "native": { "$ref": "#/$defs/Native" },
-        "pmp": { "$ref": "#/$defs/Pmp" },
-        "displaymanager": { "type": "string" },
-        "displaymanagerver": { "type": "string" },
-        "instl": { "type": "integer", "enum": [0, 1] },
-        "tagid": { "type": "string" },
-        "bidfloor": { "type": "number", "minimum": 0 },
-        "bidfloorcur": { "$ref": "#/$defs/Iso4217" },
-        "clickbrowser": { "type": "integer", "enum": [0, 1] },
-        "secure": { "type": "integer", "enum": [0, 1] },
-        "iframebuster": { "type": "array", "items": { "type": "string" } },
-        "rwdd": { "type": "integer", "enum": [0, 1] },
-        "ssai": { "type": "integer", "enum": [0, 1, 2, 3] },
-        "exp": { "type": "integer", "minimum": 0 },
-        "qty": { "$ref": "#/$defs/Qty" },
-        "dt": { "type": "number" },
-        "refresh": { "$ref": "#/$defs/Refresh" },
-        "ext": { "$ref": "#/$defs/Ext" }
+        "id": { "description": "Required ID, unique within the request. Bid.impid must reference this value.", "$ref": "#/$defs/NonEmptyString" },
+        "metric": { "description": "Inventory quality or verification metrics, such as third-party viewability or video completion rates.", "type": "array", "items": { "$ref": "#/$defs/Metric" } },
+        "banner": { "description": "Display ad specifications for banners, rich media or interstitial images.", "$ref": "#/$defs/Banner" },
+        "video": { "description": "Video ad specifications for pre-/mid-/post-roll, rewarded video or CTV pods.", "$ref": "#/$defs/Video" },
+        "audio": { "description": "Audio ad specifications for podcasts, radio streams or music apps.", "$ref": "#/$defs/Audio" },
+        "native": { "description": "Native ad specifications for feed cards; request embeds Native 1.2 JSON.", "$ref": "#/$defs/Native" },
+        "pmp": { "description": "Private marketplace data for PDB/PD/Preferred Deals, including deals[].", "$ref": "#/$defs/Pmp" },
+        "displaymanager": { "description": "Rendering SDK/player name, used to identify mediation/player compatibility.", "type": "string" },
+        "displaymanagerver": { "description": "displaymanager version, for SDK-version rollout and troubleshooting.", "type": "string" },
+        "instl": { "description": "Interstitial/fullscreen flag (FlagBool): 0=no, 1=yes; used for pricing and experience policies.", "type": "integer", "enum": [0, 1] },
+        "tagid": { "description": "Publisher placement ID for optimization, reporting and floor policies.", "type": "string" },
+        "bidfloor": { "description": "CPM floor; bids below this price are generally invalid.", "type": "number", "minimum": 0 },
+        "bidfloorcur": { "description": "Floor currency (ISO-4217), paired with bidfloor; commonly defaults to USD.", "$ref": "#/$defs/Iso4217" },
+        "clickbrowser": { "description": "Click destination behavior (FlagBool): 0=embedded WebView, 1=external browser; relevant to mobile landing pages and attribution.", "type": "integer", "enum": [0, 1] },
+        "secure": { "description": "HTTPS requirement (FlagBool): 0=no, 1=creative and page must use HTTPS; relevant to mixed-content restrictions.", "type": "integer", "enum": [0, 1] },
+        "iframebuster": { "description": "Supported iframe-buster vendor names for rich media that can escape an iframe.", "type": "array", "items": { "type": "string" } },
+        "rwdd": { "description": "Rewarded ad flag (FlagBool): 0=no reward, 1=reward for viewing the ad; applies across creative formats.", "type": "integer", "enum": [0, 1] },
+        "ssai": { "description": "Ad insertion mode (Ssai): 0=unknown, 1=client-side, 2=server-side, 3=hybrid; used for CTV/live SSAI.", "type": "integer", "enum": [0, 1, 2, 3] },
+        "exp": { "description": "Suggested impression expiry in seconds; bounds creative caching during long sessions.", "type": "integer", "minimum": 0 },
+        "qty": { "description": "Quantity multiplier for DOOH/group impressions, converting to billable impression volume.", "$ref": "#/$defs/Qty" },
+        "dt": { "description": "Estimated seconds until display; defines the window for early auctions.", "type": "number" },
+        "refresh": { "description": "Automatic refresh details for rotating in-page placements.", "$ref": "#/$defs/Refresh" },
+        "ext": { "description": "Extension JSON string.", "$ref": "#/$defs/Ext" }
       }
     },
     "Publisher": {
       "type": "object",
       "additionalProperties": true,
       "properties": {
-        "id": { "type": "string" },
-        "name": { "type": "string" },
-        "cattax": { "type": "integer" },
-        "cat": { "type": "array", "items": { "type": "string" } },
-        "domain": { "type": "string" },
-        "ext": { "$ref": "#/$defs/Ext" }
+        "id": { "description": "Publisher ID for reporting and contracts.", "type": "string" },
+        "name": { "description": "Publisher name.", "type": "string" },
+        "cattax": { "description": "Category taxonomy; see CategoryTaxonomy.", "type": "integer" },
+        "cat": { "description": "Publisher categories.", "type": "array", "items": { "type": "string" } },
+        "domain": { "description": "Publisher primary domain.", "type": "string" },
+        "ext": { "description": "Extension JSON object string.", "$ref": "#/$defs/Ext" }
       }
     },
     "Producer": {
       "type": "object",
       "additionalProperties": true,
       "properties": {
-        "id": { "type": "string" },
-        "name": { "type": "string" },
-        "cattax": { "type": "integer" },
-        "cat": { "type": "array", "items": { "type": "string" } },
-        "domain": { "type": "string" },
-        "ext": { "$ref": "#/$defs/Ext" }
+        "id": { "description": "Content producer/production company.", "type": "string" },
+        "name": { "description": "Producer name.", "type": "string" },
+        "cattax": { "description": "Category taxonomy; see CategoryTaxonomy.", "type": "integer" },
+        "cat": { "description": "Producer categories; see cattax for the taxonomy.", "type": "array", "items": { "type": "string" } },
+        "domain": { "description": "Producer primary domain.", "type": "string" },
+        "ext": { "description": "Extension JSON object string.", "$ref": "#/$defs/Ext" }
       }
     },
     "Network": {
       "type": "object",
       "additionalProperties": true,
       "properties": {
-        "id": { "type": "string" },
-        "name": { "type": "string" },
-        "domain": { "type": "string" },
-        "ext": { "$ref": "#/$defs/Ext" }
+        "id": { "description": "Network ID.", "type": "string" },
+        "name": { "description": "Network name.", "type": "string" },
+        "domain": { "description": "Network primary domain.", "type": "string" },
+        "ext": { "description": "Extension JSON object string.", "$ref": "#/$defs/Ext" }
       }
     },
     "Channel": {
       "type": "object",
       "additionalProperties": true,
       "properties": {
-        "id": { "type": "string" },
-        "name": { "type": "string" },
-        "domain": { "type": "string" },
-        "ext": { "$ref": "#/$defs/Ext" }
+        "id": { "description": "Channel ID.", "type": "string" },
+        "name": { "description": "Channel name.", "type": "string" },
+        "domain": { "description": "Channel primary domain.", "type": "string" },
+        "ext": { "description": "Extension JSON object string.", "$ref": "#/$defs/Ext" }
       }
     },
     "Segment": {
       "type": "object",
       "additionalProperties": true,
       "properties": {
-        "id": { "type": "string" },
-        "name": { "type": "string" },
-        "value": { "type": "string" },
-        "ext": { "$ref": "#/$defs/Ext" }
+        "id": { "description": "Segment ID.", "type": "string" },
+        "name": { "description": "Segment name.", "type": "string" },
+        "value": { "description": "Segment value.", "type": "string" },
+        "ext": { "description": "Extension JSON object string.", "$ref": "#/$defs/Ext" }
       }
     },
     "Data": {
       "type": "object",
       "additionalProperties": true,
       "properties": {
-        "id": { "type": "string" },
-        "name": { "type": "string" },
-        "cids": { "type": "array", "items": { "type": "string" } },
-        "segment": { "type": "array", "items": { "$ref": "#/$defs/Segment" } },
-        "ext": { "$ref": "#/$defs/Ext" }
+        "id": { "description": "Data provider ID.", "type": "string" },
+        "name": { "description": "Data source name.", "type": "string" },
+        "cids": { "description": "Related campaign/customer ID.", "type": "array", "items": { "type": "string" } },
+        "segment": { "description": "Individual segments.", "type": "array", "items": { "$ref": "#/$defs/Segment" } },
+        "ext": { "description": "Extension JSON object string.", "$ref": "#/$defs/Ext" }
       }
     },
     "Content": {
       "type": "object",
       "additionalProperties": true,
       "properties": {
-        "id": { "type": "string" },
-        "episode": { "type": "integer" },
-        "title": { "type": "string" },
-        "series": { "type": "string" },
-        "season": { "type": "string" },
-        "artist": { "type": "string" },
+        "id": { "description": "Content ID identifying a series/article for contextual targeting.", "type": "string" },
+        "episode": { "description": "Episode number.", "type": "integer" },
+        "title": { "description": "Title.", "type": "string" },
+        "series": { "description": "Series name.", "type": "string" },
+        "season": { "description": "Season.", "type": "string" },
+        "artist": { "description": "Artist for audio/music.", "type": "string" },
         "genre": {
           "type": "string",
-          "description": "Free-text genre label (legacy). Prefer genres + gtax when using a taxonomy."
+          "description": "Legacy free-text genre; prefer genres plus gtax when a taxonomy is available."
         },
         "gtax": {
           "type": "integer",
-          "description": "Genre taxonomy in use (OpenRTB 2.6-202501+). Refer to AdCOM Category Taxonomies; default 9 = Content Category Taxonomy 3.1 when omitted per IAB guidance."
+          "description": "Genre taxonomy (OpenRTB 2.6-202501+); IAB guidance may treat the default as Content Taxonomy 3.1. Genre taxonomy (OpenRTB 2.6-202501+) interpreting genres[]; default may follow IAB Content Taxonomy conventions."
         },
         "genres": {
           "type": "array",
           "items": { "type": "string" },
-          "description": "Genre ID(s) from the taxonomy defined by gtax (OpenRTB 2.6-202501+)."
+          "description": "Genre IDs using the taxonomy specified by gtax (OpenRTB 2.6-202501+)."
         },
-        "album": { "type": "string" },
-        "isrc": { "type": "string" },
-        "producer": { "$ref": "#/$defs/Producer" },
-        "url": { "type": "string" },
-        "cattax": { "type": "integer" },
-        "cat": { "type": "array", "items": { "type": "string" } },
-        "prodq": { "type": "integer" },
-        "context": { "type": "integer" },
-        "contentrating": { "type": "string" },
-        "userrating": { "type": "string" },
-        "qagmediarating": { "type": "integer" },
-        "keywords": { "type": "string" },
-        "kwarray": { "type": "array", "items": { "type": "string" } },
+        "album": { "description": "Album name for audio/music.", "type": "string" },
+        "isrc": { "description": "International Standard Recording Code.", "type": "string" },
+        "producer": { "description": "Content producer.", "$ref": "#/$defs/Producer" },
+        "url": { "description": "Content URL.", "type": "string" },
+        "cattax": { "description": "Category taxonomy; see CategoryTaxonomy.", "type": "integer" },
+        "cat": { "description": "Content categories; see cattax for the taxonomy.", "type": "array", "items": { "type": "string" } },
+        "prodq": { "description": "Production quality (ProductionQuality): 0=unknown, 1=professional, 2=prosumer, 3=UGC.", "type": "integer" },
+        "context": { "description": "Content context (ContentContext): 1=video, 2=game, 3=music, 4=app, 5=text, 6=other, 7=unknown.", "type": "integer" },
+        "contentrating": { "description": "Content rating, such as MPAA.", "type": "string" },
+        "userrating": { "description": "User rating.", "type": "string" },
+        "qagmediarating": { "description": "Media rating (MediaRating): 1=all audiences, 2=12+, 3=mature.", "type": "integer" },
+        "keywords": { "description": "Comma-separated keywords (legacy field).", "type": "string" },
+        "kwarray": { "description": "Keyword array (recommended).", "type": "array", "items": { "type": "string" } },
         "livestream": {
           "type": "integer",
           "enum": [0, 1],
-          "description": "Broadcast method (OpenRTB 2.6-202606): 0 = not scheduled (e.g. VOD / user-initiated); 1 = scheduled / linear viewing. Not the same as realtime."
+          "description": "Broadcast scheduling (OpenRTB 2.6-202606): 0=unscheduled (VOD/user-initiated), 1=scheduled/linear; distinct from realtime."
         },
         "realtime": {
           "type": "integer",
           "enum": [0, 1],
-          "description": "Whether the event is happening in real time while watched (OpenRTB 2.6-202606): 0 = not real time (e.g. replay); 1 = real time (e.g. live sports)."
+          "description": "Real-time flag (OpenRTB 2.6-202606): 0=not real-time, such as replay; 1=real-time, such as a live event."
         },
         "firstbroadcast": {
           "type": "integer",
           "enum": [0, 1],
-          "description": "Whether this is the first time the content is available to an audience (OpenRTB 2.6-202606): 0 = not first broadcast; 1 = first broadcast."
+          "description": "Premiere flag (OpenRTB 2.6-202606): 0=not first showing, 1=first broadcast to the audience."
         },
-        "sourcerelationship": { "type": "integer" },
-        "len": { "type": "integer" },
-        "language": { "type": "string" },
-        "langb": { "type": "string" },
-        "embeddable": { "type": "integer", "enum": [0, 1] },
-        "data": { "type": "array", "items": { "$ref": "#/$defs/Data" } },
-        "network": { "$ref": "#/$defs/Network" },
-        "channel": { "$ref": "#/$defs/Channel" },
-        "ext": { "$ref": "#/$defs/Ext" }
+        "sourcerelationship": { "description": "Publisher relationship (SourceRelationship): 0=indirect, 1=direct.", "type": "integer" },
+        "len": { "description": "Content duration in seconds.", "type": "integer" },
+        "language": { "description": "ISO-639-1", "type": "string" },
+        "langb": { "description": "BCP-47", "type": "string" },
+        "embeddable": { "description": "Embeddable flag (FlagBool): 0=no, 1=yes.", "type": "integer", "enum": [0, 1] },
+        "data": { "description": "Content-side segment data.", "type": "array", "items": { "$ref": "#/$defs/Data" } },
+        "network": { "description": "Broadcast network.", "$ref": "#/$defs/Network" },
+        "channel": { "description": "Channel.", "$ref": "#/$defs/Channel" },
+        "ext": { "description": "Extension JSON object string.", "$ref": "#/$defs/Ext" }
       }
     },
     "Site": {
       "type": "object",
       "additionalProperties": true,
       "properties": {
-        "id": { "type": "string" },
-        "name": { "type": "string" },
-        "domain": { "type": "string" },
-        "cattax": { "type": "integer" },
-        "cat": { "type": "array", "items": { "type": "string" } },
-        "sectioncat": { "type": "array", "items": { "type": "string" } },
-        "pagecat": { "type": "array", "items": { "type": "string" } },
-        "page": { "type": "string" },
-        "ref": { "type": "string" },
-        "search": { "type": "string" },
-        "mobile": { "type": "integer", "enum": [0, 1] },
-        "privacypolicy": { "type": "integer", "enum": [0, 1] },
-        "publisher": { "$ref": "#/$defs/Publisher" },
-        "content": { "$ref": "#/$defs/Content" },
-        "keywords": { "type": "string" },
-        "kwarray": { "type": "array", "items": { "type": "string" } },
-        "inventorypartnerdomain": { "type": "string" },
-        "ext": { "$ref": "#/$defs/Ext" }
+        "id": { "description": "Exchange-assigned site ID.", "type": "string" },
+        "name": { "description": "Site display name.", "type": "string" },
+        "domain": { "description": "Primary domain, such as example.com, for brand safety and blocking.", "type": "string" },
+        "cattax": { "description": "Category taxonomy; see CategoryTaxonomy enum.", "type": "integer" },
+        "cat": { "description": "Site categories.", "type": "array", "items": { "type": "string" } },
+        "sectioncat": { "description": "Section categories.", "type": "array", "items": { "type": "string" } },
+        "pagecat": { "description": "Current-page categories.", "type": "array", "items": { "type": "string" } },
+        "page": { "description": "Full page URL for contextual targeting.", "type": "string" },
+        "ref": { "description": "Referrer URL", "type": "string" },
+        "search": { "description": "Search terms, when arriving from search results.", "type": "string" },
+        "mobile": { "description": "Mobile-optimized site flag (FlagBool): 0=no, 1=yes.", "type": "integer", "enum": [0, 1] },
+        "privacypolicy": { "description": "Privacy-policy flag (FlagBool): 0=no, 1=yes.", "type": "integer", "enum": [0, 1] },
+        "publisher": { "description": "Publisher.", "$ref": "#/$defs/Publisher" },
+        "content": { "description": "Page content metadata.", "$ref": "#/$defs/Content" },
+        "keywords": { "description": "Comma-separated keywords (legacy field).", "type": "string" },
+        "kwarray": { "description": "Keyword array (recommended).", "type": "array", "items": { "type": "string" } },
+        "inventorypartnerdomain": { "description": "ads.txt/inventory partner domain.", "type": "string" },
+        "ext": { "description": "Extension JSON object string.", "$ref": "#/$defs/Ext" }
       }
     },
     "App": {
       "type": "object",
       "additionalProperties": true,
       "properties": {
-        "id": { "type": "string" },
-        "name": { "type": "string" },
-        "bundle": { "type": "string" },
-        "domain": { "type": "string" },
-        "storeurl": { "type": "string" },
-        "cattax": { "type": "integer" },
-        "cat": { "type": "array", "items": { "type": "string" } },
-        "sectioncat": { "type": "array", "items": { "type": "string" } },
-        "pagecat": { "type": "array", "items": { "type": "string" } },
-        "ver": { "type": "string" },
-        "privacypolicy": { "type": "integer", "enum": [0, 1] },
-        "paid": { "type": "integer", "enum": [0, 1] },
-        "publisher": { "$ref": "#/$defs/Publisher" },
-        "content": { "$ref": "#/$defs/Content" },
-        "keywords": { "type": "string" },
-        "kwarray": { "type": "array", "items": { "type": "string" } },
-        "inventorypartnerdomain": { "type": "string" },
-        "ext": { "$ref": "#/$defs/Ext" }
+        "id": { "description": "Exchange-assigned app ID.", "type": "string" },
+        "name": { "description": "App name.", "type": "string" },
+        "bundle": { "description": "Package name/bundle ID, central to app targeting and blocking.", "type": "string" },
+        "domain": { "description": "Associated app domain.", "type": "string" },
+        "storeurl": { "description": "App-store detail URL.", "type": "string" },
+        "cattax": { "description": "Category taxonomy; see CategoryTaxonomy.", "type": "integer" },
+        "cat": { "description": "App categories for industry targeting; taxonomy is specified by cattax.", "type": "array", "items": { "type": "string" } },
+        "sectioncat": { "description": "Section categories.", "type": "array", "items": { "type": "string" } },
+        "pagecat": { "description": "Current view/page categories.", "type": "array", "items": { "type": "string" } },
+        "ver": { "description": "App version.", "type": "string" },
+        "privacypolicy": { "description": "Privacy-policy flag; see FlagBool.", "type": "integer", "enum": [0, 1] },
+        "paid": { "description": "Paid-app flag (FlagBool): 0=free, 1=paid.", "type": "integer", "enum": [0, 1] },
+        "publisher": { "description": "Publisher entity responsible for distributing the app.", "$ref": "#/$defs/Publisher" },
+        "content": { "description": "In-app content metadata, such as embedded player or article context.", "$ref": "#/$defs/Content" },
+        "keywords": { "description": "Comma-separated keywords (legacy field).", "type": "string" },
+        "kwarray": { "description": "Keyword array (recommended).", "type": "array", "items": { "type": "string" } },
+        "inventorypartnerdomain": { "description": "Inventory partner domain for app-ads.txt.", "type": "string" },
+        "ext": { "description": "Extension JSON object string.", "$ref": "#/$defs/Ext" }
       }
     },
     "Dooh": {
       "type": "object",
       "additionalProperties": true,
       "properties": {
-        "id": { "type": "string" },
-        "name": { "type": "string" },
+        "id": { "description": "Screen/venue unit ID.", "type": "string" },
+        "name": { "description": "Screen/venue unit name.", "type": "string" },
         "venue": {
           "type": "integer",
-          "description": "Legacy numeric venue type used by some exchanges; prefer venuetype + venuetypetax."
+          "description": "Legacy numeric venue type; prefer venuetype plus venuetypetax."
         },
         "venuetype": {
           "type": "array",
           "items": { "type": "string" },
-          "description": "Out-of-home venue type IDs. Taxonomy defined by venuetypetax (default OpenOOH when omitted)."
+          "description": "Venue type IDs, such as OpenOOH; venuetypetax specifies the taxonomy."
         },
         "venuetypetax": {
           "type": "integer",
-          "description": "Venue taxonomy in use. Refer to AdCOM List: DOOH Venue Taxonomies; default 1."
+          "description": "Venue taxonomy from AdCOM DOOH Venue Taxonomies; default 1."
         },
-        "fixed": { "type": "integer" },
-        "publisher": { "$ref": "#/$defs/Publisher" },
-        "domain": { "type": "string" },
-        "keywords": { "type": "string" },
-        "kwarray": { "type": "array", "items": { "type": "string" } },
-        "content": { "$ref": "#/$defs/Content" },
-        "ext": { "$ref": "#/$defs/Ext" }
+        "fixed": { "description": "Fixed-screen flag (FlagBool): 0=mobile, 1=fixed.", "type": "integer" },
+        "publisher": { "description": "Publisher or screen-network operator.", "$ref": "#/$defs/Publisher" },
+        "domain": { "description": "Associated business domain.", "type": "string" },
+        "keywords": { "description": "Comma-separated keywords (legacy field).", "type": "string" },
+        "kwarray": { "description": "Keyword array (recommended).", "type": "array", "items": { "type": "string" } },
+        "content": { "description": "Context of the content currently playing.", "$ref": "#/$defs/Content" },
+        "ext": { "description": "Extension JSON object string.", "$ref": "#/$defs/Ext" }
       }
     },
     "Geo": {
       "type": "object",
       "additionalProperties": true,
       "properties": {
-        "lat": { "type": "number", "minimum": -90, "maximum": 90 },
-        "lon": { "type": "number", "minimum": -180, "maximum": 180 },
-        "type": { "type": "integer" },
-        "accuracy": { "type": "integer", "minimum": 0 },
-        "lastfix": { "type": "integer", "minimum": 0 },
-        "ipservice": { "type": "integer" },
-        "country": { "type": "string" },
-        "region": { "type": "string" },
-        "regionfips104": { "type": "string" },
-        "metro": { "type": "string" },
-        "city": { "type": "string" },
-        "zip": { "type": "string" },
-        "utcoffset": { "type": "integer" },
-        "ext": { "$ref": "#/$defs/Ext" }
+        "lat": { "description": "Latitude.", "type": "number", "minimum": -90, "maximum": 90 },
+        "lon": { "description": "Longitude.", "type": "number", "minimum": -180, "maximum": 180 },
+        "type": { "description": "Location source (LocationType): 1=GPS, 2=IP, 3=user-provided.", "type": "integer" },
+        "accuracy": { "description": "Accuracy in meters.", "type": "integer", "minimum": 0 },
+        "lastfix": { "description": "Location age in seconds.", "type": "integer", "minimum": 0 },
+        "ipservice": { "description": "IP geolocation service (IpLocationService): 1=ip2location, 2=Neustar, 3=MaxMind, 4=NetAcuity.", "type": "integer" },
+        "country": { "description": "Country code using ISO-3166-1 Alpha-3 or an agreed convention.", "type": "string" },
+        "region": { "description": "Province/state.", "type": "string" },
+        "regionfips104": { "description": "FIPS 10-4 region code, where applicable.", "type": "string" },
+        "metro": { "description": "Metro code.", "type": "string" },
+        "city": { "description": "City name for city-level targeting.", "type": "string" },
+        "zip": { "description": "Postal code.", "type": "string" },
+        "utcoffset": { "description": "UTC offset in minutes.", "type": "integer" },
+        "ext": { "description": "Extension JSON object string.", "$ref": "#/$defs/Ext" }
       }
     },
     "BrandVersion": {
       "type": "object",
       "additionalProperties": true,
       "properties": {
-        "brand": { "type": "string" },
-        "version": { "type": "array", "items": { "type": "string" } },
-        "ext": { "$ref": "#/$defs/Ext" }
+        "brand": { "description": "Brand name, such as \"Chrome\".", "type": "string" },
+        "version": { "description": "Version components, such as [\"192\",\"0\",\"0\",\"0\"].", "type": "array", "items": { "type": "string" } },
+        "ext": { "description": "Extension JSON object string.", "$ref": "#/$defs/Ext" }
       }
     },
     "UserAgent": {
       "type": "object",
       "additionalProperties": true,
       "properties": {
-        "browsers": { "type": "array", "items": { "$ref": "#/$defs/BrandVersion" } },
-        "platform": { "$ref": "#/$defs/BrandVersion" },
-        "mobile": { "type": "integer", "enum": [0, 1] },
-        "architecture": { "type": "string" },
-        "bitness": { "type": "string" },
-        "model": { "type": "string" },
-        "source": { "type": "integer" },
-        "ext": { "$ref": "#/$defs/Ext" }
+        "browsers": { "description": "Browser brands and versions.", "type": "array", "items": { "$ref": "#/$defs/BrandVersion" } },
+        "platform": { "description": "Platform/OS brand and version.", "$ref": "#/$defs/BrandVersion" },
+        "mobile": { "description": "Mobile flag (FlagBool): 0=no, 1=yes.", "type": "integer", "enum": [0, 1] },
+        "architecture": { "description": "CPU architecture.", "type": "string" },
+        "bitness": { "description": "Bitness, such as \"64\".", "type": "string" },
+        "model": { "description": "Device model from SUA.", "type": "string" },
+        "source": { "description": "SUA source (UserAgentSource): 0=unknown, 1=low-entropy CH, 2=high-entropy CH, 3=parsed UA string.", "type": "integer" },
+        "ext": { "description": "Extension JSON object string.", "$ref": "#/$defs/Ext" }
       }
     },
     "Device": {
       "type": "object",
       "additionalProperties": true,
       "properties": {
-        "geo": { "$ref": "#/$defs/Geo" },
-        "dnt": { "type": "integer", "enum": [0, 1] },
-        "lmt": { "type": "integer", "enum": [0, 1] },
-        "ua": { "type": "string" },
-        "sua": { "$ref": "#/$defs/UserAgent" },
-        "ip": { "type": "string" },
-        "ipv6": { "type": "string" },
-        "devicetype": { "type": "integer" },
-        "make": { "type": "string" },
-        "model": { "type": "string" },
-        "os": { "type": "string" },
-        "osv": { "type": "string" },
-        "hwv": { "type": "string" },
-        "h": { "type": "integer", "minimum": 0 },
-        "w": { "type": "integer", "minimum": 0 },
-        "ppi": { "type": "integer" },
-        "pxratio": { "type": "number" },
-        "js": { "type": "integer", "enum": [0, 1] },
-        "geofetch": { "type": "integer", "enum": [0, 1] },
-        "language": { "type": "string" },
-        "langb": { "type": "string" },
-        "carrier": { "type": "string" },
-        "mccmnc": { "type": "string" },
-        "connectiontype": { "type": "integer" },
-        "ifa": { "type": "string" },
-        "ext": { "$ref": "#/$defs/Ext" }
+        "geo": { "description": "Device location, which may differ from User.geo.", "$ref": "#/$defs/Geo" },
+        "dnt": { "description": "Do Not Track (FlagBool): 0=no, 1=DNT enabled.", "type": "integer", "enum": [0, 1] },
+        "lmt": { "description": "Limit Ad Tracking (FlagBool): 0=no, 1=limited.", "type": "integer", "enum": [0, 1] },
+        "ua": { "description": "Raw User-Agent string, used as a parsing fallback.", "type": "string" },
+        "sua": { "description": "Structured UA (SUA), preferred over ua for precise targeting.", "$ref": "#/$defs/UserAgent" },
+        "ip": { "description": "IPv4 address for geolocation and risk assessment.", "type": "string" },
+        "ipv6": { "description": "IPv6", "type": "string" },
+        "devicetype": { "description": "Device type (DeviceType): 1=general mobile, 2=PC, 3=CTV, 4=phone, 5=tablet, 6=connected device, 7=set-top box, 8=OOH.", "type": "integer" },
+        "make": { "description": "Manufacturer, such as Apple.", "type": "string" },
+        "model": { "description": "Model.", "type": "string" },
+        "os": { "description": "Operating system.", "type": "string" },
+        "osv": { "description": "OS version.", "type": "string" },
+        "hwv": { "description": "Hardware version.", "type": "string" },
+        "h": { "description": "Physical screen height in pixels.", "type": "integer", "minimum": 0 },
+        "w": { "description": "Physical screen width in pixels.", "type": "integer", "minimum": 0 },
+        "ppi": { "description": "Pixel density.", "type": "integer" },
+        "pxratio": { "description": "Ratio of physical pixels to device-independent pixels (DIPs).", "type": "number" },
+        "js": { "description": "JavaScript support (FlagBool): 0=no, 1=yes.", "type": "integer", "enum": [0, 1] },
+        "geofetch": { "description": "Whether the creative may obtain location (FlagBool): 0=no, 1=yes.", "type": "integer", "enum": [0, 1] },
+        "language": { "description": "Device language (ISO-639-1).", "type": "string" },
+        "langb": { "description": "BCP-47", "type": "string" },
+        "carrier": { "description": "Carrier.", "type": "string" },
+        "mccmnc": { "description": "MCC-MNC", "type": "string" },
+        "connectiontype": { "description": "Connection type (ConnectionType): 0=unknown, 1=Ethernet, 2=WiFi, 3=unknown cellular, 4=2G, 5=3G, 6=4G, 7=5G.", "type": "integer" },
+        "ifa": { "description": "Advertising ID, such as IDFA/GAID, for user targeting and attribution.", "type": "string" },
+        "ext": { "description": "Extension JSON object string.", "$ref": "#/$defs/Ext" }
       }
     },
     "UID": {
       "type": "object",
       "additionalProperties": true,
       "properties": {
-        "id": { "type": "string" },
-        "atype": { "type": "integer" },
-        "ext": { "$ref": "#/$defs/Ext" }
+        "id": { "description": "User identifier value.", "type": "string" },
+        "atype": { "description": "Agent type (AgentType): 1=browser/device, 2=in-app, 3=cross-device person; >=500 vendor-specific.", "type": "integer" },
+        "ext": { "description": "Extension JSON object string.", "$ref": "#/$defs/Ext" }
       }
     },
     "EID": {
       "type": "object",
       "additionalProperties": true,
       "properties": {
-        "source": { "type": "string" },
-        "uids": { "type": "array", "items": { "$ref": "#/$defs/UID" } },
-        "inserter": { "type": "string" },
-        "matcher": { "type": "string" },
-        "mm": { "type": "integer" },
-        "ext": { "$ref": "#/$defs/Ext" }
+        "source": { "description": "ID source domain/system, such as uidapi.com.", "type": "string" },
+        "uids": { "description": "Individual ID values.", "type": "array", "items": { "$ref": "#/$defs/UID" } },
+        "inserter": { "description": "Inserter.", "type": "string" },
+        "matcher": { "description": "Matcher.", "type": "string" },
+        "mm": { "description": "Match method (IdMatchMethod): 0=unknown, 1=unmatched direct cookie/IFA, 2=browser cookie sync, 3=authenticated, 4=first-party observation, 5=inferred; >=500 vendor-specific.", "type": "integer" },
+        "ext": { "description": "Extension JSON object string.", "$ref": "#/$defs/Ext" }
       }
     },
     "User": {
       "type": "object",
       "additionalProperties": true,
       "properties": {
-        "id": { "type": "string" },
-        "buyeruid": { "type": "string" },
-        "keywords": { "type": "string" },
-        "kwarray": { "type": "array", "items": { "type": "string" } },
-        "customdata": { "type": "string" },
-        "geo": { "$ref": "#/$defs/Geo" },
-        "data": { "type": "array", "items": { "$ref": "#/$defs/Data" } },
-        "consent": { "type": "string" },
-        "eids": { "type": "array", "items": { "$ref": "#/$defs/EID" } },
-        "ext": { "$ref": "#/$defs/Ext" }
+        "id": { "description": "Exchange-assigned user ID.", "type": "string" },
+        "buyeruid": { "description": "Buyer cookie/mapped ID, important for DSP frequency capping.", "type": "string" },
+        "keywords": { "description": "Legacy comma-separated keywords.", "type": "string" },
+        "kwarray": { "description": "Interest/context keywords.", "type": "array", "items": { "type": "string" } },
+        "customdata": { "description": "Buyer-defined opaque data returned by the exchange.", "type": "string" },
+        "geo": { "description": "User home/registration location, which may differ from Device.geo.", "$ref": "#/$defs/Geo" },
+        "data": { "description": "Audience/first-party data segments.", "type": "array", "items": { "$ref": "#/$defs/Data" } },
+        "consent": { "description": "Consent string, such as GDPR TCF.", "type": "string" },
+        "eids": { "description": "Extended/unified identities, such as UID2 or Living Docs.", "type": "array", "items": { "$ref": "#/$defs/EID" } },
+        "ext": { "description": "Extension JSON object string.", "$ref": "#/$defs/Ext" }
       }
     },
     "SupplyChainNode": {
@@ -581,13 +581,13 @@
       "additionalProperties": true,
       "required": ["asi", "sid", "hp"],
       "properties": {
-        "asi": { "$ref": "#/$defs/NonEmptyString" },
-        "sid": { "$ref": "#/$defs/NonEmptyString" },
-        "rid": { "type": "string" },
-        "name": { "type": "string" },
-        "domain": { "type": "string" },
-        "hp": { "type": "integer", "enum": [0, 1] },
-        "ext": { "$ref": "#/$defs/Ext" }
+        "asi": { "description": "Advertising System Identifier domain.", "$ref": "#/$defs/NonEmptyString" },
+        "sid": { "description": "Seller ID within this system.", "$ref": "#/$defs/NonEmptyString" },
+        "rid": { "description": "Request ID at this node.", "type": "string" },
+        "name": { "description": "Optional organization name.", "type": "string" },
+        "domain": { "description": "Optional business domain.", "type": "string" },
+        "hp": { "description": "Payment-path participation (FlagBool): 0=no, 1=yes (helps payment).", "type": "integer", "enum": [0, 1] },
+        "ext": { "description": "Extension JSON object string.", "$ref": "#/$defs/Ext" }
       }
     },
     "SupplyChain": {
@@ -595,37 +595,37 @@
       "additionalProperties": true,
       "required": ["complete", "nodes", "ver"],
       "properties": {
-        "complete": { "type": "integer", "enum": [0, 1] },
-        "nodes": {
+        "complete": { "description": "Chain completeness (FlagBool): 0=possibly truncated, 1=complete.", "type": "integer", "enum": [0, 1] },
+        "nodes": { "description": "Ordered resale nodes from origin to the current seller.",
           "type": "array",
           "minItems": 1,
           "items": { "$ref": "#/$defs/SupplyChainNode" }
         },
-        "ver": { "$ref": "#/$defs/NonEmptyString" },
-        "ext": { "$ref": "#/$defs/Ext" }
+        "ver": { "description": "schain version, such as \"1.0\".", "$ref": "#/$defs/NonEmptyString" },
+        "ext": { "description": "Extension JSON object string.", "$ref": "#/$defs/Ext" }
       }
     },
     "Source": {
       "type": "object",
       "additionalProperties": true,
       "properties": {
-        "fd": { "type": "integer", "enum": [0, 1] },
-        "tid": { "type": "string" },
-        "pchain": { "type": "string" },
-        "schain": { "$ref": "#/$defs/SupplyChain" },
-        "ext": { "$ref": "#/$defs/Ext" }
+        "fd": { "description": "Upstream final decision flag (FlagBool): 0=this exchange decides, 1=upstream decides.", "type": "integer", "enum": [0, 1] },
+        "tid": { "description": "Transaction ID for tracing.", "type": "string" },
+        "pchain": { "description": "Legacy payment ID chain; prefer schain.", "type": "string" },
+        "schain": { "description": "SupplyChain object.", "$ref": "#/$defs/SupplyChain" },
+        "ext": { "description": "Extension JSON object string.", "$ref": "#/$defs/Ext" }
       }
     },
     "Regs": {
       "type": "object",
       "additionalProperties": true,
       "properties": {
-        "coppa": { "type": "integer", "enum": [0, 1] },
-        "gdpr": { "type": "integer", "enum": [0, 1] },
-        "us_privacy": { "type": "string" },
-        "gpp": { "type": "string" },
-        "gpp_sid": { "type": "array", "items": { "type": "integer" } },
-        "ext": { "$ref": "#/$defs/Ext" }
+        "coppa": { "description": "COPPA applicability (FlagBool): 0=no, 1=applies to child-directed traffic.", "type": "integer", "enum": [0, 1] },
+        "gdpr": { "description": "GDPR applicability (FlagBool): 0=no, 1=applies.", "type": "integer", "enum": [0, 1] },
+        "us_privacy": { "description": "CCPA/US Privacy string.", "type": "string" },
+        "gpp": { "description": "Global Privacy Platform string.", "type": "string" },
+        "gpp_sid": { "description": "GPP section IDs.", "type": "array", "items": { "type": "integer" } },
+        "ext": { "description": "Extension JSON object string.", "$ref": "#/$defs/Ext" }
       }
     },
     "Bid": {
@@ -633,38 +633,38 @@
       "additionalProperties": true,
       "required": ["id", "impid", "price"],
       "properties": {
-        "id": { "$ref": "#/$defs/NonEmptyString" },
-        "impid": { "$ref": "#/$defs/NonEmptyString" },
-        "price": { "type": "number", "exclusiveMinimum": 0 },
-        "nurl": { "type": "string" },
-        "burl": { "type": "string" },
-        "lurl": { "type": "string" },
-        "adm": { "type": "string" },
-        "adid": { "type": "string" },
-        "adomain": { "type": "array", "items": { "type": "string" } },
-        "bundle": { "type": "string" },
-        "iurl": { "type": "string" },
-        "cid": { "type": "string" },
-        "crid": { "type": "string" },
-        "tactic": { "type": "string" },
-        "cattax": { "type": "integer" },
-        "cat": { "type": "array", "items": { "type": "string" } },
-        "attr": { "type": "array", "items": { "type": "integer" } },
-        "apis": { "type": "array", "items": { "type": "integer" } },
-        "protocol": { "type": "integer" },
-        "qagmediarating": { "type": "integer" },
-        "language": { "type": "string" },
-        "langb": { "type": "string" },
-        "dealid": { "type": "string" },
-        "w": { "type": "integer", "minimum": 1 },
-        "h": { "type": "integer", "minimum": 1 },
-        "wratio": { "type": "integer" },
-        "hratio": { "type": "integer" },
-        "exp": { "type": "integer" },
-        "dur": { "type": "integer" },
-        "mtype": { "type": "integer", "enum": [1, 2, 3, 4] },
-        "slotinpod": { "type": "integer" },
-        "ext": { "$ref": "#/$defs/Ext" }
+        "id": { "description": "Required bidder-assigned bid ID.", "$ref": "#/$defs/NonEmptyString" },
+        "impid": { "description": "Required reference to Imp.id; unmatched bids are discarded by the exchange.", "$ref": "#/$defs/NonEmptyString" },
+        "price": { "description": "Required CPM bid price, strictly greater than zero; currency is BidResponse.cur.", "type": "number", "exclusiveMinimum": 0 },
+        "nurl": { "description": "Win notice URL, optionally containing ${AUCTION_PRICE}; called by the exchange server after a win.", "type": "string" },
+        "burl": { "description": "Billing notice URL, called at the actual billing event, which may differ from display time.", "type": "string" },
+        "lurl": { "description": "Loss notice URL for feedback and learning on unsuccessful bids.", "type": "string" },
+        "adm": { "description": "Ad markup (HTML/VAST/Native JSON, etc.). Inline markup is strongly recommended; nurl retrieval is also possible.", "type": "string" },
+        "adid": { "description": "Advertiser-side ad ID for ad-level reporting.", "type": "string" },
+        "adomain": { "description": "Advertiser domains. Strongly recommended for badv checks and brand disclosure.", "type": "array", "items": { "type": "string" } },
+        "bundle": { "description": "Promoted app bundle, such as for app-install ads.", "type": "string" },
+        "iurl": { "description": "Sample creative preview image URL for review and quality assurance.", "type": "string" },
+        "cid": { "description": "Campaign ID.", "type": "string" },
+        "crid": { "description": "Creative ID. Strongly recommended for review, frequency capping and rejection troubleshooting.", "type": "string" },
+        "tactic": { "description": "Tactic ID for internal DSP strategy attribution.", "type": "string" },
+        "cattax": { "description": "Category taxonomy; see CategoryTaxonomy enum.", "type": "integer" },
+        "cat": { "description": "Creative/advertiser categories.", "type": "array", "items": { "type": "string" } },
+        "attr": { "description": "Creative attributes; see CreativeAttribute enum; >=500 vendor-specific.", "type": "array", "items": { "type": "integer" } },
+        "apis": { "description": "Creative APIs; see ApiFramework enum.", "type": "array", "items": { "type": "integer" } },
+        "protocol": { "description": "Video protocol; see Protocol enum.", "type": "integer" },
+        "qagmediarating": { "description": "Media rating (MediaRating): 1=all audiences, 2=12+, 3=mature.", "type": "integer" },
+        "language": { "description": "Creative language (ISO-639-1).", "type": "string" },
+        "langb": { "description": "Creative language (BCP-47).", "type": "string" },
+        "dealid": { "description": "Selected Deal.id; a corresponding deal is required for PMP bids.", "type": "string" },
+        "w": { "description": "Actual creative width in device-independent pixels (DIPs).", "type": "integer", "minimum": 1 },
+        "h": { "description": "Actual creative height in device-independent pixels (DIPs).", "type": "integer", "minimum": 1 },
+        "wratio": { "description": "Creative width ratio for native/flexible layouts.", "type": "integer" },
+        "hratio": { "description": "Creative height ratio.", "type": "integer" },
+        "exp": { "description": "Suggested bid expiry in seconds.", "type": "integer" },
+        "dur": { "description": "Video/audio duration in seconds.", "type": "integer" },
+        "mtype": { "description": "Creative format (MarkupType): 1=Banner, 2=Video, 3=Audio, 4=Native; required by BidCheck for multi-format Imps. JSON Schema forbids zero; protobuf UNSPECIFIED=0 means unset. Set 1-4 before emitting an explicit mtype in JSON.", "type": "integer", "enum": [1, 2, 3, 4] },
+        "slotinpod": { "description": "Requested pod slot (SlotInPod); special value -1=last slot; used for CTV pod bidding.", "type": "integer" },
+        "ext": { "description": "Extension JSON object string.", "$ref": "#/$defs/Ext" }
       }
     },
     "SeatBid": {
@@ -672,14 +672,14 @@
       "additionalProperties": true,
       "required": ["bid"],
       "properties": {
-        "bid": {
+        "bid": { "description": "Bids for this seat; at least one is needed for a meaningful entry.",
           "type": "array",
           "minItems": 1,
           "items": { "$ref": "#/$defs/Bid" }
         },
-        "seat": { "type": "string" },
-        "group": { "type": "integer", "enum": [0, 1] },
-        "ext": { "$ref": "#/$defs/Ext" }
+        "seat": { "description": "Buyer seat name, distinguishing pricing and settlement for DSPs with multiple seats.", "type": "string" },
+        "group": { "description": "Group flag (FlagBool): 0=partial wins allowed, 1=all bids must win together; used for bundled Imp sales.", "type": "integer", "enum": [0, 1] },
+        "ext": { "description": "Extension JSON object string.", "$ref": "#/$defs/Ext" }
       }
     },
     "BidRequest": {
@@ -694,44 +694,44 @@
         ]
       },
       "properties": {
-        "id": { "$ref": "#/$defs/NonEmptyString" },
-        "imp": {
+        "id": { "description": "Unique auction ID. Required. BidResponse.id must echo it unchanged for reconciliation and log correlation.", "$ref": "#/$defs/NonEmptyString" },
+        "imp": { "description": "Impression opportunities for sale. Required and nonempty; a request may include multiple placements or formats.",
           "type": "array",
           "minItems": 1,
           "items": { "$ref": "#/$defs/Imp" }
         },
-        "site": { "$ref": "#/$defs/Site" },
-        "app": { "$ref": "#/$defs/App" },
-        "dooh": { "$ref": "#/$defs/Dooh" },
-        "device": { "$ref": "#/$defs/Device" },
-        "user": { "$ref": "#/$defs/User" },
-        "test": { "type": "integer", "enum": [0, 1] },
-        "at": {
+        "site": { "description": "Site inventory, mutually exclusive with app/dooh; used for desktop and mobile web placements.", "$ref": "#/$defs/Site" },
+        "app": { "description": "App inventory, mutually exclusive with site/dooh; used for iOS/Android in-app ads.", "$ref": "#/$defs/App" },
+        "dooh": { "description": "Digital out-of-home inventory, mutually exclusive with site/app; used for DOOH screens and billboards.", "$ref": "#/$defs/Dooh" },
+        "device": { "description": "Device and environment. Strongly recommended for targeting, fraud detection and creative size/OS compatibility.", "$ref": "#/$defs/Device" },
+        "user": { "description": "User/audience. Recommended for frequency capping, audience targeting and consent/eids signals.", "$ref": "#/$defs/User" },
+        "test": { "description": "Test mode (FlagBool): 0=production, 1=test. Test traffic is for integration and must not be billed.", "type": "integer", "enum": [0, 1] },
+        "at": { "description": "Auction type. Required. AuctionType: 1=first price, 2=second price plus, 3=fixed price (Deal only), >=500=exchange-specific. Defines how the DSP interprets the winning price. Schema/builders reject zero (unspecified).",
           "allOf": [
             { "$ref": "#/$defs/AuctionType" },
             { "anyOf": [{ "enum": [1, 2] }, { "minimum": 500 }], "description": "Required: 1 first price, 2 second price plus, or >=500 exchange-specific. Fixed price (3) is only valid for Deal.at." }
           ]
         },
-        "tmax": { "type": "integer", "minimum": 1 },
-        "wseat": { "type": "array", "items": { "type": "string" } },
-        "bseat": { "type": "array", "items": { "type": "string" } },
-        "allimps": { "type": "integer", "enum": [0, 1] },
+        "tmax": { "description": "Timeout in milliseconds, including network time. The DSP must respond within tmax; otherwise the exchange treats it as 204.", "type": "integer", "minimum": 1 },
+        "wseat": { "description": "Allowed seats; only listed buyer seats may participate.", "type": "array", "items": { "type": "string" } },
+        "bseat": { "description": "Blocked seats; excludes specified buyers.", "type": "array", "items": { "type": "string" } },
+        "allimps": { "description": "Whether all Imps are included (FlagBool): 0=no, 1=yes. Supports global budget and exclusivity decisions.", "type": "integer", "enum": [0, 1] },
         "cur": {
           "type": "array",
           "minItems": 1,
           "items": { "$ref": "#/$defs/Iso4217" },
-          "description": "Required; at least one ISO-4217 currency code."
+          "description": "Accepted bid currencies (ISO-4217). Required and nonempty; DSPs must not use unlisted currencies."
         },
-        "wlang": { "type": "array", "items": { "type": "string" } },
-        "wlangb": { "type": "array", "items": { "type": "string" } },
-        "acat": { "type": "array", "items": { "type": "string" } },
-        "bcat": { "type": "array", "items": { "type": "string" } },
-        "cattax": { "type": "integer" },
-        "badv": { "type": "array", "items": { "type": "string" } },
-        "bapp": { "type": "array", "items": { "type": "string" } },
-        "source": { "$ref": "#/$defs/Source" },
-        "regs": { "$ref": "#/$defs/Regs" },
-        "ext": { "$ref": "#/$defs/Ext" }
+        "wlang": { "description": "Allowed creative languages (ISO-639-1) for language targeting.", "type": "array", "items": { "type": "string" } },
+        "wlangb": { "description": "Allowed creative languages (BCP-47), providing more detail than wlang.", "type": "array", "items": { "type": "string" } },
+        "acat": { "description": "Allowed advertiser industry categories for category-restricted inventory.", "type": "array", "items": { "type": "string" } },
+        "bcat": { "description": "Blocked advertiser industry categories for brand safety and category exclusion.", "type": "array", "items": { "type": "string" } },
+        "cattax": { "description": "Category taxonomy: CategoryTaxonomy values 1-7 are defined in the enum; >=500 are vendor-specific. Interprets cat/bcat/acat.", "type": "integer" },
+        "badv": { "description": "Blocked advertiser domains, such as competitors or sensitive domains.", "type": "array", "items": { "type": "string" } },
+        "bapp": { "description": "Blocked app bundles/package names; excludes specified advertiser apps on app inventory.", "type": "array", "items": { "type": "string" } },
+        "source": { "description": "Upstream source and supply chain, for schain transparency and header-bidding audits.", "$ref": "#/$defs/Source" },
+        "regs": { "description": "Regulatory and privacy signals for COPPA/GDPR/CCPA/GPP decisions.", "$ref": "#/$defs/Regs" },
+        "ext": { "description": "Extension JSON object string for exchange-specific fields agreed by both parties.", "$ref": "#/$defs/Ext" }
       }
     },
     "BidResponse": {
@@ -739,19 +739,19 @@
       "additionalProperties": true,
       "required": ["id", "cur"],
       "properties": {
-        "id": { "$ref": "#/$defs/NonEmptyString" },
-        "seatbid": {
+        "id": { "description": "Required; must equal BidRequest.id.", "$ref": "#/$defs/NonEmptyString" },
+        "seatbid": { "description": "Seat bids; an actual bid response includes at least one SeatBid.",
           "type": "array",
           "items": { "$ref": "#/$defs/SeatBid" }
         },
-        "bidid": { "type": "string" },
+        "bidid": { "description": "Bidder-generated response ID for bidder-side logging and reconciliation.", "type": "string" },
         "cur": {
           "$ref": "#/$defs/Iso4217",
-          "description": "Required; ISO-4217 currency for bid prices (builders default to USD)."
+          "description": "Required response currency (ISO-4217). Builders default to USD; it must be allowed by the request cur list."
         },
-        "customdata": { "type": "string" },
-        "nbr": { "type": "integer" },
-        "ext": { "$ref": "#/$defs/Ext" }
+        "customdata": { "description": "Opaque data returned to the exchange and potentially included later in User.customdata.", "type": "string" },
+        "nbr": { "description": "No-bid reason (NoBidReason): 0=unknown error, 1=technical error, 2=invalid request, 3=crawler, 4=non-human, 5=cloud/proxy IP, 6=unsupported device, 7=blocked publisher, 8=unmatched user, 9=daily reader cap, 10=daily domain cap; >=500 custom.", "type": "integer" },
+        "ext": { "description": "Extension JSON object string.", "$ref": "#/$defs/Ext" }
       }
     }
   },

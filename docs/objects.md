@@ -1,6 +1,6 @@
 # 对象字典
 
-字段级约束以 JSON Schema 为准。这里只列层次和必填项。  
+字段级约束以 JSON Schema 为准。这里只列层次和必填项；全部字段、类型、单位与约束见 [完整字段手册](fields.md)。
 OakRTB 相对 IAB 2.6 最小集收紧了 `at`/`cur`（请求）与响应 `cur`，详见 [spec.md](spec.md#相对-iab-openrtb-26-的差异)。
 
 ## BidRequest
@@ -27,12 +27,12 @@ OakRTB 相对 IAB 2.6 最小集收紧了 `at`/`cur`（请求）与响应 `cur`�
 | `bidfloor` | 否 | CPM 底价 |
 | `secure` | 否 | 1 = 素材必须 HTTPS |
 | `pmp` | 否 | 私有交易 |
-| `rwdd` | 否 | 激励视频 |
+| `rwdd` | 否 | 激励广告标记，适用于多种素材形态，不限于视频 |
 | `ssai` | 否 | 服务端广告插入 |
 
 ## Banner / Video / Audio / Native
 
-- Banner：推荐 `w`/`h` 或 `format[]`
+- Banner：JSON Schema 不强制提供尺寸；SDK 构建器的 Readiness 检查要求正数 `w` + `h` 或非空 `format[]`。展示尺寸使用设备无关像素（DIPs），不是屏幕物理像素。
 - Video：必填 `mimes`；CTV pod 用 `podid` / `poddur` / `slotinpod`；`poddedupe` 可选
 - Audio：必填 `mimes`
 - Native：必填 `request`（JSON 字符串）
@@ -68,4 +68,4 @@ OakRTB 相对 IAB 2.6 最小集收紧了 `at`/`cur`（请求）与响应 `cur`�
 | `mtype` | 多形态 Imp 时必填（BidCheck） | JSON Schema 中若提供，只允许 1–4 |
 | `dealid` | deal 出价时是 | 对应 Deal.id |
 
-完整属性表见 `schema/jsonschema/openrtb.schema.json` 中的 `$defs`。
+完整属性表见 [字段手册](fields.md)，包含 Native.request 内嵌 JSON。JSON 必填与约束以 Schema 为准；Readiness 和 BidCheck 的附加规则不等同于 Schema 必填。

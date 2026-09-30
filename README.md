@@ -189,7 +189,7 @@ make sdk-test
 | 运行和修改完整示例 | [示例说明](examples/README.md) |
 | 模块依赖、数据语义与 API 迁移 | [SDK 架构](docs/sdk.md) |
 | View 查询与竞价检查 | [View 使用](docs/view-usage.md) |
-| 对象、字段和协议约束 | [协议规范](docs/spec.md)、[对象说明](docs/objects.md) |
+| 对象、字段和协议约束 | [协议规范](docs/spec.md)、[对象说明](docs/objects.md)、[完整字段手册](docs/fields.md) |
 | HTTP、编码、压缩与状态码 | [传输约定](docs/transport.md)、[OpenAPI](openapi/openrtb.yaml) |
 | 版本和发布 | [版本策略](docs/versioning.md)、[发布指南](docs/publishing.md)、[变更记录](CHANGELOG.md) |
 

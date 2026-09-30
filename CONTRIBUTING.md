@@ -20,10 +20,13 @@ make sdk-test          # Or sdk-test-go / sdk-test-java / sdk-test-rust
 改 `schema/jsonschema/` 或 `proto/` 后必须：
 
 ```bash
+python3 scripts/field_docs.py --write  # Regenerate field reference and schema descriptions.
 make sync-schemas      # Refresh vendored schema/proto copies.
 make proto-go          # Regenerate committed Go models when proto changes.
 make sdk-test
 ```
+
+字段或注释改变时，先更新 `docs/field-descriptions.json` 中对应的中文 `zh` 和英文原文 `source`。生成器会拒绝遗漏或未同步的释义；新增 Native 属性也必须补充中文说明。`make validate` 和 CI 会检查字段覆盖、Schema 描述与生成文档是否同步；自动检查不能代替语义审阅。
 
 修改 proto 前需安装 `protoc-gen-go`（版本应与 `sdk/go/go.mod` 中的 protobuf 依赖匹配），并确保它在 `PATH` 中。提交生成的 `sdk/go/oakrtb/v2/`，以及更新后的 `sdk/go/jsonschema/schemas/`、`sdk/java/src/main/{resources,proto}/`、`sdk/rust/{schemas,proto}/`。
 

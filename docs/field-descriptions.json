@@ -1,0 +1,1681 @@
+{
+  "fields": {
+    "BidRequest.id": {
+      "source": "Unique auction ID. Required. BidResponse.id must echo it unchanged for reconciliation and log correlation.",
+      "zh": "本场拍卖唯一 ID。必填。BidResponse.id 必须原样回传，用于对账与日志关联。"
+    },
+    "BidRequest.imp": {
+      "source": "Impression opportunities for sale. Required and nonempty; a request may include multiple placements or formats.",
+      "zh": "待售展示机会列表。必填，至少 1 个。一单可多 Imp（多广告位/多形态）。"
+    },
+    "BidRequest.site": {
+      "source": "Site inventory, mutually exclusive with app/dooh; used for desktop and mobile web placements.",
+      "zh": "网站库存。与 app、dooh 互斥。场景：网页/移动 Web 广告位。"
+    },
+    "BidRequest.app": {
+      "source": "App inventory, mutually exclusive with site/dooh; used for iOS/Android in-app ads.",
+      "zh": "应用库存。与 site、dooh 互斥。场景：iOS/Android App 内广告。"
+    },
+    "BidRequest.dooh": {
+      "source": "Digital out-of-home inventory, mutually exclusive with site/app; used for DOOH screens and billboards.",
+      "zh": "数字户外库存。与 site、app 互斥。场景：DOOH 屏/看板。"
+    },
+    "BidRequest.device": {
+      "source": "Device and environment. Strongly recommended for targeting, fraud detection and creative size/OS compatibility.",
+      "zh": "设备与环境。强烈推荐。场景：定向、反作弊、创意适配（尺寸/OS）。"
+    },
+    "BidRequest.user": {
+      "source": "User/audience. Recommended for frequency capping, audience targeting and consent/eids signals.",
+      "zh": "用户/受众。推荐。场景：频控、人群定向、同意信号（consent/eids）。"
+    },
+    "BidRequest.test": {
+      "source": "Test mode (FlagBool): 0=production, 1=test. Test traffic is for integration and must not be billed.",
+      "zh": "测试模式。取值 FlagBool：0=生产，1=测试。场景：联调；测试流量不得计入计费。"
+    },
+    "BidRequest.at": {
+      "source": "Auction type. Required. AuctionType: 1=first price, 2=second price plus, 3=fixed price (Deal only), >=500=exchange-specific. Defines how the DSP interprets the winning price. Schema/builders reject zero (unspecified).",
+      "zh": "拍卖类型，必填：1=一价，2=二价加价，≥500=交易平台自定义；3=固定价格仅适用于 Deal.at。Schema 与构建器拒绝未指定的 0。"
+    },
+    "BidRequest.tmax": {
+      "source": "Timeout in milliseconds, including network time. The DSP must respond within tmax; otherwise the exchange treats it as 204.",
+      "zh": "超时毫秒（含网络）。场景：DSP 必须在 tmax 内返回，否则 Exchange 当 204。"
+    },
+    "BidRequest.wseat": {
+      "source": "Allowed seats; only listed buyer seats may participate.",
+      "zh": "白名单 seat。场景：只允许名单内买家席位参竞。"
+    },
+    "BidRequest.bseat": {
+      "source": "Blocked seats; excludes specified buyers.",
+      "zh": "黑名单 seat。场景：排除特定买家席位。"
+    },
+    "BidRequest.allimps": {
+      "source": "Whether all Imps are included (FlagBool): 0=no, 1=yes. Supports global budget and exclusivity decisions.",
+      "zh": "是否带齐全部 Imp。取值 FlagBool：0=否，1=是。场景：帮助 DSP 做全局预算与互斥决策。"
+    },
+    "BidRequest.cur": {
+      "source": "Accepted bid currencies (ISO-4217). Required and nonempty; DSPs must not use unlisted currencies.",
+      "zh": "可接受出价币种（ISO-4217）。必填，至少 1 个。场景：多币种结算；未列出则 DSP 勿用该币种。"
+    },
+    "BidRequest.wlang": {
+      "source": "Allowed creative languages (ISO-639-1) for language targeting.",
+      "zh": "允许的创意语言（ISO-639-1）。场景：语言定向过滤。"
+    },
+    "BidRequest.wlangb": {
+      "source": "Allowed creative languages (BCP-47), providing more detail than wlang.",
+      "zh": "允许的创意语言（BCP-47）。场景：比 wlang 更细的语言标签。"
+    },
+    "BidRequest.acat": {
+      "source": "Allowed advertiser industry categories for category-restricted inventory.",
+      "zh": "允许的广告主行业类目。场景：白名单类目库存。"
+    },
+    "BidRequest.bcat": {
+      "source": "Blocked advertiser industry categories for brand safety and category exclusion.",
+      "zh": "屏蔽的广告主行业类目。场景：品牌安全/类目黑名单。"
+    },
+    "BidRequest.cattax": {
+      "source": "Category taxonomy: CategoryTaxonomy values 1-7 are defined in the enum; >=500 are vendor-specific. Interprets cat/bcat/acat.",
+      "zh": "类目 taxonomy。取值 CategoryTaxonomy：1–7 见枚举；>=500 厂商自定义。场景：解释 cat/bcat/acat。"
+    },
+    "BidRequest.badv": {
+      "source": "Blocked advertiser domains, such as competitors or sensitive domains.",
+      "zh": "屏蔽广告主域名。场景：竞品/敏感域名屏蔽。"
+    },
+    "BidRequest.bapp": {
+      "source": "Blocked app bundles/package names; excludes specified advertiser apps on app inventory.",
+      "zh": "屏蔽应用 bundle/包名。场景：App 流量上屏蔽特定广告主 App。"
+    },
+    "BidRequest.source": {
+      "source": "Upstream source and supply chain, for schain transparency and header-bidding audits.",
+      "zh": "上游来源与供应链。场景：schain 透明化、header bidding 链路审计。"
+    },
+    "BidRequest.regs": {
+      "source": "Regulatory and privacy signals for COPPA/GDPR/CCPA/GPP decisions.",
+      "zh": "法规与隐私信号。场景：COPPA/GDPR/CCPA/GPP 合规决策。"
+    },
+    "BidRequest.ext": {
+      "source": "Extension JSON object string for exchange-specific fields agreed by both parties.",
+      "zh": "扩展：JSON 对象字符串。场景：Exchange 私有字段，双方约定后使用。"
+    },
+    "Imp.id": {
+      "source": "Required ID, unique within the request. Bid.impid must reference this value.",
+      "zh": "Imp 在本请求内唯一。必填。Bid.impid 必须回填此值。"
+    },
+    "Imp.metric": {
+      "source": "Inventory quality or verification metrics, such as third-party viewability or video completion rates.",
+      "zh": "库存质量/可验证指标。场景：viewability、视频完成率等第三方度量。"
+    },
+    "Imp.banner": {
+      "source": "Display ad specifications for banners, rich media or interstitial images.",
+      "zh": "展示广告规格。场景：横幅、富媒体、插屏图片等。"
+    },
+    "Imp.video": {
+      "source": "Video ad specifications for pre-/mid-/post-roll, rewarded video or CTV pods.",
+      "zh": "视频广告规格。场景：前贴/中贴/后贴、激励视频、CTV pod。"
+    },
+    "Imp.audio": {
+      "source": "Audio ad specifications for podcasts, radio streams or music apps.",
+      "zh": "音频广告规格。场景：播客、电台流、音乐 App。"
+    },
+    "Imp.native": {
+      "source": "Native ad specifications for feed cards; request embeds Native 1.2 JSON.",
+      "zh": "原生广告规格。场景：信息流卡片；request 内嵌 Native 1.2 JSON。"
+    },
+    "Imp.pmp": {
+      "source": "Private marketplace data for PDB/PD/Preferred Deals, including deals[].",
+      "zh": "私有交易。场景：PDB/PD/Preferred Deal，带 deals[]。"
+    },
+    "Imp.displaymanager": {
+      "source": "Rendering SDK/player name, used to identify mediation/player compatibility.",
+      "zh": "广告渲染 SDK/播放器名。场景：识别 Mediation/Player，做兼容定向。"
+    },
+    "Imp.displaymanagerver": {
+      "source": "displaymanager version, for SDK-version rollout and troubleshooting.",
+      "zh": "displaymanager 版本。场景：按 SDK 版本灰度或排障。"
+    },
+    "Imp.instl": {
+      "source": "Interstitial/fullscreen flag (FlagBool): 0=no, 1=yes; used for pricing and experience policies.",
+      "zh": "是否插屏/全屏。取值 FlagBool：0=否，1=是。场景：插屏比价与体验策略。"
+    },
+    "Imp.tagid": {
+      "source": "Publisher placement ID for optimization, reporting and floor policies.",
+      "zh": "发布商广告位 ID。场景：按位优化、报表、底价策略。"
+    },
+    "Imp.bidfloor": {
+      "source": "CPM floor; bids below this price are generally invalid.",
+      "zh": "CPM 底价。场景：低于此价的出价通常无效。"
+    },
+    "Imp.bidfloorcur": {
+      "source": "Floor currency (ISO-4217), paired with bidfloor; commonly defaults to USD.",
+      "zh": "底价币种（ISO-4217）。场景：与 bidfloor 成对；默认常 USD。"
+    },
+    "Imp.clickbrowser": {
+      "source": "Click destination behavior (FlagBool): 0=embedded WebView, 1=external browser; relevant to mobile landing pages and attribution.",
+      "zh": "点击打开方式。取值 FlagBool：0=嵌入 WebView，1=独立浏览器。场景：移动端落地页与归因。"
+    },
+    "Imp.secure": {
+      "source": "HTTPS requirement (FlagBool): 0=no, 1=creative and page must use HTTPS; relevant to mixed-content restrictions.",
+      "zh": "是否要求 HTTPS。取值 FlagBool：0=否，1=创意与页面须 HTTPS。场景：混合内容拦截环境。"
+    },
+    "Imp.iframebuster": {
+      "source": "Supported iframe-buster vendor names for rich media that can escape an iframe.",
+      "zh": "支持的 iframe buster 厂商名。场景：可跳出 iframe 的富媒体。"
+    },
+    "Imp.rwdd": {
+      "source": "Rewarded ad flag (FlagBool): 0=no reward, 1=reward for viewing the ad; applies across creative formats.",
+      "zh": "激励广告标记（FlagBool）：0=无奖励，1=观看广告后获得奖励；适用于多种素材形态，不限于视频。"
+    },
+    "Imp.ssai": {
+      "source": "Ad insertion mode (Ssai): 0=unknown, 1=client-side, 2=server-side, 3=hybrid; used for CTV/live SSAI.",
+      "zh": "服务端广告插入。取值 Ssai：0=未知，1=客户端，2=服务端，3=混合。场景：CTV/直播 SSAI。"
+    },
+    "Imp.exp": {
+      "source": "Suggested impression expiry in seconds; bounds creative caching during long sessions.",
+      "zh": "展示过期秒数建议。场景：长时间会话中创意缓存多久失效。"
+    },
+    "Imp.qty": {
+      "source": "Quantity multiplier for DOOH/group impressions, converting to billable impression volume.",
+      "zh": "数量乘数。场景：DOOH/成组曝光，用 multiplier 换算计费展示量。"
+    },
+    "Imp.dt": {
+      "source": "Estimated seconds until display; defines the window for early auctions.",
+      "zh": "距展示的估计秒数。场景：提前竞价（early auction）时的时间窗。"
+    },
+    "Imp.refresh": {
+      "source": "Automatic refresh details for rotating in-page placements.",
+      "zh": "自动刷新详情。场景：页内广告位自动轮换。"
+    },
+    "Imp.ext": {
+      "source": "Extension JSON string.",
+      "zh": "扩展 JSON 字符串。"
+    },
+    "Metric.type": {
+      "source": "Metric type, such as \"viewability\" or \"completion_rate\".",
+      "zh": "指标类型，如 \"viewability\"、\"completion_rate\"。"
+    },
+    "Metric.value": {
+      "source": "Metric value, typically a probability or ratio in 0-1.",
+      "zh": "指标取值，通常 0–1 概率或比率。"
+    },
+    "Metric.vendor": {
+      "source": "Measurement provider, such as IAS, MOAT or publisher measurement.",
+      "zh": "度量提供方。场景：IAS、MOAT、发布商自测等。"
+    },
+    "Metric.ext": {
+      "source": "Extension JSON object string.",
+      "zh": "扩展：JSON 对象字符串。"
+    },
+    "Banner.format": {
+      "source": "Accepted sizes for flexible/multi-size placements; takes precedence over standalone w/h.",
+      "zh": "可接受尺寸集合。场景：弹性/多尺寸位，优先于单独的 w/h。"
+    },
+    "Banner.w": {
+      "source": "Width in device-independent pixels (DIPs) for fixed-size banners, paired with h.",
+      "zh": "固定展示宽度，单位为设备无关像素（DIPs），与 h 配对。"
+    },
+    "Banner.h": {
+      "source": "Height in device-independent pixels (DIPs).",
+      "zh": "固定展示高度，单位为设备无关像素（DIPs），与 w 配对。"
+    },
+    "Banner.btype": {
+      "source": "Blocked banner types (BannerAdType): 1=XHTML text, 2=XHTML banner, 3=JavaScript, 4=iframe.",
+      "zh": "屏蔽的横幅类型。取值 BannerAdType：1=XHTML文本，2=XHTML Banner，3=JS，4=iframe。"
+    },
+    "Banner.battr": {
+      "source": "Blocked creative attributes (CreativeAttribute): 1-18 as defined in the enum, >=500 vendor-specific; for example, blocking autoplay audio.",
+      "zh": "屏蔽的创意属性。取值 CreativeAttribute：1–18 见枚举；>=500 厂商自定义。场景：禁自动播放声等。"
+    },
+    "Banner.pos": {
+      "source": "Ad position (AdPosition): 0=unknown, 1=above fold, 2=locked, 3=below fold, 4=header, 5=footer, 6=sidebar, 7=fullscreen.",
+      "zh": "广告位置。取值 AdPosition：0=未知，1=首屏上，2=锁定，3=首屏下，4=头，5=脚，6=侧栏，7=全屏。"
+    },
+    "Banner.mimes": {
+      "source": "Supported MIME types, such as image/jpeg, image/png or text/javascript.",
+      "zh": "支持的 MIME。场景：image/jpeg、image/png、text/javascript 等。"
+    },
+    "Banner.topframe": {
+      "source": "Top-frame flag (FlagBool): 0=inside iframe, 1=top frame; relevant to expansion or escaping the frame.",
+      "zh": "是否顶层 frame。取值 FlagBool：0=在 iframe 内，1=顶层。场景：是否允许跳出/expand。"
+    },
+    "Banner.expdir": {
+      "source": "Allowed expansion directions (ExpandableDirection): 1=left, 2=right, 3=up, 4=down, 5=fullscreen, 6=resize.",
+      "zh": "允许扩展方向。取值 ExpandableDirection：1=左，2=右，3=上，4=下，5=全屏，6=缩小。"
+    },
+    "Banner.api": {
+      "source": "Supported APIs (ApiFramework): 1=VPAID1, 2=VPAID2, 3=MRAID1, 4=ORMMA, 5=MRAID2, 6=MRAID3, 7=OMID, 8-9=SIMID; >=500 vendor-specific.",
+      "zh": "支持的 API。取值 ApiFramework：1=VPAID1，2=VPAID2，3=MRAID1，4=ORMMA，5=MRAID2，6=MRAID3，7=OMID，8–9=SIMID；>=500 厂商。"
+    },
+    "Banner.id": {
+      "source": "Banner ID for correlating multiple video companion banners.",
+      "zh": "同伴广告时区分 Banner 的 ID。场景：视频 companion 多 banner 时关联。"
+    },
+    "Banner.vcm": {
+      "source": "Video companion mode (VideoCompanionMode): 0=concurrent with video, 1=end card after completion.",
+      "zh": "视频伴生模式。取值 VideoCompanionMode：0=与视频同时，1=结束后 end card。"
+    },
+    "Banner.ext": {
+      "source": "Extension JSON object string.",
+      "zh": "扩展：JSON 对象字符串。"
+    },
+    "Format.w": {
+      "source": "Width in device-independent pixels (DIPs).",
+      "zh": "允许的展示宽度，单位为设备无关像素（DIPs）。"
+    },
+    "Format.h": {
+      "source": "Height in device-independent pixels (DIPs).",
+      "zh": "允许的展示高度，单位为设备无关像素（DIPs）。"
+    },
+    "Format.wratio": {
+      "source": "Width ratio; together with hratio defines the aspect ratio.",
+      "zh": "宽比例；与 hratio 描述纵横比"
+    },
+    "Format.hratio": {
+      "source": "Height ratio.",
+      "zh": "高比例"
+    },
+    "Format.wmin": {
+      "source": "Minimum width in device-independent pixels (DIPs) for flexible layouts.",
+      "zh": "按宽高比例布局时的最小展示宽度，单位为设备无关像素（DIPs）。"
+    },
+    "Format.ext": {
+      "source": "Extension JSON object string.",
+      "zh": "扩展：JSON 对象字符串。"
+    },
+    "Video.mimes": {
+      "source": "Supported video MIME types. Required; for example video/mp4 or video/webm.",
+      "zh": "支持的视频 MIME。必填。场景：video/mp4、video/webm 等。"
+    },
+    "Video.minduration": {
+      "source": "Minimum duration in seconds; filters creatives that are too short.",
+      "zh": "最短时长（秒）。场景：过滤过短素材。"
+    },
+    "Video.maxduration": {
+      "source": "Maximum duration in seconds; filters creatives that are too long.",
+      "zh": "最长时长（秒）。场景：过滤过长素材。"
+    },
+    "Video.startdelay": {
+      "source": "Start delay in seconds: 0=pre-roll, -1=generic mid-roll, -2=post-roll, >0=mid-roll after that many seconds.",
+      "zh": "起播延迟（秒）。特殊值：0=前贴，-1=通用中贴，-2=后贴，>0=中贴且延迟该秒数。场景：贴片位置。"
+    },
+    "Video.maxseq": {
+      "source": "Maximum ads within a pod, defining CTV ad-pod capacity.",
+      "zh": "pod 内最大广告条数。场景：CTV ad pod 容量。"
+    },
+    "Video.poddur": {
+      "source": "Total pod duration in seconds, shared by its ads.",
+      "zh": "整个 pod 总时长（秒）。场景：多条广告共享的时间预算。"
+    },
+    "Video.protocols": {
+      "source": "Supported video protocols (Protocol): 1-3=VAST1-3, 4-6=corresponding wrappers, 7-8=VAST4, 9-10=DAAST, 11-16=VAST4.1-4.3 and wrappers.",
+      "zh": "支持的视频协议。取值 Protocol：1–3=VAST1–3，4–6=对应 Wrapper，7–8=VAST4，9–10=DAAST，11–16=VAST4.1–4.3及Wrapper。"
+    },
+    "Video.w": {
+      "source": "Player width in device-independent pixels (DIPs).",
+      "zh": "播放器宽度，单位为设备无关像素（DIPs）。"
+    },
+    "Video.h": {
+      "source": "Player height in device-independent pixels (DIPs).",
+      "zh": "播放器高度，单位为设备无关像素（DIPs）。"
+    },
+    "Video.podid": {
+      "source": "Ad pod ID, shared by Imps within the same dynamic pod for scheduling.",
+      "zh": "广告 pod ID。场景：同一动态 pod 内多 Imp 共享，用于编排。"
+    },
+    "Video.podseq": {
+      "source": "Pod sequence (PodSequence): 0=any, 1=first; special value -1=last pod.",
+      "zh": "该 Imp 所属 pod 序号策略。取值 PodSequence：0=任意，1=第一个；特殊 -1=最后一个 pod。"
+    },
+    "Video.rqddurs": {
+      "source": "Required exact durations in seconds, such as standard 15s/30s creatives.",
+      "zh": "要求的精确时长列表（秒）。场景：只接受 15s/30s 等标准时长。"
+    },
+    "Video.plcmt": {
+      "source": "Video placement type replacing placement (VideoPlcmt): 1=instream, 2=accompanying content, 3=interstitial, 4=no content, 5=pause, 6=screensaver, 7=overlay, 8=squeezeback, 9=in-scene.",
+      "zh": "视频放置类型（替代旧 placement）。取值 VideoPlcmt：1=Instream，2=伴随内容，3=插屏，4=无内容，5=暂停，6=屏保，7=叠层，8=分屏，9=画面植入。"
+    },
+    "Video.linearity": {
+      "source": "Linearity (VideoLinearity): 1=linear in-stream, 2=non-linear/overlay.",
+      "zh": "线性模式。取值 VideoLinearity：1=线性贴片，2=非线性/Overlay。"
+    },
+    "Video.skip": {
+      "source": "Skippable flag (FlagBool): 0=not skippable, 1=skippable; distinguishes skippable and non-skippable pre-roll.",
+      "zh": "是否可跳过。取值 FlagBool：0=不可跳，1=可跳。场景：可跳过前贴 vs 不可跳。"
+    },
+    "Video.skipmin": {
+      "source": "Minimum video duration in seconds for skipping to be allowed.",
+      "zh": "允许跳过前的最少视频秒数。"
+    },
+    "Video.skipafter": {
+      "source": "Seconds before the skip button appears.",
+      "zh": "出现跳过按钮前的秒数。"
+    },
+    "Video.slotinpod": {
+      "source": "Pod slot (SlotInPod): 0=any, 1=first, 2=first/last, 3=first/middle/last; special value -1=last slot.",
+      "zh": "pod 内槽位。取值 SlotInPod：0=任意，1=第一，2=第一或最后，3=第一/中/最后；特殊 -1=最后槽。场景：包段选槽。"
+    },
+    "Video.mincpmpersec": {
+      "source": "Minimum CPM per second for duration-based floor pricing.",
+      "zh": "每秒最低 CPM。场景：按时长计价的底价约束。"
+    },
+    "Video.battr": {
+      "source": "Blocked creative attributes (CreativeAttribute): 1-18 as defined in the enum; >=500 vendor-specific.",
+      "zh": "屏蔽的创意属性。取值 CreativeAttribute：1–18 见枚举；>=500 厂商自定义。"
+    },
+    "Video.maxextended": {
+      "source": "Maximum seconds beyond maxduration; -1 means unlimited.",
+      "zh": "允许超出 maxduration 的最大秒数；-1 表示不限。"
+    },
+    "Video.minbitrate": {
+      "source": "Minimum bitrate in Kbps.",
+      "zh": "最低码率（Kbps）。"
+    },
+    "Video.maxbitrate": {
+      "source": "Maximum bitrate in Kbps.",
+      "zh": "最高码率（Kbps）。"
+    },
+    "Video.boxingallowed": {
+      "source": "Letterboxing allowed (FlagBool): 0=no, 1=yes; permits black bars for mismatched aspect ratios.",
+      "zh": "是否允许 letterboxing。取值 FlagBool：0=否，1=是。场景：画幅不匹配时黑边。"
+    },
+    "Video.playbackmethod": {
+      "source": "Playback method (PlaybackMethod): 1=load/sound on, 2=load/muted, 3=click/sound on, 4=hover/sound on, 5=viewport/sound on, 6=viewport/muted, 7=continuous.",
+      "zh": "播放方式。取值 PlaybackMethod：1=加载有声，2=加载静音，3=点击有声，4=悬停有声，5=入视口有声，6=入视口静音，7=连续播。"
+    },
+    "Video.playbackend": {
+      "source": "Playback cessation (PlaybackCessationMode): 1=completion/user, 2=leave viewport/user, 3=float after leaving viewport until completion.",
+      "zh": "播放终止方式。取值 PlaybackCessationMode：1=播完/用户停，2=离视口/用户停，3=离视口后悬浮至播完。"
+    },
+    "Video.delivery": {
+      "source": "Delivery method (DeliveryMethod): 1=streaming, 2=progressive, 3=download.",
+      "zh": "传输方式。取值 DeliveryMethod：1=流式，2=渐进，3=下载。"
+    },
+    "Video.pos": {
+      "source": "Ad position (AdPosition), as in Banner.pos.",
+      "zh": "广告位置。取值 AdPosition（同 Banner.pos）。"
+    },
+    "Video.companionad": {
+      "source": "Companion banner specifications, such as banners beside or below a video.",
+      "zh": "伴生 Banner 规格。场景：视频旁/下方 companion。"
+    },
+    "Video.api": {
+      "source": "Supported APIs; see ApiFramework.",
+      "zh": "支持的 API。取值 ApiFramework（见枚举）。"
+    },
+    "Video.companiontype": {
+      "source": "Companion types (CompanionType): 1=static, 2=HTML, 3=iframe.",
+      "zh": "伴生广告类型。取值 CompanionType：1=Static，2=HTML，3=iframe。"
+    },
+    "Video.placement": {
+      "source": "Deprecated placement; use plcmt (OpenRTB 2.6-202303+).",
+      "zh": "已弃用的 placement；请用 plcmt（OpenRTB 2.6-202303+）。"
+    },
+    "Video.poddedupe": {
+      "source": "Pod deduplication policy (OpenRTB 2.6-202402+); see AdCOM Pod Deduplication. Pod deduplication (OpenRTB 2.6-202402+, PodDeduplication): 1=adomain, 2=IAB Content Taxonomy, 3=creative ID, 4=mediafile URL; multiple values allowed.",
+      "zh": "Pod 去重策略（OpenRTB 2.6-202402+）。取值见 AdCOM Pod Deduplication。 Pod 去重策略（OpenRTB 2.6-202402+）。取值 PodDeduplication：1=按 adomain，2=按 IAB Content Taxonomy，3=按创意 ID，4=按 mediafile URL；可多选。"
+    },
+    "Video.durfloors": {
+      "source": "Duration-based floor tiers. Duration-based floor tiers, such as different CPM floors for 15s/30s creatives.",
+      "zh": "按时长分段底价。 按时长分段底价。场景：15s/30s 等不同时长档使用不同 CPM 底价。"
+    },
+    "Video.ext": {
+      "source": "Extension JSON object string.",
+      "zh": "扩展：JSON 对象字符串。"
+    },
+    "Audio.mimes": {
+      "source": "Supported audio MIME types. Required.",
+      "zh": "支持的音频 MIME。必填。"
+    },
+    "Audio.minduration": {
+      "source": "Minimum duration in seconds.",
+      "zh": "最短秒数"
+    },
+    "Audio.maxduration": {
+      "source": "Maximum duration in seconds.",
+      "zh": "最长秒数"
+    },
+    "Audio.poddur": {
+      "source": "Total pod duration.",
+      "zh": "pod 总时长"
+    },
+    "Audio.protocols": {
+      "source": "Audio protocols (Protocol), including DAAST 9/10 and VAST; see enum.",
+      "zh": "音频协议。取值 Protocol（含 DAAST 9/10、VAST 等，见枚举）。"
+    },
+    "Audio.startdelay": {
+      "source": "Start delay, as in Video: 0=pre-roll, -1=mid-roll, -2=post-roll, >0=mid-roll delay in seconds.",
+      "zh": "起播延迟。同 Video：0=前贴，-1=中贴，-2=后贴，>0=中贴延迟秒数。"
+    },
+    "Audio.rqddurs": {
+      "source": "Required exact durations.",
+      "zh": "要求的精确时长"
+    },
+    "Audio.podid": {
+      "source": "Audio pod ID.",
+      "zh": "音频 pod ID"
+    },
+    "Audio.podseq": {
+      "source": "Pod sequence (PodSequence): 0=any, 1=first; special value -1=last pod.",
+      "zh": "pod 序号。取值 PodSequence：0=任意，1=第一；特殊 -1=最后 pod。"
+    },
+    "Audio.slotinpod": {
+      "source": "Pod slot (SlotInPod); special value -1=last slot.",
+      "zh": "pod 槽位。取值 SlotInPod；特殊 -1=最后槽。"
+    },
+    "Audio.mincpmpersec": {
+      "source": "Minimum CPM per second for duration-based floor pricing.",
+      "zh": "每秒最低 CPM。场景：按时长计价的底价约束。"
+    },
+    "Audio.battr": {
+      "source": "Blocked creative attributes; see CreativeAttribute.",
+      "zh": "屏蔽创意属性。取值 CreativeAttribute。"
+    },
+    "Audio.maxextended": {
+      "source": "Maximum seconds beyond maxduration; -1 means unlimited.",
+      "zh": "允许超出 maxduration 的最大秒数；-1 表示不限。"
+    },
+    "Audio.minbitrate": {
+      "source": "Minimum bitrate in Kbps.",
+      "zh": "最低码率（Kbps）。"
+    },
+    "Audio.maxbitrate": {
+      "source": "Maximum bitrate in Kbps.",
+      "zh": "最高码率（Kbps）。"
+    },
+    "Audio.delivery": {
+      "source": "Delivery method (DeliveryMethod): 1=streaming, 2=progressive, 3=download.",
+      "zh": "传输方式。取值 DeliveryMethod：1=流式，2=渐进，3=下载。"
+    },
+    "Audio.companionad": {
+      "source": "Visual companions.",
+      "zh": "可视化伴生"
+    },
+    "Audio.api": {
+      "source": "Supported APIs; see ApiFramework.",
+      "zh": "支持的 API。取值 ApiFramework。"
+    },
+    "Audio.companiontype": {
+      "source": "Companion types (CompanionType): 1=static, 2=HTML, 3=iframe.",
+      "zh": "伴生类型。取值 CompanionType：1=Static，2=HTML，3=iframe。"
+    },
+    "Audio.maxseq": {
+      "source": "Maximum ads in the pod.",
+      "zh": "pod 内最大广告数"
+    },
+    "Audio.feed": {
+      "source": "Audio feed type (FeedType): 1=music service, 2=FM/AM, 3=podcast.",
+      "zh": "音频流类型。取值 FeedType：1=音乐服务，2=FM/AM，3=播客。"
+    },
+    "Audio.stitched": {
+      "source": "Whether stitched into content (FlagBool): 0=no, 1=yes.",
+      "zh": "是否已与内容缝合。取值 FlagBool：0=否，1=是。"
+    },
+    "Audio.nvol": {
+      "source": "Volume normalization (VolumeNormalizationMode): 0=none, 1=average, 2=peak, 3=loudness, 4=custom.",
+      "zh": "音量归一。取值 VolumeNormalizationMode：0=无，1=平均，2=峰值，3=响度，4=自定义。"
+    },
+    "Audio.durfloors": {
+      "source": "Duration-based floor tiers.",
+      "zh": "按时长分段底价。"
+    },
+    "Audio.ext": {
+      "source": "Extension JSON object string.",
+      "zh": "扩展：JSON 对象字符串。"
+    },
+    "Native.request": {
+      "source": "Required Native request JSON string, including assets[]; validate against Native 1.2.",
+      "zh": "Native 请求体（JSON 字符串）。必填。内含 assets[] 等；需按 Native 1.2 校验。"
+    },
+    "Native.ver": {
+      "source": "Native specification version, such as \"1.2\", indicating which markup version the DSP should parse.",
+      "zh": "Native 规范版本，如 \"1.2\"。场景：告诉 DSP 解析哪一版 markup。"
+    },
+    "Native.api": {
+      "source": "Supported APIs; see ApiFramework.",
+      "zh": "支持的 API。取值 ApiFramework（见枚举）。"
+    },
+    "Native.battr": {
+      "source": "Blocked creative attributes; see CreativeAttribute enum.",
+      "zh": "屏蔽的创意属性。取值 CreativeAttribute（见枚举）。"
+    },
+    "Native.ext": {
+      "source": "Extension JSON object string.",
+      "zh": "扩展：JSON 对象字符串。"
+    },
+    "Pmp.private_auction": {
+      "source": "Private-auction flag (FlagBool): 0=open market permitted, 1=private only; used for closed PDB trading.",
+      "zh": "是否仅私有拍卖。取值 FlagBool：0=可对公开市场，1=仅私有。场景：PDB 封闭交易。"
+    },
+    "Pmp.deals": {
+      "source": "Available deal terms; one Imp may offer multiple Deals for DSP selection.",
+      "zh": "可用成交条件列表。场景：一条 Imp 挂多个 Deal 供 DSP 选择。"
+    },
+    "Pmp.ext": {
+      "source": "Extension JSON object string.",
+      "zh": "扩展：JSON 对象字符串。"
+    },
+    "Deal.id": {
+      "source": "Required Deal ID, echoed in Bid.dealid for a deal bid.",
+      "zh": "Deal ID。必填。Bid.dealid 赢价时回填。"
+    },
+    "Deal.bidfloor": {
+      "source": "Deal floor in CPM.",
+      "zh": "该 Deal 底价（CPM）。"
+    },
+    "Deal.bidfloorcur": {
+      "source": "Floor currency.",
+      "zh": "底价币种。"
+    },
+    "Deal.at": {
+      "source": "Deal auction type (AuctionType): 1=first price, 2=second price plus, 3=fixed price, >=500=custom; overrides BidRequest.at.",
+      "zh": "该 Deal 拍卖类型。取值 AuctionType：1=一价，2=二价+，3=固定价；>=500 自定义。场景：覆盖 BidRequest.at。"
+    },
+    "Deal.wseat": {
+      "source": "Allowed buyer seat IDs.",
+      "zh": "允许的买家 seat 白名单。"
+    },
+    "Deal.wadomain": {
+      "source": "Allowed advertiser domains.",
+      "zh": "允许的广告主域名白名单。"
+    },
+    "Deal.guar": {
+      "source": "Guaranteed flag (FlagBool): 0=no, 1=guaranteed Deal; used for programmatic guaranteed delivery.",
+      "zh": "是否保量。取值 FlagBool：0=否，1=保量 Deal。场景：程序化合约保量。"
+    },
+    "Deal.mincpmpersec": {
+      "source": "Minimum CPM per second for duration-priced video.",
+      "zh": "每秒最低 CPM（视频按时长）。"
+    },
+    "Deal.durfloors": {
+      "source": "Duration-based floor tiers for video/audio deals.",
+      "zh": "按时长分段底价（视频/音频 deal）。"
+    },
+    "Deal.ext": {
+      "source": "Extension JSON object string.",
+      "zh": "扩展：JSON 对象字符串。"
+    },
+    "Qty.multiplier": {
+      "source": "Quantity multiplier relative to one standard impression.",
+      "zh": "数量乘数（相对 1 次标准展示）。"
+    },
+    "Qty.sourcetype": {
+      "source": "Multiplier source (QtySourceType): 0=measurement provider method, 1=publisher/vendor-specific method.",
+      "zh": "乘数来源。取值 QtySourceType：0=度量厂商方法，1=发布商/厂商特定方法。"
+    },
+    "Qty.vendor": {
+      "source": "Vendor supplying the multiplier.",
+      "zh": "提供乘数的厂商。"
+    },
+    "Qty.ext": {
+      "source": "Extension JSON object string.",
+      "zh": "扩展：JSON 对象字符串。"
+    },
+    "DurFloors.mindur": {
+      "source": "Minimum interval duration in seconds, inclusive.",
+      "zh": "区间最短秒数（含）"
+    },
+    "DurFloors.maxdur": {
+      "source": "Maximum interval duration in seconds, inclusive; omit for no upper bound.",
+      "zh": "区间最长秒数（含）；可省略表示无上界"
+    },
+    "DurFloors.bidfloor": {
+      "source": "CPM floor for this duration interval.",
+      "zh": "该时长区间 CPM 底价"
+    },
+    "DurFloors.bidfloorcur": {
+      "source": "Floor currency (ISO-4217).",
+      "zh": "底价币种 ISO-4217"
+    },
+    "DurFloors.ext": {
+      "source": "Extension JSON object string.",
+      "zh": "扩展：JSON 对象字符串。"
+    },
+    "Refresh.refsettings": {
+      "source": "Refresh triggers and intervals.",
+      "zh": "刷新触发与间隔"
+    },
+    "Refresh.count": {
+      "source": "Refresh count since the last full page load.",
+      "zh": "自上次整页加载以来已刷新次数"
+    },
+    "Refresh.ext": {
+      "source": "Extension JSON object string.",
+      "zh": "扩展：JSON 对象字符串。"
+    },
+    "RefSettings.reftype": {
+      "source": "Refresh trigger (AutoRefreshTrigger): 0=unknown, 1=user action, 2=event, 3=timed interval.",
+      "zh": "自动刷新触发类型。取值 AutoRefreshTrigger：0=未知，1=用户动作，2=事件驱动，3=按时间间隔。"
+    },
+    "RefSettings.minint": {
+      "source": "Minimum refresh interval in seconds, limiting refresh frequency.",
+      "zh": "最小刷新间隔（秒）。场景：限制刷新频率。"
+    },
+    "RefSettings.ext": {
+      "source": "Extension JSON object string.",
+      "zh": "扩展：JSON 对象字符串。"
+    },
+    "Site.id": {
+      "source": "Exchange-assigned site ID.",
+      "zh": "Exchange 侧站点 ID"
+    },
+    "Site.name": {
+      "source": "Site display name.",
+      "zh": "站点名（可展示名）"
+    },
+    "Site.domain": {
+      "source": "Primary domain, such as example.com, for brand safety and blocking.",
+      "zh": "主域，如 example.com；品牌安全与屏蔽"
+    },
+    "Site.cattax": {
+      "source": "Category taxonomy; see CategoryTaxonomy enum.",
+      "zh": "类目 taxonomy。取值 CategoryTaxonomy（见枚举）"
+    },
+    "Site.cat": {
+      "source": "Site categories.",
+      "zh": "站点类目"
+    },
+    "Site.sectioncat": {
+      "source": "Section categories.",
+      "zh": "栏目类目"
+    },
+    "Site.pagecat": {
+      "source": "Current-page categories.",
+      "zh": "当前页类目"
+    },
+    "Site.page": {
+      "source": "Full page URL for contextual targeting.",
+      "zh": "完整页面 URL；上下文定向"
+    },
+    "Site.ref": {
+      "source": "Referrer URL",
+      "zh": "Referrer URL"
+    },
+    "Site.search": {
+      "source": "Search terms, when arriving from search results.",
+      "zh": "搜索词（若来自搜索结果页）"
+    },
+    "Site.mobile": {
+      "source": "Mobile-optimized site flag (FlagBool): 0=no, 1=yes.",
+      "zh": "是否移动优化站。取值 FlagBool：0=否，1=是"
+    },
+    "Site.privacypolicy": {
+      "source": "Privacy-policy flag (FlagBool): 0=no, 1=yes.",
+      "zh": "是否有隐私政策。取值 FlagBool：0=否，1=是"
+    },
+    "Site.publisher": {
+      "source": "Publisher.",
+      "zh": "发布商"
+    },
+    "Site.content": {
+      "source": "Page content metadata.",
+      "zh": "页内内容元数据"
+    },
+    "Site.keywords": {
+      "source": "Comma-separated keywords (legacy field).",
+      "zh": "逗号分隔关键词（兼容旧字段）"
+    },
+    "Site.kwarray": {
+      "source": "Keyword array (recommended).",
+      "zh": "关键词数组（推荐）"
+    },
+    "Site.inventorypartnerdomain": {
+      "source": "ads.txt/inventory partner domain.",
+      "zh": "ads.txt/库存合作域"
+    },
+    "Site.ext": {
+      "source": "Extension JSON object string.",
+      "zh": "扩展：JSON 对象字符串。"
+    },
+    "App.id": {
+      "source": "Exchange-assigned app ID.",
+      "zh": "Exchange 侧 App ID"
+    },
+    "App.name": {
+      "source": "App name.",
+      "zh": "应用名"
+    },
+    "App.bundle": {
+      "source": "Package name/bundle ID, central to app targeting and blocking.",
+      "zh": "包名/Bundle ID；应用定向与屏蔽核心字段"
+    },
+    "App.domain": {
+      "source": "Associated app domain.",
+      "zh": "应用关联域"
+    },
+    "App.storeurl": {
+      "source": "App-store detail URL.",
+      "zh": "应用商店详情 URL"
+    },
+    "App.cattax": {
+      "source": "Category taxonomy; see CategoryTaxonomy.",
+      "zh": "类目 taxonomy。取值 CategoryTaxonomy"
+    },
+    "App.cat": {
+      "source": "App categories for industry targeting; taxonomy is specified by cattax.",
+      "zh": "应用类目。场景：行业定向；taxonomy 见 cattax。"
+    },
+    "App.sectioncat": {
+      "source": "Section categories.",
+      "zh": "栏目/分区类目。"
+    },
+    "App.pagecat": {
+      "source": "Current view/page categories.",
+      "zh": "当前视图/页面类目。"
+    },
+    "App.ver": {
+      "source": "App version.",
+      "zh": "应用版本"
+    },
+    "App.privacypolicy": {
+      "source": "Privacy-policy flag; see FlagBool.",
+      "zh": "是否有隐私政策。取值 FlagBool"
+    },
+    "App.paid": {
+      "source": "Paid-app flag (FlagBool): 0=free, 1=paid.",
+      "zh": "是否付费应用。取值 FlagBool：0=免费，1=付费"
+    },
+    "App.publisher": {
+      "source": "Publisher entity responsible for distributing the app.",
+      "zh": "发布商。场景：应用归属的发行商主体。"
+    },
+    "App.content": {
+      "source": "In-app content metadata, such as embedded player or article context.",
+      "zh": "应用内内容元数据。场景：内嵌播放器/文章上下文。"
+    },
+    "App.keywords": {
+      "source": "Comma-separated keywords (legacy field).",
+      "zh": "逗号分隔关键词（兼容旧字段）。"
+    },
+    "App.kwarray": {
+      "source": "Keyword array (recommended).",
+      "zh": "关键词数组（推荐）。"
+    },
+    "App.inventorypartnerdomain": {
+      "source": "Inventory partner domain for app-ads.txt.",
+      "zh": "库存合作域（app-ads.txt 合作方）。"
+    },
+    "App.ext": {
+      "source": "Extension JSON object string.",
+      "zh": "扩展：JSON 对象字符串。"
+    },
+    "Dooh.id": {
+      "source": "Screen/venue unit ID.",
+      "zh": "屏点/单元 ID"
+    },
+    "Dooh.name": {
+      "source": "Screen/venue unit name.",
+      "zh": "屏点/单元名称。"
+    },
+    "Dooh.venue": {
+      "source": "Legacy numeric venue type; prefer venuetype plus venuetypetax.",
+      "zh": "旧版数值场所类型；优先用 venuetype + venuetypetax"
+    },
+    "Dooh.fixed": {
+      "source": "Fixed-screen flag (FlagBool): 0=mobile, 1=fixed.",
+      "zh": "是否固定屏。取值 FlagBool：0=可移动，1=固定"
+    },
+    "Dooh.publisher": {
+      "source": "Publisher or screen-network operator.",
+      "zh": "发布商/屏网运营商。"
+    },
+    "Dooh.domain": {
+      "source": "Associated business domain.",
+      "zh": "关联业务域。"
+    },
+    "Dooh.keywords": {
+      "source": "Comma-separated keywords (legacy field).",
+      "zh": "逗号分隔关键词（兼容旧字段）。"
+    },
+    "Dooh.kwarray": {
+      "source": "Keyword array (recommended).",
+      "zh": "关键词数组（推荐）。"
+    },
+    "Dooh.content": {
+      "source": "Context of the content currently playing.",
+      "zh": "当前播放的内容上下文"
+    },
+    "Dooh.venuetype": {
+      "source": "Venue type IDs, such as OpenOOH; venuetypetax specifies the taxonomy.",
+      "zh": "场所类型 ID 列表（OpenOOH 等）；taxonomy 由 venuetypetax 指定。"
+    },
+    "Dooh.venuetypetax": {
+      "source": "Venue taxonomy from AdCOM DOOH Venue Taxonomies; default 1.",
+      "zh": "场所 taxonomy。AdCOM DOOH Venue Taxonomies；默认 1。"
+    },
+    "Dooh.ext": {
+      "source": "Extension JSON object string.",
+      "zh": "扩展：JSON 对象字符串。"
+    },
+    "Publisher.id": {
+      "source": "Publisher ID for reporting and contracts.",
+      "zh": "发布商 ID；报表与合约主体"
+    },
+    "Publisher.name": {
+      "source": "Publisher name.",
+      "zh": "发布商名称。"
+    },
+    "Publisher.cattax": {
+      "source": "Category taxonomy; see CategoryTaxonomy.",
+      "zh": "类目 taxonomy。取值 CategoryTaxonomy"
+    },
+    "Publisher.cat": {
+      "source": "Publisher categories.",
+      "zh": "发布商类目"
+    },
+    "Publisher.domain": {
+      "source": "Publisher primary domain.",
+      "zh": "发布商主域"
+    },
+    "Publisher.ext": {
+      "source": "Extension JSON object string.",
+      "zh": "扩展：JSON 对象字符串。"
+    },
+    "Producer.id": {
+      "source": "Content producer/production company.",
+      "zh": "内容制片方/出品方"
+    },
+    "Producer.name": {
+      "source": "Producer name.",
+      "zh": "出品方名称。"
+    },
+    "Producer.cattax": {
+      "source": "Category taxonomy; see CategoryTaxonomy.",
+      "zh": "类目 taxonomy。取值 CategoryTaxonomy"
+    },
+    "Producer.cat": {
+      "source": "Producer categories; see cattax for the taxonomy.",
+      "zh": "出品方类目；taxonomy 见 cattax。"
+    },
+    "Producer.domain": {
+      "source": "Producer primary domain.",
+      "zh": "出品方主域。"
+    },
+    "Producer.ext": {
+      "source": "Extension JSON object string.",
+      "zh": "扩展：JSON 对象字符串。"
+    },
+    "Content.id": {
+      "source": "Content ID identifying a series/article for contextual targeting.",
+      "zh": "内容 ID。场景：剧集/文章唯一标识，用于上下文定向。"
+    },
+    "Content.episode": {
+      "source": "Episode number.",
+      "zh": "集数"
+    },
+    "Content.title": {
+      "source": "Title.",
+      "zh": "标题"
+    },
+    "Content.series": {
+      "source": "Series name.",
+      "zh": "系列名"
+    },
+    "Content.season": {
+      "source": "Season.",
+      "zh": "季"
+    },
+    "Content.artist": {
+      "source": "Artist for audio/music.",
+      "zh": "艺术家（音频/音乐）"
+    },
+    "Content.genre": {
+      "source": "Legacy free-text genre; prefer genres plus gtax when a taxonomy is available.",
+      "zh": "自由文本类型（旧字段）；有 taxonomy 时优先 genres+gtax"
+    },
+    "Content.album": {
+      "source": "Album name for audio/music.",
+      "zh": "专辑名（音频/音乐）。"
+    },
+    "Content.isrc": {
+      "source": "International Standard Recording Code.",
+      "zh": "录音制品国际标准码"
+    },
+    "Content.producer": {
+      "source": "Content producer.",
+      "zh": "内容出品方。"
+    },
+    "Content.url": {
+      "source": "Content URL.",
+      "zh": "内容 URL"
+    },
+    "Content.cattax": {
+      "source": "Category taxonomy; see CategoryTaxonomy.",
+      "zh": "类目 taxonomy。取值 CategoryTaxonomy"
+    },
+    "Content.cat": {
+      "source": "Content categories; see cattax for the taxonomy.",
+      "zh": "内容类目；taxonomy 见 cattax。"
+    },
+    "Content.prodq": {
+      "source": "Production quality (ProductionQuality): 0=unknown, 1=professional, 2=prosumer, 3=UGC.",
+      "zh": "制作质量。取值 ProductionQuality：0=未知，1=专业，2=准专业，3=UGC"
+    },
+    "Content.context": {
+      "source": "Content context (ContentContext): 1=video, 2=game, 3=music, 4=app, 5=text, 6=other, 7=unknown.",
+      "zh": "内容上下文。取值 ContentContext：1=视频，2=游戏，3=音乐，4=应用，5=文本，6=其他，7=未知"
+    },
+    "Content.contentrating": {
+      "source": "Content rating, such as MPAA.",
+      "zh": "内容分级，如 MPAA"
+    },
+    "Content.userrating": {
+      "source": "User rating.",
+      "zh": "用户评分"
+    },
+    "Content.qagmediarating": {
+      "source": "Media rating (MediaRating): 1=all audiences, 2=12+, 3=mature.",
+      "zh": "媒体评级。取值 MediaRating：1=全年龄，2=12+，3=成人"
+    },
+    "Content.keywords": {
+      "source": "Comma-separated keywords (legacy field).",
+      "zh": "逗号分隔关键词（兼容旧字段）。"
+    },
+    "Content.kwarray": {
+      "source": "Keyword array (recommended).",
+      "zh": "关键词数组（推荐）。"
+    },
+    "Content.livestream": {
+      "source": "Broadcast scheduling (OpenRTB 2.6-202606): 0=unscheduled (VOD/user-initiated), 1=scheduled/linear; distinct from realtime.",
+      "zh": "播出方式（OpenRTB 2.6-202606）：0=非排期（VOD/用户发起），1=排期/线性；≠ realtime。"
+    },
+    "Content.sourcerelationship": {
+      "source": "Publisher relationship (SourceRelationship): 0=indirect, 1=direct.",
+      "zh": "与发布商关系。取值 SourceRelationship：0=间接，1=直接"
+    },
+    "Content.len": {
+      "source": "Content duration in seconds.",
+      "zh": "内容时长秒数"
+    },
+    "Content.language": {
+      "source": "ISO-639-1",
+      "zh": "ISO-639-1"
+    },
+    "Content.langb": {
+      "source": "BCP-47",
+      "zh": "BCP-47"
+    },
+    "Content.embeddable": {
+      "source": "Embeddable flag (FlagBool): 0=no, 1=yes.",
+      "zh": "是否可嵌入。取值 FlagBool：0=否，1=是"
+    },
+    "Content.data": {
+      "source": "Content-side segment data.",
+      "zh": "内容侧分段数据"
+    },
+    "Content.network": {
+      "source": "Broadcast network.",
+      "zh": "播出网络"
+    },
+    "Content.channel": {
+      "source": "Channel.",
+      "zh": "频道"
+    },
+    "Content.gtax": {
+      "source": "Genre taxonomy (OpenRTB 2.6-202501+); IAB guidance may treat the default as Content Taxonomy 3.1. Genre taxonomy (OpenRTB 2.6-202501+) interpreting genres[]; default may follow IAB Content Taxonomy conventions.",
+      "zh": "类型 taxonomy（OpenRTB 2.6-202501+）；缺省按 IAB 指南可视为 Content Taxonomy 3.1。 类型 taxonomy（OpenRTB 2.6-202501+）。解释 genres[]；缺省可按 IAB Content Taxonomy 约定。"
+    },
+    "Content.genres": {
+      "source": "Genre IDs using the taxonomy specified by gtax (OpenRTB 2.6-202501+).",
+      "zh": "类型 ID 列表，taxonomy 由 gtax 定义（OpenRTB 2.6-202501+）。"
+    },
+    "Content.realtime": {
+      "source": "Real-time flag (OpenRTB 2.6-202606): 0=not real-time, such as replay; 1=real-time, such as a live event.",
+      "zh": "是否实时发生（OpenRTB 2.6-202606）：0=非实时（如回放），1=实时（如直播赛事）。"
+    },
+    "Content.firstbroadcast": {
+      "source": "Premiere flag (OpenRTB 2.6-202606): 0=not first showing, 1=first broadcast to the audience.",
+      "zh": "是否首播（OpenRTB 2.6-202606）：0=非首次，1=首次对观众播出。"
+    },
+    "Content.ext": {
+      "source": "Extension JSON object string.",
+      "zh": "扩展：JSON 对象字符串。"
+    },
+    "Network.id": {
+      "source": "Network ID.",
+      "zh": "网络 ID。"
+    },
+    "Network.name": {
+      "source": "Network name.",
+      "zh": "网络名称。"
+    },
+    "Network.domain": {
+      "source": "Network primary domain.",
+      "zh": "网络主域。"
+    },
+    "Network.ext": {
+      "source": "Extension JSON object string.",
+      "zh": "扩展：JSON 对象字符串。"
+    },
+    "Channel.id": {
+      "source": "Channel ID.",
+      "zh": "频道 ID。"
+    },
+    "Channel.name": {
+      "source": "Channel name.",
+      "zh": "频道名称。"
+    },
+    "Channel.domain": {
+      "source": "Channel primary domain.",
+      "zh": "频道主域。"
+    },
+    "Channel.ext": {
+      "source": "Extension JSON object string.",
+      "zh": "扩展：JSON 对象字符串。"
+    },
+    "Device.geo": {
+      "source": "Device location, which may differ from User.geo.",
+      "zh": "设备地理位置（可与 User.geo 不同）"
+    },
+    "Device.dnt": {
+      "source": "Do Not Track (FlagBool): 0=no, 1=DNT enabled.",
+      "zh": "Do Not Track。取值 FlagBool：0=否，1=开启 DNT"
+    },
+    "Device.lmt": {
+      "source": "Limit Ad Tracking (FlagBool): 0=no, 1=limited.",
+      "zh": "限制广告跟踪（LAT）。取值 FlagBool：0=否，1=限制"
+    },
+    "Device.ua": {
+      "source": "Raw User-Agent string, used as a parsing fallback.",
+      "zh": "User-Agent 原始串；解析失败时的兜底"
+    },
+    "Device.sua": {
+      "source": "Structured UA (SUA), preferred over ua for precise targeting.",
+      "zh": "结构化 UA（SUA）；优先于 ua 做精准定向"
+    },
+    "Device.ip": {
+      "source": "IPv4 address for geolocation and risk assessment.",
+      "zh": "IPv4；地理与风控"
+    },
+    "Device.ipv6": {
+      "source": "IPv6",
+      "zh": "IPv6"
+    },
+    "Device.devicetype": {
+      "source": "Device type (DeviceType): 1=general mobile, 2=PC, 3=CTV, 4=phone, 5=tablet, 6=connected device, 7=set-top box, 8=OOH.",
+      "zh": "设备类型。取值 DeviceType：1=通用移动，2=PC，3=CTV，4=手机，5=平板，6=联网设备，7=机顶盒，8=OOH"
+    },
+    "Device.make": {
+      "source": "Manufacturer, such as Apple.",
+      "zh": "厂商，如 Apple"
+    },
+    "Device.model": {
+      "source": "Model.",
+      "zh": "型号"
+    },
+    "Device.os": {
+      "source": "Operating system.",
+      "zh": "操作系统"
+    },
+    "Device.osv": {
+      "source": "OS version.",
+      "zh": "OS 版本"
+    },
+    "Device.hwv": {
+      "source": "Hardware version.",
+      "zh": "硬件版本"
+    },
+    "Device.h": {
+      "source": "Physical screen height in pixels.",
+      "zh": "屏幕物理高度，单位为物理像素；不是广告容器高度。"
+    },
+    "Device.w": {
+      "source": "Physical screen width in pixels.",
+      "zh": "屏幕物理宽度，单位为物理像素；不是广告容器宽度。"
+    },
+    "Device.ppi": {
+      "source": "Pixel density.",
+      "zh": "像素密度"
+    },
+    "Device.pxratio": {
+      "source": "Ratio of physical pixels to device-independent pixels (DIPs).",
+      "zh": "物理像素与设备无关像素（DIPs）的比值。"
+    },
+    "Device.js": {
+      "source": "JavaScript support (FlagBool): 0=no, 1=yes.",
+      "zh": "是否支持 JS。取值 FlagBool：0=否，1=是"
+    },
+    "Device.geofetch": {
+      "source": "Whether the creative may obtain location (FlagBool): 0=no, 1=yes.",
+      "zh": "是否允许创意再取地理。取值 FlagBool：0=否，1=是"
+    },
+    "Device.language": {
+      "source": "Device language (ISO-639-1).",
+      "zh": "设备语言 ISO-639-1"
+    },
+    "Device.langb": {
+      "source": "BCP-47",
+      "zh": "BCP-47"
+    },
+    "Device.carrier": {
+      "source": "Carrier.",
+      "zh": "运营商"
+    },
+    "Device.mccmnc": {
+      "source": "MCC-MNC",
+      "zh": "MCC-MNC"
+    },
+    "Device.connectiontype": {
+      "source": "Connection type (ConnectionType): 0=unknown, 1=Ethernet, 2=WiFi, 3=unknown cellular, 4=2G, 5=3G, 6=4G, 7=5G.",
+      "zh": "连接类型。取值 ConnectionType：0=未知，1=以太网，2=WiFi，3=蜂窝未知，4=2G，5=3G，6=4G，7=5G"
+    },
+    "Device.ifa": {
+      "source": "Advertising ID, such as IDFA/GAID, for user targeting and attribution.",
+      "zh": "广告 ID（IDFA/GAID 等）；用户级定向与归因"
+    },
+    "Device.ext": {
+      "source": "Extension JSON object string.",
+      "zh": "扩展：JSON 对象字符串。"
+    },
+    "UserAgent.browsers": {
+      "source": "Browser brands and versions.",
+      "zh": "浏览器品牌版本列表"
+    },
+    "UserAgent.platform": {
+      "source": "Platform/OS brand and version.",
+      "zh": "平台（OS）品牌版本"
+    },
+    "UserAgent.mobile": {
+      "source": "Mobile flag (FlagBool): 0=no, 1=yes.",
+      "zh": "是否移动。取值 FlagBool：0=否，1=是"
+    },
+    "UserAgent.architecture": {
+      "source": "CPU architecture.",
+      "zh": "CPU 架构"
+    },
+    "UserAgent.bitness": {
+      "source": "Bitness, such as \"64\".",
+      "zh": "位数，如 \"64\""
+    },
+    "UserAgent.model": {
+      "source": "Device model from SUA.",
+      "zh": "设备型号（SUA）"
+    },
+    "UserAgent.source": {
+      "source": "SUA source (UserAgentSource): 0=unknown, 1=low-entropy CH, 2=high-entropy CH, 3=parsed UA string.",
+      "zh": "SUA 来源。取值 UserAgentSource：0=未知，1=低熵 CH，2=高熵 CH，3=UA 字符串解析"
+    },
+    "UserAgent.ext": {
+      "source": "Extension JSON object string.",
+      "zh": "扩展：JSON 对象字符串。"
+    },
+    "BrandVersion.brand": {
+      "source": "Brand name, such as \"Chrome\".",
+      "zh": "品牌名，如 \"Chrome\""
+    },
+    "BrandVersion.version": {
+      "source": "Version components, such as [\"192\",\"0\",\"0\",\"0\"].",
+      "zh": "版本分量，如 [\"192\",\"0\",\"0\",\"0\"]"
+    },
+    "BrandVersion.ext": {
+      "source": "Extension JSON object string.",
+      "zh": "扩展：JSON 对象字符串。"
+    },
+    "Geo.lat": {
+      "source": "Latitude.",
+      "zh": "纬度"
+    },
+    "Geo.lon": {
+      "source": "Longitude.",
+      "zh": "经度"
+    },
+    "Geo.type": {
+      "source": "Location source (LocationType): 1=GPS, 2=IP, 3=user-provided.",
+      "zh": "坐标来源。取值 LocationType：1=GPS，2=IP，3=用户提供"
+    },
+    "Geo.accuracy": {
+      "source": "Accuracy in meters.",
+      "zh": "精度（米）"
+    },
+    "Geo.lastfix": {
+      "source": "Location age in seconds.",
+      "zh": "坐标年龄（秒）"
+    },
+    "Geo.ipservice": {
+      "source": "IP geolocation service (IpLocationService): 1=ip2location, 2=Neustar, 3=MaxMind, 4=NetAcuity.",
+      "zh": "IP 地理库。取值 IpLocationService：1=ip2location，2=Neustar，3=MaxMind，4=NetAcuity"
+    },
+    "Geo.country": {
+      "source": "Country code using ISO-3166-1 Alpha-3 or an agreed convention.",
+      "zh": "ISO-3166-1 Alpha-3 等约定国家码"
+    },
+    "Geo.region": {
+      "source": "Province/state.",
+      "zh": "省/州"
+    },
+    "Geo.metro": {
+      "source": "Metro code.",
+      "zh": "都市圈码"
+    },
+    "Geo.city": {
+      "source": "City name for city-level targeting.",
+      "zh": "城市名。场景：城市级定向。"
+    },
+    "Geo.zip": {
+      "source": "Postal code.",
+      "zh": "邮编"
+    },
+    "Geo.utcoffset": {
+      "source": "UTC offset in minutes.",
+      "zh": "相对 UTC 的分钟偏移"
+    },
+    "Geo.regionfips104": {
+      "source": "FIPS 10-4 region code, where applicable.",
+      "zh": "FIPS 10-4 地区码（若适用）"
+    },
+    "Geo.ext": {
+      "source": "Extension JSON object string.",
+      "zh": "扩展：JSON 对象字符串。"
+    },
+    "User.id": {
+      "source": "Exchange-assigned user ID.",
+      "zh": "Exchange 侧用户 ID"
+    },
+    "User.buyeruid": {
+      "source": "Buyer cookie/mapped ID, important for DSP frequency capping.",
+      "zh": "该买家 cookie/映射 ID；DSP 频控关键"
+    },
+    "User.keywords": {
+      "source": "Legacy comma-separated keywords.",
+      "zh": "旧版逗号关键词"
+    },
+    "User.kwarray": {
+      "source": "Interest/context keywords.",
+      "zh": "兴趣/上下文关键词"
+    },
+    "User.customdata": {
+      "source": "Buyer-defined opaque data returned by the exchange.",
+      "zh": "Exchange 回传的买家自定义串"
+    },
+    "User.geo": {
+      "source": "User home/registration location, which may differ from Device.geo.",
+      "zh": "用户常住/注册地（可与 Device.geo 不同）"
+    },
+    "User.data": {
+      "source": "Audience/first-party data segments.",
+      "zh": "人群/第一方数据分段"
+    },
+    "User.consent": {
+      "source": "Consent string, such as GDPR TCF.",
+      "zh": "GDPR TCF 同意串等"
+    },
+    "User.eids": {
+      "source": "Extended/unified identities, such as UID2 or Living Docs.",
+      "zh": "扩展/统一身份（UID2、Living Docs 等）"
+    },
+    "User.ext": {
+      "source": "Extension JSON object string.",
+      "zh": "扩展：JSON 对象字符串。"
+    },
+    "Data.id": {
+      "source": "Data provider ID.",
+      "zh": "数据提供方 ID。"
+    },
+    "Data.name": {
+      "source": "Data source name.",
+      "zh": "数据源名称"
+    },
+    "Data.cids": {
+      "source": "Related campaign/customer ID.",
+      "zh": "相关活动/客户 ID"
+    },
+    "Data.segment": {
+      "source": "Individual segments.",
+      "zh": "具体分群"
+    },
+    "Data.ext": {
+      "source": "Extension JSON object string.",
+      "zh": "扩展：JSON 对象字符串。"
+    },
+    "Segment.id": {
+      "source": "Segment ID.",
+      "zh": "分群 ID"
+    },
+    "Segment.name": {
+      "source": "Segment name.",
+      "zh": "分群名称。"
+    },
+    "Segment.value": {
+      "source": "Segment value.",
+      "zh": "分群取值"
+    },
+    "Segment.ext": {
+      "source": "Extension JSON object string.",
+      "zh": "扩展：JSON 对象字符串。"
+    },
+    "EID.source": {
+      "source": "ID source domain/system, such as uidapi.com.",
+      "zh": "ID 来源域或体系，如 uidapi.com"
+    },
+    "EID.uids": {
+      "source": "Individual ID values.",
+      "zh": "具体 ID 值列表"
+    },
+    "EID.inserter": {
+      "source": "Inserter.",
+      "zh": "写入方"
+    },
+    "EID.matcher": {
+      "source": "Matcher.",
+      "zh": "匹配方"
+    },
+    "EID.mm": {
+      "source": "Match method (IdMatchMethod): 0=unknown, 1=unmatched direct cookie/IFA, 2=browser cookie sync, 3=authenticated, 4=first-party observation, 5=inferred; >=500 vendor-specific.",
+      "zh": "匹配方法。取值 IdMatchMethod：0=未知，1=未匹配（直接 cookie/IFA），2=浏览器 cookie sync，3=认证匹配，4=第一方观测，5=推断；>=500 厂商自定义。"
+    },
+    "EID.ext": {
+      "source": "Extension JSON object string.",
+      "zh": "扩展：JSON 对象字符串。"
+    },
+    "UID.id": {
+      "source": "User identifier value.",
+      "zh": "用户标识值"
+    },
+    "UID.atype": {
+      "source": "Agent type (AgentType): 1=browser/device, 2=in-app, 3=cross-device person; >=500 vendor-specific.",
+      "zh": "agent 类型。取值 AgentType：1=浏览器/设备，2=App 内，3=跨设备人物；>=500 厂商"
+    },
+    "UID.ext": {
+      "source": "Extension JSON object string.",
+      "zh": "扩展：JSON 对象字符串。"
+    },
+    "Source.fd": {
+      "source": "Upstream final decision flag (FlagBool): 0=this exchange decides, 1=upstream decides.",
+      "zh": "最终决策是否在上游。取值 FlagBool：0=本 Exchange 决策，1=上游最终决策"
+    },
+    "Source.tid": {
+      "source": "Transaction ID for tracing.",
+      "zh": "事务 ID；链路追踪"
+    },
+    "Source.pchain": {
+      "source": "Legacy payment ID chain; prefer schain.",
+      "zh": "支付 ID 链（旧字段，优先 schain）"
+    },
+    "Source.schain": {
+      "source": "SupplyChain object.",
+      "zh": "SupplyChain 对象"
+    },
+    "Source.ext": {
+      "source": "Extension JSON object string.",
+      "zh": "扩展：JSON 对象字符串。"
+    },
+    "SupplyChain.complete": {
+      "source": "Chain completeness (FlagBool): 0=possibly truncated, 1=complete.",
+      "zh": "链路是否完整。取值 FlagBool：0=可能截断，1=完整"
+    },
+    "SupplyChain.nodes": {
+      "source": "Ordered resale nodes from origin to the current seller.",
+      "zh": "从源头到当前的转售节点，按序"
+    },
+    "SupplyChain.ver": {
+      "source": "schain version, such as \"1.0\".",
+      "zh": "schain 版本，如 \"1.0\""
+    },
+    "SupplyChain.ext": {
+      "source": "Extension JSON object string.",
+      "zh": "扩展：JSON 对象字符串。"
+    },
+    "SupplyChainNode.asi": {
+      "source": "Advertising System Identifier domain.",
+      "zh": "广告系统标识域（Advertising System Identifier）"
+    },
+    "SupplyChainNode.sid": {
+      "source": "Seller ID within this system.",
+      "zh": "该系统上的卖家 ID"
+    },
+    "SupplyChainNode.rid": {
+      "source": "Request ID at this node.",
+      "zh": "该节点请求 ID"
+    },
+    "SupplyChainNode.name": {
+      "source": "Optional organization name.",
+      "zh": "组织名（可选）"
+    },
+    "SupplyChainNode.domain": {
+      "source": "Optional business domain.",
+      "zh": "业务域（可选）"
+    },
+    "SupplyChainNode.hp": {
+      "source": "Payment-path participation (FlagBool): 0=no, 1=yes (helps payment).",
+      "zh": "是否参与支付路径。取值 FlagBool：0=否，1=是（helps payment）"
+    },
+    "SupplyChainNode.ext": {
+      "source": "Extension JSON object string.",
+      "zh": "扩展：JSON 对象字符串。"
+    },
+    "Regs.coppa": {
+      "source": "COPPA applicability (FlagBool): 0=no, 1=applies to child-directed traffic.",
+      "zh": "是否适用 COPPA。取值 FlagBool：0=否，1=儿童流量适用"
+    },
+    "Regs.gdpr": {
+      "source": "GDPR applicability (FlagBool): 0=no, 1=applies.",
+      "zh": "是否适用 GDPR。取值 FlagBool：0=否，1=适用"
+    },
+    "Regs.us_privacy": {
+      "source": "CCPA/US Privacy string.",
+      "zh": "CCPA/US Privacy 字符串"
+    },
+    "Regs.gpp": {
+      "source": "Global Privacy Platform string.",
+      "zh": "Global Privacy Platform 串"
+    },
+    "Regs.gpp_sid": {
+      "source": "GPP section IDs.",
+      "zh": "GPP 区段 ID 列表"
+    },
+    "Regs.ext": {
+      "source": "Extension JSON object string.",
+      "zh": "扩展：JSON 对象字符串。"
+    },
+    "BidResponse.id": {
+      "source": "Required; must equal BidRequest.id.",
+      "zh": "必须等于 BidRequest.id。必填。"
+    },
+    "BidResponse.seatbid": {
+      "source": "Seat bids; an actual bid response includes at least one SeatBid.",
+      "zh": "席位出价集合。真正出价时至少 1 个 SeatBid。"
+    },
+    "BidResponse.bidid": {
+      "source": "Bidder-generated response ID for bidder-side logging and reconciliation.",
+      "zh": "Bidder 生成的响应 ID。场景：Bidder 侧日志与对账。"
+    },
+    "BidResponse.cur": {
+      "source": "Required response currency (ISO-4217). Builders default to USD; it must be allowed by the request cur list.",
+      "zh": "本响应出价币种（ISO-4217）。必填。构建器默认 USD。须落在请求 cur 允许集合内。"
+    },
+    "BidResponse.customdata": {
+      "source": "Opaque data returned to the exchange and potentially included later in User.customdata.",
+      "zh": "回传给 Exchange、之后可能再塞进 User.customdata 的不透明串。"
+    },
+    "BidResponse.nbr": {
+      "source": "No-bid reason (NoBidReason): 0=unknown error, 1=technical error, 2=invalid request, 3=crawler, 4=non-human, 5=cloud/proxy IP, 6=unsupported device, 7=blocked publisher, 8=unmatched user, 9=daily reader cap, 10=daily domain cap; >=500 custom.",
+      "zh": "不竞价原因。取值 NoBidReason：0=未知错误，1=技术错误，2=非法请求，3=爬虫，4=非人，5=云/代理IP，6=不支持设备，7=屏蔽发布商，8=用户未匹配，9=日读者上限，10=日域名上限；>=500 自定义。"
+    },
+    "BidResponse.ext": {
+      "source": "Extension JSON object string.",
+      "zh": "扩展：JSON 对象字符串。"
+    },
+    "SeatBid.bid": {
+      "source": "Bids for this seat; at least one is needed for a meaningful entry.",
+      "zh": "该 seat 的出价列表。至少 1 条才有意义。"
+    },
+    "SeatBid.seat": {
+      "source": "Buyer seat name, distinguishing pricing and settlement for DSPs with multiple seats.",
+      "zh": "买家席位名。场景：同一 DSP 多 seat 时报价与结算区分。"
+    },
+    "SeatBid.group": {
+      "source": "Group flag (FlagBool): 0=partial wins allowed, 1=all bids must win together; used for bundled Imp sales.",
+      "zh": "是否打包整组。取值 FlagBool：0=可部分赢，1=组内须全赢。场景：多 Imp 打包售卖。"
+    },
+    "SeatBid.ext": {
+      "source": "Extension JSON object string.",
+      "zh": "扩展：JSON 对象字符串。"
+    },
+    "Bid.id": {
+      "source": "Required bidder-assigned bid ID.",
+      "zh": "Bidder 侧出价 ID。必填。"
+    },
+    "Bid.impid": {
+      "source": "Required reference to Imp.id; unmatched bids are discarded by the exchange.",
+      "zh": "对应 Imp.id。必填。对不上则 Exchange 丢弃。"
+    },
+    "Bid.price": {
+      "source": "Required CPM bid price, strictly greater than zero; currency is BidResponse.cur.",
+      "zh": "CPM 出价，必须 > 0。必填。币种见 BidResponse.cur。"
+    },
+    "Bid.nurl": {
+      "source": "Win notice URL, optionally containing ${AUCTION_PRICE}; called by the exchange server after a win.",
+      "zh": "赢价通知 URL（可含 ${AUCTION_PRICE}）。场景：胜出后 Exchange 服务端调用。"
+    },
+    "Bid.burl": {
+      "source": "Billing notice URL, called at the actual billing event, which may differ from display time.",
+      "zh": "计费通知 URL。场景：实际计费时点回调（可与展示分离）。"
+    },
+    "Bid.lurl": {
+      "source": "Loss notice URL for feedback and learning on unsuccessful bids.",
+      "zh": "丢单通知 URL。场景：未胜出时的反馈学习。"
+    },
+    "Bid.adm": {
+      "source": "Ad markup (HTML/VAST/Native JSON, etc.). Inline markup is strongly recommended; nurl retrieval is also possible.",
+      "zh": "广告 markup（HTML/VAST/Native JSON 等）。强烈推荐内联；也可靠 nurl 拉取。"
+    },
+    "Bid.adid": {
+      "source": "Advertiser-side ad ID for ad-level reporting.",
+      "zh": "广告 ID（广告主侧）。场景：广告维度报表。"
+    },
+    "Bid.adomain": {
+      "source": "Advertiser domains. Strongly recommended for badv checks and brand disclosure.",
+      "zh": "广告主域名列表。强烈推荐。场景：badv 屏蔽检查与品牌披露。"
+    },
+    "Bid.bundle": {
+      "source": "Promoted app bundle, such as for app-install ads.",
+      "zh": "推广应用 bundle。场景：App 安装类广告。"
+    },
+    "Bid.iurl": {
+      "source": "Sample creative preview image URL for review and quality assurance.",
+      "zh": "抽样创意预览图 URL。场景：审核与质检。"
+    },
+    "Bid.cid": {
+      "source": "Campaign ID.",
+      "zh": "活动 ID。"
+    },
+    "Bid.crid": {
+      "source": "Creative ID. Strongly recommended for review, frequency capping and rejection troubleshooting.",
+      "zh": "创意 ID。强烈推荐。场景：创意审核、频控、拒登排查。"
+    },
+    "Bid.tactic": {
+      "source": "Tactic ID for internal DSP strategy attribution.",
+      "zh": "策略战术 ID。场景：DSP 内部策略归因。"
+    },
+    "Bid.cattax": {
+      "source": "Category taxonomy; see CategoryTaxonomy enum.",
+      "zh": "类目 taxonomy。取值 CategoryTaxonomy（见枚举）。"
+    },
+    "Bid.cat": {
+      "source": "Creative/advertiser categories.",
+      "zh": "创意/广告主类目。"
+    },
+    "Bid.attr": {
+      "source": "Creative attributes; see CreativeAttribute enum; >=500 vendor-specific.",
+      "zh": "创意属性。取值 CreativeAttribute（见枚举）；>=500 厂商。"
+    },
+    "Bid.apis": {
+      "source": "Creative APIs; see ApiFramework enum.",
+      "zh": "创意使用的 API。取值 ApiFramework（见枚举）。"
+    },
+    "Bid.protocol": {
+      "source": "Video protocol; see Protocol enum.",
+      "zh": "视频协议。取值 Protocol（见枚举）。"
+    },
+    "Bid.qagmediarating": {
+      "source": "Media rating (MediaRating): 1=all audiences, 2=12+, 3=mature.",
+      "zh": "媒体评级。取值 MediaRating：1=全年龄，2=12+，3=成人。"
+    },
+    "Bid.language": {
+      "source": "Creative language (ISO-639-1).",
+      "zh": "创意语言 ISO-639-1。"
+    },
+    "Bid.langb": {
+      "source": "Creative language (BCP-47).",
+      "zh": "创意语言 BCP-47。"
+    },
+    "Bid.dealid": {
+      "source": "Selected Deal.id; a corresponding deal is required for PMP bids.",
+      "zh": "成交的 Deal.id。走 PMP 时必填对应 deal。"
+    },
+    "Bid.w": {
+      "source": "Actual creative width in device-independent pixels (DIPs).",
+      "zh": "素材展示宽度，单位为设备无关像素（DIPs）。"
+    },
+    "Bid.h": {
+      "source": "Actual creative height in device-independent pixels (DIPs).",
+      "zh": "素材展示高度，单位为设备无关像素（DIPs）。"
+    },
+    "Bid.wratio": {
+      "source": "Creative width ratio for native/flexible layouts.",
+      "zh": "创意宽比（原生/弹性）。"
+    },
+    "Bid.hratio": {
+      "source": "Creative height ratio.",
+      "zh": "创意高比。"
+    },
+    "Bid.exp": {
+      "source": "Suggested bid expiry in seconds.",
+      "zh": "该出价建议的过期秒数。"
+    },
+    "Bid.dur": {
+      "source": "Video/audio duration in seconds.",
+      "zh": "视频/音频时长秒数。"
+    },
+    "Bid.mtype": {
+      "source": "Creative format (MarkupType): 1=Banner, 2=Video, 3=Audio, 4=Native; required by BidCheck for multi-format Imps. JSON Schema forbids zero; protobuf UNSPECIFIED=0 means unset. Set 1-4 before emitting an explicit mtype in JSON.",
+      "zh": "素材形态（MarkupType）：1=Banner，2=Video，3=Audio，4=Native。对应 Imp 提供多种形态时，BidCheck 要求显式指定。JSON Schema 不允许 0；protobuf 的 0 只表示未设置。"
+    },
+    "Bid.slotinpod": {
+      "source": "Requested pod slot (SlotInPod); special value -1=last slot; used for CTV pod bidding.",
+      "zh": "声明占用的 pod 槽位。取值 SlotInPod；特殊 -1=最后槽。场景：CTV pod 选槽出价。"
+    },
+    "Bid.ext": {
+      "source": "Extension JSON object string.",
+      "zh": "扩展：JSON 对象字符串。"
+    }
+  },
+  "native": {
+    "NativeRequest.ver": "Native 请求协议版本，例如 1.2。",
+    "NativeRequest.context": "广告所处内容环境的分类。",
+    "NativeRequest.contextsubtype": "内容环境的细分类。",
+    "NativeRequest.plcmttype": "Native 版位类型：1=信息流，2=原子内容单元，3=内容外部，4=推荐组件。",
+    "NativeRequest.plcmtcnt": "本次版位可容纳的相同广告单元数量。",
+    "NativeRequest.seq": "同一上下文中的广告序号。",
+    "NativeRequest.assets": "请求的素材资源列表，至少一个资源。",
+    "NativeRequest.aurlsupport": "是否支持通过资源 URL 返回素材：0=否，1=是。",
+    "NativeRequest.durlsupport": "是否支持动态内容 URL：0=否，1=是。",
+    "NativeRequest.eventtrackers": "支持的事件及其追踪方式。",
+    "NativeRequest.privacy": "是否支持买方提供隐私声明 URL：0=否，1=是。",
+    "NativeRequest.ext": "交易平台或买方自定义扩展对象。",
+    "NativeRequest.eventtrackers[].event": "待追踪事件类型，例如 1=曝光。",
+    "NativeRequest.eventtrackers[].methods": "支持的追踪方式列表，例如 1=图片像素，2=JavaScript。",
+    "NativeRequest.eventtrackers[].ext": "交易平台或买方自定义扩展对象。",
+    "NativeAsset.id": "请求资源的标识，响应资源使用相同 ID 关联。",
+    "NativeAsset.required": "该资源是否必需：0=可选，1=必需。",
+    "NativeAsset.title": "标题资源要求。",
+    "NativeAsset.img": "图片资源要求。",
+    "NativeAsset.video": "视频资源要求。",
+    "NativeAsset.data": "其他数据资源要求，例如描述、品牌或按钮文字。",
+    "NativeAsset.ext": "交易平台或买方自定义扩展对象。",
+    "NativeAsset.title.len": "标题允许的最大字符数，至少为 1。",
+    "NativeAsset.title.ext": "交易平台或买方自定义扩展对象。",
+    "NativeAsset.img.type": "图片资源类型，例如 1=图标，3=主图。",
+    "NativeAsset.img.w": "所需图片的精确宽度，单位为图片像素。",
+    "NativeAsset.img.h": "所需图片的精确高度，单位为图片像素。",
+    "NativeAsset.img.wmin": "图片最小宽度，单位为图片像素。",
+    "NativeAsset.img.hmin": "图片最小高度，单位为图片像素。",
+    "NativeAsset.img.mimes": "支持的图片 MIME 类型。",
+    "NativeAsset.img.ext": "交易平台或买方自定义扩展对象。",
+    "NativeAsset.video.mimes": "支持的视频 MIME 类型。",
+    "NativeAsset.video.minduration": "最短视频时长，单位为秒。",
+    "NativeAsset.video.maxduration": "最长视频时长，单位为秒。",
+    "NativeAsset.video.protocols": "支持的视频响应协议编号。",
+    "NativeAsset.video.ext": "交易平台或买方自定义扩展对象。",
+    "NativeAsset.data.type": "数据资源类型，例如 1=赞助方名称，2=描述，12=行动按钮文字。",
+    "NativeAsset.data.len": "文本数据允许的最大字符数。",
+    "NativeAsset.data.ext": "交易平台或买方自定义扩展对象。"
+  }
+}
