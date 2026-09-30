@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/oakrtb/openrtb/schema/jsonschema/openrtb.schema.json",
+  "$id": "https://github.com/oakrtb/oakrtb/schema/jsonschema/openrtb.schema.json",
   "title": "OakRTB OpenRTB 2.6",
   "description": "OakRTB JSON Schema for BidRequest/BidResponse (IAB OpenRTB 2.6-202606 field names). OakRTB profile: BidRequest requires at+cur; BidResponse requires cur. Extra fields allowed via additionalProperties / ext.",
   "$comment": "OakRTB protocol 0.2.0, aligned with IAB OpenRTB 2.6-202606. Validation authority for JSON; protobuf is codec-only. See docs/spec.md.",
@@ -709,7 +709,7 @@
         "at": {
           "allOf": [
             { "$ref": "#/$defs/AuctionType" },
-            { "minimum": 1, "description": "Required; 0/unspecified rejected. Typical: 1 first price, 2 second price plus; >=500 exchange-specific." }
+            { "anyOf": [{ "enum": [1, 2] }, { "minimum": 500 }], "description": "Required: 1 first price, 2 second price plus, or >=500 exchange-specific. Fixed price (3) is only valid for Deal.at." }
           ]
         },
         "tmax": { "type": "integer", "minimum": 1 },

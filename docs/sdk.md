@@ -1,362 +1,153 @@
-# SDK 与校验
+# SDK 架构与使用
 
-OakRTB 提供 Go / Java / Rust 的**模型生成**、**请求/响应构建器**与**统一校验**（不包含 HTTP 服务或拍卖引擎）。
+首次接入请先阅读 [接入指南](getting-started.md)；可运行程序见 [完整示例](../examples/README.md)。
 
-## 模块术语
+Go、Java、Rust 使用同一份 `proto/oakrtb/v2/openrtb.proto` 生成强类型模型。JSON 和 protobuf 是模型的两种编码方式；构建器、视图与 BidCheck 不使用独立的 JSON 对象树作为业务模型。
 
-| 模块 | 职责 | 不是 |
+## 模块职责与依赖
+
+| 模块 | 职责 | 允许依赖的 SDK 模块 |
 |---|---|---|
-| `schema` | JSON Schema 合同 / `buildValidated` / 工具链（**非**热路径必经） | 业务拒投；与 LightGate 叠跑 |
-| `view` | 热路径**读模型**；**LightGate** = 解码后唯一结构门禁 | 完整 schema / 拍卖 |
-| `fit` | 可选**形态就绪 + bid↔imp 契合**（ERROR/WARN；业务不抛，Java null→NPE） | 人群/库存匹配引擎 |
-| `build` | 构造 + Oak 护栏 | schema 本体 |
+| 生成模型 | 字段、存在性、protobuf 消息 | 无业务模块；Rust serde 辅助代码属于模型层 |
+| `codec` | 模型与 OpenRTB JSON 的双向转换 | 生成模型 |
+| `validation` | 模型基础检查、格式就绪检查及共享 CheckResult/CheckIssue | 生成模型 |
+| `builder` | 构造模型；提供编码、完整校验的便捷方法 | 模型、validation、codec、jsonschema |
+| `view` | 创建查询视图、索引和字段摘要 | 模型、validation |
+| `bidcheck` | 请求与响应之间的契合检查 | 模型、view、validation |
+| `jsonschema` | 原始 JSON 的完整合同校验及 Report | 不依赖 builder/view/bidcheck |
 
-`MarkupMask`：Imp 上 banner/video/audio/native 的位掩码（≠ proto `Banner.Format` 尺寸条目）。
-`Inventory`：BidRequest 的 site/app/dooh 库存面（≠ proto `Content.Channel` 内容频道）。
+箭头表示“依赖”，不是调用顺序：
+
+```mermaid
+flowchart TD
+    bidcheck --> view
+    bidcheck --> validation
+    bidcheck --> model[生成模型]
+    view --> validation
+    view --> model
+    validation --> model
+    builder --> validation
+    builder --> codec
+    builder --> jsonschema
+    builder --> model
+    codec --> model
+```
+
+`builder → view → bidcheck` 只是本地构造请求时的一种流程，不能用作架构层级。收到外部请求时从 codec 开始，无需经过构建器。
 
 ## 入站适配：双格式、单模型
 
-HTTP 线格式可以是 **JSON** 或 **protobuf 二进制**（见 [transport.md](transport.md)）。SDK 的设计是：
+| 语言 | JSON 解码 | protobuf 解码 | 查询入口 |
+|---|---|---|---|
+| Go | `codec.UnmarshalBidRequest` | `proto.Unmarshal` | `view.NewRequest(req)` |
+| Java | `codec.Json.parseBidRequest` | `BidRequest.parseFrom` | `RequestView.of(req)` |
+| Rust | `codec::parse_bid_request` | `BidRequest::decode`（prost） | `RequestView::new(&req)` |
+
+响应使用对应的 BidResponse / ResponseView 入口。codec 负责语法和类型；view 创建时调用一次基础校验。只需校验、不需视图时，可直接使用 Go/Rust 的 `validation.Request` / `validation::request`，或 Java 的 `BasicValidation.validateRequest`。
+
+典型流程：
 
 ```text
-线格式（二选一）              内存 / 热路径                出站（与请求一致）
-─────────────────           ─────────────              ─────────────────
-application/json      ──→   BidRequest / BidResponse   ──→ JSON 或 protobuf
-application/x-protobuf ──→   （语义模型）                （同 Content-Type）
+接收 JSON/protobuf → codec/原生 protobuf 解码 → 强类型 BidRequest
+    → RequestView（基础校验）→ 业务决策
+    → builder（强类型 BidResponse）→ 可选 BidCheck.response → codec/原生 protobuf 编码
 ```
 
-**build / view / fit 只处理「已解码的对象」**，不直接读 HTTP body。  
-无论 JSON 还是 protobuf 入站，**先解码成 OpenRTB 对象，再走同一条热路径**。
+Schema 是独立的完整合同校验能力，输入原始 JSON 字节；按边界策略或离线工具需求选择。`BuildValidated` / `buildValidated` / `build_validated` 是便利组合，不代表核心构建操作必须执行 schema 校验。
 
-### 热路径只留一道结构验证：LightGate
+## 三语言一致的数据约定
 
-JSON 与 protobuf **最终都变成对象**。解码之后不必再叠跑 Schema + LightGate：
+- 单值 `int32` / `double` 使用 proto optional。缺失与显式零值不同；JSON/protobuf 往返保留 `gdpr:0`、坐标零值、`nbr:0`。`mtype` 的枚举零值仍表示未指定。
+- JSON 字段名采用协议原名，枚举为数字；数值字段不接受数字字符串、NaN 或 Infinity。可表示为 int32 的整值数字（如 `1.0`）允许解码。
+- JSON `null` 字段按缺失处理；消息根必须是对象，数组元素不得用 null 代替模型或标量。
+- Rust JSON 解析保留任意精度的扩展数字；int32 使用十进制精确判断整数性与范围，不经过 f64。
+- 未知字段会被忽略。扩展数据应放入 `ext`。
+- JSON 中的 `ext` 必须是对象，可含任意嵌套数据。为兼容现有 protobuf wire，模型的 `ext` 仍存 JSON 对象字符串；codec 双向转换且不解释扩展对象内部的字段。不要用原生 ProtoJSON 替代 OpenRTB codec。
+- 基础校验要求 imp.id 在请求内唯一，Deal ID 在展示位内非空且唯一；Deal 底价必须有限且非负，固定价 Deal 必须给出价格。基础校验限制请求 at 为 1、2 或 ≥500（3 仅用于 Deal），并检查 id、at、cur、imp、库存互斥及响应出价结构；价格必须为有限正数。Banner 尺寸、mimes 等格式就绪规则统一由 validation 实现，构建器复用；完整 schema 约束不在基础校验中重复实现。
+- BidCheck 的 `OK/ok` 表示没有 ERROR。底价、屏蔽、超时等 WARN 不自动拒绝响应。`REQUEST_ID_MISMATCH` 对出价与 no-bid 均生效。
+- BidCheck 的币种、域名、bundle、类别比较统一采用 ASCII 大小写归一化，不额外执行 Unicode/IDNA 转换。币种和 bid.bundle 去除首尾空白；屏蔽列表条目保持原值。
 
-| 验证 | 输入 | 热路径角色 |
-|------|------|------------|
-| **LightGate**（`view` step-0） | 已解码对象 | **推荐唯一门禁**：`id`/`at`/`cur`/`imp`、库存互斥、Imp 至少一种形态 |
-| **Schema**（`schema`） | JSON 字节 | **非热路径**：`buildValidated`、夹具/`make validate`、可选的 Exchange 边界 400 |
+这些约定由 `testdata/conformance/cases.json` 驱动三语言测试，覆盖模型 → protobuf → JSON 往返、解码拒绝、基础校验、格式就绪和竞价检查结果。
 
-```text
-JSON bytes  ──parse──┐
-                     ├──→ BidRequest ──→ LightGate（view）──→ fit / 业务 / build
-proto bytes ─parse───┘
-```
+## 私有交易检查
 
-- **不要**在同一请求上先跑 `schema` 再 `RequestPipeline.run`（LightGate 会再验一遍重叠规则）。
-- Proto 没有等价 JSON Schema；对象级门禁本来就只能是 LightGate。
-- Schema 仍保留在 SDK 中，但职责收窄为合同/构建自检，不是 DSP 毫秒路径的必经步骤。
+`bidcheck.Response/response` 检查 private_auction 必须携带 dealid，任何携带的 dealid 都必须在对应 Imp 的 PMP 列表内。未知或缺失 Deal、席位白名单不符、广告主域名白名单不符返回 ERROR；域名比较采用 ASCII 大小写归一化，所有给出的 adomain 均须被允许，配置白名单但响应无域名也拒绝。
 
-### 各模块与输入类型
+匹配到 Deal 后，显式 Deal.bidfloor（包括零）覆盖 Imp 底价，并使用 Deal.bidfloorcur；未提供 Deal 底价时沿用 Imp 底价及币种。只有双方币种非空且匹配时比较数值，币种不同时给出 FLOOR_CUR_DIFF 警告，不进行兑换。低于一般 Deal 底价沿用 PRICE_BELOW_FLOOR/WARN；Deal.at=3 时价格必须等于固定价，否则 DEAL_PRICE_MISMATCH/ERROR。
 
-| 模块 | JSON 线格式 | Proto 对象 / 二进制 |
-|------|-------------|---------------------|
-| **view（含 LightGate）** | 先解析为对象再调用 | ✅ Java/Go：`run(BidRequest)`；Rust：`run_request(&Value)` |
-| **fit** | 同上 | ✅ 在 view Snapshot + Bid 上运行 |
-| **build** | ✅ `Json.parse*` / `Unmarshal*` → 对象 | ✅ 构建器产出 proto（Java/Go）或 JSON（Rust） |
-| **schema** | ✅ 可选：边界/`buildValidated` | ❌ 无 protobuf Schema；热路径不依赖 |
+单条 `bidcheck.Bid/bid` 缺少响应币种及 seat 上下文，跳过价格比较和席位白名单检查；需要这两项检查时使用完整响应入口。
 
-| 语言 | 热路径主类型 | JSON ↔ 对象 |
-|------|-------------|-------------|
-| Java | `com.oakrtb.openrtb.v2.BidRequest` | `Json.parseBidRequest` / `Json.toJson` |
-| Go | `openrtb.BidRequest` | `build.UnmarshalBidRequest` / `MarshalJSON` |
-| Rust | `serde_json::Value`（view/build）；`proto` 用于二进制 | 构建器产出 `Value`；protobuf 经 `prost` 解码后可再序列化为 JSON |
+## 视图所有权
 
-> Rust 当前 build/view 以 **JSON 对象** 为工作面，与 Java/Go 的 **proto 对象** 等价对齐同一 OpenRTB 语义；不是第二套协议。
+`RequestView` / `ResponseView` 表示查询视图，不承诺深拷贝。
 
-### 路径 A：JSON 入站（推荐热路径）
+- Go：`NewRequest/NewResponse` 借用模型；模型、视图及其返回的指针与切片在使用期间必须保持只读。需要随后修改原始模型时使用 `NewRequestCopy/NewResponseCopy`。复制期间不得并发修改输入。
+- Java：生成的 protobuf 消息不可变，视图列表不可变；修改原 builder 不影响已构建的消息。
+- Rust：视图借用 `&BidRequest` / `&BidResponse`，借用检查器约束原始模型的修改。视图持有模型引用，避免热路径 JSON 重解析。
 
-```java
-// Java — parse → LightGate（经 view）；不先跑 Schema
-byte[] wire = ...; // Content-Type: application/json
-BidRequest req = Json.parseBidRequest(new String(wire, UTF_8)); // parse 失败 → 400
-var snap = RequestPipeline.run(req); // 内含 LightGate；失败 → 400
-// … Fit / 定向 / 估价 …
-BidResponse res = BidResponseBuilder.create(req.getId())...build();
-byte[] out = Json.toJsonBytes(res);
-```
+## Builder 与完整校验
 
-```go
-// Go
-req, err := build.UnmarshalBidRequest(wire) // parse 失败 → 400
-snap, err := view.RunRequest(req)        // LightGate 失败 → 400
-out, _ := build.MarshalJSON(res)
-```
+Go 的所有模型 Builder 在 Build 时深拷贝结果，已构建模型不受后续构建器、传入子对象或其他构建结果的修改影响。构建期间不得并发修改输入。Java 模型不可变，Rust build 消费构建器。
 
-### 路径 B：Protobuf 入站（同一热路径）
+Builder 的 `Build/build` 输出强类型模型，`BuildJSON/buildJson/build_json` 委托 codec 编码。
 
-```java
-// Java
-BidRequest req = BidRequest.parseFrom(wire); // parse 失败 → 400
-var snap = RequestPipeline.run(req);         // LightGate；与 JSON 路径相同
-```
+Go 的完整校验返回 JSON、Report、error；Java/Rust 返回 `ValidatedPayload`（JSON 字节与 Report）。必须检查 Report 是否通过，不能仅凭构建未抛错就认定完整 schema 有效。
 
-```go
-// Go
-req := &openrtb.BidRequest{}
-if err := proto.Unmarshal(wire, req); err != nil { /* 400 parse */ }
-snap, err := view.RunRequest(req)
-out, _ := proto.Marshal(res)
-```
-
-### 统一热路径（解码之后相同）
-
-```text
-对象（BidRequest）
-  → view（LightGate + 读模型）   ← 热路径唯一结构验证
-  → fit.impReady（可选）
-  → 业务：定向 / 估价
-  → build（组 BidResponse）
-  → fit.bid / fit.response（可选；Go：Bid / Response）
-  → view（响应 LightGate + 读模型，可选）
-  → 编码回 JSON 或 protobuf
-```
-
-Schema 仅在需要时使用，例如：`buildValidated()`、本地夹具、或 Exchange 侧「非法 JSON → 400 `Report`」合同——**不要与 LightGate 叠跑**。
-
-### 约定与注意
-
-1. **响应编码与请求一致**：JSON 对 JSON，protobuf 对 protobuf（[transport.md](transport.md)）。
-2. **热路径验证 = LightGate**；Schema 为可选边界/构建工具，非必经。
-3. **proto3 缺省 0/"" ≠ JSON 缺字段**：LightGate 按对象字段语义判断；完整类型/pattern 约束仍在 Schema（工具链用）。
-4. **SDK 不提供 HTTP 服务**：Content-Type、压缩、`204` / `200+nbr` 由集成方处理；见 [view-usage.md](view-usage.md) HTTP 对照表。
-
-## 权威与产物
-
-| 角色 | 路径 |
-|---|---|
-| 校验权威 | `schema/jsonschema/*.schema.json` |
-| 统一结果（`Report` JSON 形状） | `schema/jsonschema/validation-result.schema.json` |
-| Protobuf | `proto/oakrtb/v2/openrtb.proto` |
-| Go 模型 / 构建器 / 视图 | `sdk/go/oakrtb/v2`、`sdk/go/build`、`sdk/go/view`、`sdk/go/fit` |
-| Java 模型 / 构建器 / 视图 | `com.oakrtb.openrtb.v2`、`com.oakrtb.sdk.build`、`com.oakrtb.sdk.view`、`com.oakrtb.sdk.fit` |
-| Rust 模型 / 构建器 / 视图 | `oakrtb_sdk::proto`、`oakrtb_sdk::build`、`oakrtb_sdk::view`、`oakrtb_sdk::fit` |
-| 手写 schema 层 | `sdk/{go,java,rust}/schema` |
-
-## 构建
-
-权威 JSON Schema 只维护在仓库根 `schema/jsonschema/`。各语言提交 **vendored 副本**（`make sync-schemas`），以便 `go get` / crates.io / Maven Central 发布：
-
-| 语言 | 摄入方式 |
-|---|---|
-| Go | `sdk/go/schema/schemas/*.json`（`//go:embed`） |
-| Java | `sdk/java/src/main/resources/schema/jsonschema/` + `src/main/proto/` |
-| Rust | `sdk/rust/schemas/` + `sdk/rust/proto/`（`build.rs` 嵌入） |
-
-```bash
-make sync-schemas  # 改 schema/proto 后刷新三语言副本并提交
-make proto-go
-make proto-java
-make proto-rust
-make sdk-test
-make jar
-# 发布步骤见 docs/publishing.md
-```
-
-## 怎么按广告类型组请求
-
-看 `imp` 子对象决定形态；构建器按形态要求必填字段（请求须设 `at` + `cur`；Banner 要尺寸，Video/Audio 要 `mimes`，Native 要 `request`；响应须有 `cur`），再用 `BuildValidated` / `buildValidated` 跑 schema。
-
-| 形态 | 构建入口（概念） | 必填要点 |
-|---|---|---|
-| Banner | `NewBannerImp` / `ImpBuilders.banner` / `BannerImpBuilder` | `w`+`h` 或 `format[]` |
-| Video | `NewVideoImp` / `ImpBuilders.video` / `VideoImpBuilder` | `mimes`；常加时长、`protocols`、`plcmt` |
-| Audio | `NewAudioImp` / `ImpBuilders.audio` / `AudioImpBuilder` | `mimes` |
-| Native | `NewNativeImp` / `ImpBuilders.nativeAd` / `NativeImpBuilder` | `request`（Native 1.2 JSON 字符串） |
-
-库存用 `Site` / `App` / `Dooh`（互斥）；设备用 `Device`。
-
-## Schema API
-
-| 语言 | 入口 | 类型 |
-|---|---|---|
-| Go | `schema.Request` / `schema.Response` | `Report`、`Issue`（`github.com/oakrtb/openrtb/sdk/go/schema`） |
-| Java | `Schema.request` / `Schema.response` | `Report`、`Issue`（`com.oakrtb.sdk.schema`） |
-| Rust | `schema::request` / `schema::response` | `Report`、`Issue`（`oakrtb_sdk::schema`） |
-
-成功：`{"ok": true, "errors": []}`  
-失败：`ok=false`，`errors` 含 `code` / `path` / `message`（`Report` JSON 形状，对齐 `validation-result.schema.json`；可直接作 HTTP 400 body）
-
-## View 流水线（调用方热路径）
-
-完整可拷贝示例见 **[view-usage.md](view-usage.md)**（Java / Go / Rust：组请求 → `RequestPipeline` → 可选 Fit → 组响应 → `ResponsePipeline`）。
-
-解码后的 BidRequest 上跑轻量视图，供定向 / 估价 / 组 BidResponse 使用（**不是**完整 schema 校验）。
-
-推荐用 **RequestPipeline** / **ResponsePipeline** 按序编排，一次拿到可查询的 Snapshot：
-
-**BidRequest**
-
-1. `lightGate` — 必填 `id`/`at`/`cur`/`imp≥1`、site/app/dooh 互斥、每 Imp 至少一种形态；拒绝空白 `id`、空白 `cur[]` 项、空白 `imp.id`  
-2. `shared` — SharedView（库存面、设备、屏蔽列表、`tmax` 的 85% deadline）  
-3. `imps` — `ImpView[]`（MarkupMask 位掩码、底价、banner/video/audio/native）  
-4. `snapshot` / `facts()` — 扁平事实（`mtype`、尺寸、`native.request` 等）
-
-**Fit（可选，不进 LightGate）**
-
-- `impReady` — 选定形态后检查尺寸 / `mimes` / `native.request`  
-- `bid` / `response` — `impid`、`mtype`↔MarkupMask；floor / battr / badv 等为 WARN（`ok()` 仍 true）；floor 须响应 `cur` 与 `imp.bidfloorcur` 均非空白且相等才比价（**不**隐式 USD；单条 `bid` 无响应 cur 则跳过）；响应 `cur` 与请求 `cur[]` 比较前均 trim/strip；空/`nil` `seatbid[].bid` → `MALFORMED`（与 LightGate 对齐）  
-- 包：Java `com.oakrtb.sdk.fit`、Go `sdk/go/fit`、Rust `oakrtb_sdk::fit`
-
-**BidResponse**
-
-1. `lightGate` — 必填 `id`/`cur`（拒绝空白）；有 `seatbid` 时须为数组且每 bid 须 `id`+`impid`+`price>0`；空 `seatbid` 视为 no-bid（wire）；构建器须显式 `noBid(nbr)`  
-2. `shared` — 响应 SharedView（`bidid`/`nbr`/`noBid`）  
-3. `bids` — `SeatBidView` + 扁平 `BidView`（`mtype`→MarkupMask；不重算 shared）  
-4. `snapshot` / `facts()` — `findBid` / `bidsForImp` / `bidsWith` / `BidFact`
-
-`noBid` 与 `addSeatBid` 互斥：后调用会清掉对方状态（清 `seatbid` 或清 `nbr`）。
-
-| 语言 | BidRequest | BidResponse |
-|---|---|---|
-| Go | `view.RunRequest(req)` | `view.RunResponse(res)` |
-| Java | `RequestPipeline.run(req)` | `ResponsePipeline.run(res)` |
-| Rust | `view::run_request(&Value)` | `view::run_response(&Value)` |
-
-底层步骤：`RequestViews` / `ResponseViews`（Go：`LightGateRequest` / `LightGateResponse` 等）。
-
-### Go
-
-```go
-import "github.com/oakrtb/openrtb/sdk/go/view"
-
-snap, err := view.RunRequest(req)
-if err != nil { /* LightGate 失败 */ }
-for _, f := range snap.Facts() {
-    if f.HasBanner() {
-        // f.Mtype, f.BidFloor, f.BannerW …
-    }
-}
-if snap.PastDeadline() { /* 接近 tmax */ }
-
-rsnap, err := view.RunResponse(res)
-for _, f := range rsnap.Facts() {
-    if f.HasBanner() && f.HasAdm {
-        // f.Price, f.ImpID, f.Mtype …
-    }
-}
-```
-
-### Java
-
-```java
-import com.oakrtb.sdk.view.RequestPipeline;
-import com.oakrtb.sdk.view.ResponsePipeline;
-
-var snap = RequestPipeline.run(req);
-for (var f : snap.facts()) {
-  if (f.hasBanner()) {
-    // f.mtype(), f.bidFloor(), f.bannerW() …
-  }
-}
-
-var rsnap = ResponsePipeline.run(res);
-for (var f : rsnap.facts()) {
-  if (f.hasBanner() && f.hasAdm()) {
-    // f.price(), f.impid(), f.mtype() …
-  }
-}
-```
-
-### Rust
-
-```rust
-use oakrtb_sdk::view;
-
-let snap = view::run_request(&req_json)?;
-for f in snap.facts() {
-    if f.has_banner() {
-        // f.mtype, f.bidfloor, f.banner_w …
-    }
-}
-
-let rsnap = view::run_response(&res_json)?;
-for f in rsnap.facts() {
-    if f.has_banner() && f.has_adm {
-        // f.price, f.impid, f.mtype …
-    }
-}
-```
-
-### Go（构建器）
-
-```go
-import "github.com/oakrtb/openrtb/sdk/go/build"
-
-raw, report, err := build.NewBidRequest("auction-1").
-    FirstPrice().
-    Tmax(120).
-    Currency("USD").
-    Site(build.NewSite().ID("s1").Domain("example.com").Page("https://example.com/a").Build()).
-    Device(build.NewDevice().UA("Mozilla/5.0").IP("192.0.2.1").DeviceType(4).Build()).
-    AddImp(build.NewBannerImp("1").Size(300, 250).Floor(0.03, "USD").Secure().Build()).
-    BuildValidated()
-if err != nil || !report.Ok {
-    // reject / log report.Errors（schema.Report）
-}
-
-// 响应
-raw, report, err = build.NewBidResponse("auction-1").
-    AddSeatBid("512", build.NewBid("1", "1", 1.23).Banner().Size(300, 250).Adm("<img/>").Build()).
-    BuildValidated()
-```
-
-直接校验 JSON：`schema.Request` / `schema.Response`（`github.com/oakrtb/openrtb/sdk/go/schema`）。
-
-模型：`github.com/oakrtb/openrtb/sdk/go/oakrtb/v2`  
-JSON：`build.MarshalJSON`（enum 数字 + proto 字段名）
-
-### Java（JDK 21）
-
-```java
-import com.oakrtb.sdk.build.*;
-
-var payload = BidRequestBuilder.create("auction-1")
-    .firstPrice()
-    .tmax(120)
-    .currency("USD")
-    .site(Parts.site().id("s1").domain("example.com").page("https://example.com/a").build())
-    .device(Parts.device().ua("Mozilla/5.0").ip("192.0.2.1").deviceType(4).build())
-    .addImp(ImpBuilders.banner("1").size(300, 250).floor(0.03, "USD").secure().build())
-    .buildValidated();
-if (!payload.ok()) {
-    // payload.result() → 400 body
-}
-
-var bidPayload = BidResponseBuilder.create("auction-1")
-    .addSeatBid("512",
-        BidResponseBuilder.bid("1", "1", 1.23).banner().size(300, 250).adm("<img/>").build())
-    .buildValidated();
-```
-
-```bash
-make jar
-# gen/java/dist/oakrtb-sdk-0.2.0.jar       — 薄 jar
-# gen/java/dist/oakrtb-sdk-0.2.0-all.jar   — shade 依赖
-```
-
-Maven 坐标：`com.oakrtb:oakrtb-sdk:0.2.0`（本地 `mvn install`）
-
-### Rust
-
-```rust
-use oakrtb_sdk::build::*;
-
-let v = BidRequestBuilder::new("auction-1")
-    .first_price()
-    .tmax(120)
-    .currency(&["USD"])
-    .site(SiteBuilder::new().id("s1").domain("example.com").page("https://example.com/a").build())
-    .device(DeviceBuilder::new().ua("Mozilla/5.0").ip("192.0.2.1").device_type(4).build())
-    .add_imp(BannerImpBuilder::new("1").size(300, 250).floor(0.03, "USD").secure().build())
-    .build_validated()?;
-if !v.ok() {
-    // v.result → 400 body
-}
-```
+Rust 默认启用 `jsonschema` feature；只使用模型、codec、builder、validation、view、bidcheck 时可配置：
 
 ```toml
-oakrtb-sdk = { path = "sdk/rust" }
+oakrtb-sdk = { version = "0.2.0", default-features = false }
 ```
 
-生成的 protobuf 类型：`oakrtb_sdk::proto`（编解码）；构建器直接产出 OpenRTB JSON 以便 schema 校验。
+此时不编译 jsonschema 依赖，`jsonschema`、`ValidatedPayload`、`build_validated` 不可用。生成的模型仍依赖 prost，并在构建时需要 protoc；这是统一模型的基础依赖。
+
+## 本次模块与职责调整
+
+模块从 `build` → `builder`、`fit` → `bidcheck`、`schema` → `jsonschema`，三语言同步调整导入路径；不保留旧目录的转发副本。这是 SDK 源码 API 变更，不修改协议字段、JSON Schema 文件名、HTTP 合同或 protobuf wire。
+
+- Java `Fit` 改为 `bidcheck.BidCheck`。
+- `FitResult/FitIssue` 改为 `validation.CheckResult/CheckIssue`；严重级别及稳定诊断码也由 validation 统一管理。Go 的 `Code*`、Java 的 `IssueCode`、Rust 的 `CODE_*` 从 validation 导入。
+- 格式就绪检查直接接收生成的 Imp 模型：Go `validation.ImpReadyMtype(imp, mtype)`，Java `Readiness.impReady(imp, mtype)`，Rust `validation::imp_ready_mtype(&imp, mtype)`。
+- 检查所有已提供格式：Go `validation.ImpReady(imp)`，Java `Readiness.impReady(imp)`，Rust `validation::imp_ready(&imp)`。Builder 拒绝 ERROR，WARN 保留为可查询提示。
+- bidcheck 仅负责请求与响应的关联及竞价约束；格式就绪检查由调用方按需要独立执行。
+- Rust feature `schema` 改为 `jsonschema`，仍默认开启；`default-features = false` 可关闭。
+- jsonschema 的 `Report` 保持 JSON 合同校验及 HTTP 错误响应结构；不与含 WARN 的 `CheckResult` 混用。
+
+## 统一视图入口
+
+三语言统一通过主视图工厂执行基础校验并构造完整视图：Go `NewRequest/NewResponse`，Java `RequestView.of/ResponseView.of`，Rust `RequestView::new/ResponseView::new`。主视图内部状态封装，不再提供分步组装 API。
+
+- 展示位、出价和席位子视图为独立的 `ImpView`、`BidView`、`SeatBidView`。
+- Java 删除复数 Views 工具类；三语言全部删除 Pipeline、Snapshot 及运行/轻量校验兼容入口。基础校验直接调用 validation，视图构造也会自动执行。
+- 删除 SharedView 中间层；公共查询直接从主视图调用，原始字段通过 `request()` / `response()` 访问。
+- 格式转换归属 markup：Go `MarkupFromImp/MarkupFromMtype`，Java `MarkupMask.fromImp/fromMtype`，Rust `MarkupMask::from_imp/from_mtype`。
+- 截止时间在创建请求视图时固定；响应分组与扁平列表共享 BidView 存储。Java 使用不可变列表，Rust 返回只读切片，Go 返回借用切片并要求调用方只读使用。
+
+## API 迁移
+
+| 旧入口 | 新入口 |
+|---|---|
+| Go `build.MarshalJSON/UnmarshalBidRequest/UnmarshalBidResponse` | 同名 `codec` 方法 |
+| Java `build.Json` | `codec.Json`；原 `request/response` 校验改用 `Schema` |
+| Go `RunRequest/RunResponse` | `NewRequest/NewResponse` |
+| Go `RunRequestCopy/RunResponseCopy` | `NewRequestCopy/NewResponseCopy` |
+| Java `RequestPipeline.run/ResponsePipeline.run` | `RequestView.of/ResponseView.of` |
+| Rust `run_request/run_response(&Value)` | codec 解码为模型，再 `RequestView::new/ResponseView::new` |
+| `LightGate` | `validation` 基础校验；创建 View 时自动调用 |
+| Go `Shared` 字段 / Rust `shared` 字段 | 主视图查询方法；原始字段从 `Request()/request()` 或 `Response()/response()` 读取 |
+| Go `Imps/SeatBids/Bids` 字段 | `Imps()/SeatBids()/Bids()` 方法 |
+| Rust `imps/seatbids/bids` 字段 | 同名只读切片访问方法 |
+| `Snapshot` | `RequestView/ResponseView` |
+| Rust `ValidatedJson` | `ValidatedPayload` |
+
+builder 编解码/Schema 转发方法、Java builder.Json、Rust ValidatedJson 及三语言旧视图入口均已删除，须迁移至新入口。Rust Builder、View、BidCheck 的 JSON Value 接口是源码破坏性变更，不隐式地在热路径转换 Value；原 JSON 通过 codec 在边界解码，模型构造使用 `proto` 类型。
+
+Go 直接构造 optional 字段使用 `proto.Int32(0)` / `proto.Float64(0)`，通过指针 nil 判断存在性；Java 使用 `hasX/clearX`；Rust 使用 `Some(0)/None`。旧版模型转发 protobuf 时仍可能丢弃显式零值，需要端到端升级。
+
+## 协议源与生成产物
+
+JSON Schema 是 JSON 校验权威；proto 定义共享模型和二进制编码；OpenAPI 描述 HTTP 合同。
+
+修改根目录 schema/proto 后执行 `make sync-schemas`；修改 proto 还需 `make proto-go`。`make check-copies` 与 SDK 测试入口只读检查副本，发现不一致即失败。`scripts/check_architecture.py` 检查模块依赖边界，防止职责重新混入。
+
+运行 `make validate proto-check sdk-test`。Java 需要 JDK 21，Rust 需要 protoc。安装与发布见 [publishing.md](publishing.md)，协议传输见 [transport.md](transport.md)，使用示例见 [view-usage.md](view-usage.md)。

@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/oakrtb/openrtb/schema/jsonschema/native.schema.json",
+  "$id": "https://github.com/oakrtb/oakrtb/schema/jsonschema/native.schema.json",
   "title": "OakRTB Native Markup Request 1.2",
   "description": "Native Ads specification 1.1+ root object encoded as Imp.native.request JSON string.",
   "type": "object",

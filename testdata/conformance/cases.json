@@ -1,0 +1,2592 @@
+{
+  "roundtrip": [
+    {
+      "name": "nested_ext_zero",
+      "kind": "request",
+      "input": {
+        "id": "a",
+        "at": 1,
+        "cur": [
+          "USD"
+        ],
+        "imp": [
+          {
+            "id": "1",
+            "banner": {
+              "w": 300,
+              "h": 250
+            },
+            "bidfloor": 1,
+            "bidfloorcur": "USD",
+            "ext": {
+              "vendor": [
+                0,
+                false,
+                {
+                  "ext": "opaque"
+                }
+              ]
+            }
+          }
+        ],
+        "test": 0,
+        "regs": {
+          "gdpr": 0,
+          "coppa": 0
+        },
+        "device": {
+          "geo": {
+            "lat": 0,
+            "lon": 0
+          }
+        },
+        "ext": {
+          "ext": {
+            "nested": true
+          },
+          "integer": 9007199254740993
+        }
+      },
+      "expected": {
+        "id": "a",
+        "at": 1,
+        "cur": [
+          "USD"
+        ],
+        "imp": [
+          {
+            "id": "1",
+            "banner": {
+              "w": 300,
+              "h": 250
+            },
+            "bidfloor": 1,
+            "bidfloorcur": "USD",
+            "ext": {
+              "vendor": [
+                0,
+                false,
+                {
+                  "ext": "opaque"
+                }
+              ]
+            }
+          }
+        ],
+        "test": 0,
+        "regs": {
+          "gdpr": 0,
+          "coppa": 0
+        },
+        "device": {
+          "geo": {
+            "lat": 0,
+            "lon": 0
+          }
+        },
+        "ext": {
+          "ext": {
+            "nested": true
+          },
+          "integer": 9007199254740993
+        }
+      }
+    },
+    {
+      "name": "no_bid_zero",
+      "kind": "response",
+      "input": {
+        "id": "a",
+        "cur": "USD",
+        "nbr": 0,
+        "ext": {}
+      },
+      "expected": {
+        "id": "a",
+        "cur": "USD",
+        "nbr": 0,
+        "ext": {}
+      }
+    },
+    {
+      "name": "vendor_mtype",
+      "kind": "response",
+      "input": {
+        "id": "a",
+        "cur": "USD",
+        "seatbid": [
+          {
+            "bid": [
+              {
+                "id": "b",
+                "impid": "1",
+                "price": 2,
+                "mtype": 500,
+                "ext": {
+                  "nested": {
+                    "key": "value"
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "expected": {
+        "id": "a",
+        "cur": "USD",
+        "seatbid": [
+          {
+            "bid": [
+              {
+                "id": "b",
+                "impid": "1",
+                "price": 2,
+                "mtype": 500,
+                "ext": {
+                  "nested": {
+                    "key": "value"
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "discard_unknown",
+      "kind": "request",
+      "input": {
+        "id": "a",
+        "at": 1,
+        "cur": [
+          "USD"
+        ],
+        "imp": [
+          {
+            "id": "1",
+            "banner": {
+              "w": 300,
+              "h": 250,
+              "unknown": true
+            },
+            "bidfloor": 1,
+            "bidfloorcur": "USD"
+          }
+        ],
+        "unknown": 42
+      },
+      "expected": {
+        "id": "a",
+        "at": 1,
+        "cur": [
+          "USD"
+        ],
+        "imp": [
+          {
+            "id": "1",
+            "banner": {
+              "w": 300,
+              "h": 250
+            },
+            "bidfloor": 1,
+            "bidfloorcur": "USD"
+          }
+        ]
+      }
+    },
+    {
+      "name": "null_is_absent",
+      "kind": "request",
+      "input": {
+        "id": "a",
+        "at": 1,
+        "cur": [
+          "USD"
+        ],
+        "imp": [
+          {
+            "id": "1",
+            "banner": {
+              "w": 300,
+              "h": 250
+            },
+            "bidfloor": 1,
+            "bidfloorcur": "USD"
+          }
+        ],
+        "test": null,
+        "site": null,
+        "badv": null
+      },
+      "expected": {
+        "id": "a",
+        "at": 1,
+        "cur": [
+          "USD"
+        ],
+        "imp": [
+          {
+            "id": "1",
+            "banner": {
+              "w": 300,
+              "h": 250
+            },
+            "bidfloor": 1,
+            "bidfloorcur": "USD"
+          }
+        ]
+      }
+    },
+    {
+      "name": "integral_number",
+      "kind": "request",
+      "input": {
+        "id": "a",
+        "at": 1.0,
+        "cur": [
+          "USD"
+        ],
+        "imp": [
+          {
+            "id": "1",
+            "banner": {
+              "w": 300,
+              "h": 250
+            },
+            "bidfloor": 1,
+            "bidfloorcur": "USD"
+          }
+        ]
+      },
+      "expected": {
+        "id": "a",
+        "at": 1,
+        "cur": [
+          "USD"
+        ],
+        "imp": [
+          {
+            "id": "1",
+            "banner": {
+              "w": 300,
+              "h": 250
+            },
+            "bidfloor": 1,
+            "bidfloorcur": "USD"
+          }
+        ]
+      }
+    },
+    {
+      "name": "canonical_underscore_fields",
+      "kind": "request",
+      "input": {
+        "id": "a",
+        "regs": {
+          "us_privacy": "1---",
+          "gpp_sid": [
+            2
+          ],
+          "usPrivacy": "ignored",
+          "gppSid": [
+            9
+          ]
+        },
+        "imp": [
+          {
+            "id": "1",
+            "pmp": {
+              "private_auction": 0,
+              "privateAuction": 1
+            }
+          }
+        ]
+      },
+      "expected": {
+        "id": "a",
+        "regs": {
+          "us_privacy": "1---",
+          "gpp_sid": [
+            2
+          ]
+        },
+        "imp": [
+          {
+            "id": "1",
+            "pmp": {
+              "private_auction": 0
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "opaque_ext_precise_numbers",
+      "kind": "request",
+      "input": {
+        "ext": {
+          "large": 18446744073709551617,
+          "decimal": 0.123456789012345678901
+        }
+      },
+      "expected": {
+        "ext": {
+          "large": 18446744073709551617,
+          "decimal": 0.123456789012345678901
+        }
+      }
+    }
+  ],
+  "reject": [
+    {
+      "name": "array_root",
+      "kind": "request",
+      "input": []
+    },
+    {
+      "name": "null_root",
+      "kind": "response",
+      "input": null
+    },
+    {
+      "name": "numeric_string",
+      "kind": "request",
+      "input": {
+        "id": "a",
+        "at": "1",
+        "cur": [
+          "USD"
+        ],
+        "imp": [
+          {
+            "id": "1",
+            "banner": {
+              "w": 300,
+              "h": 250
+            },
+            "bidfloor": 1,
+            "bidfloorcur": "USD"
+          }
+        ]
+      }
+    },
+    {
+      "name": "int32_overflow",
+      "kind": "request",
+      "input": {
+        "id": "a",
+        "at": 2147483648,
+        "cur": [
+          "USD"
+        ],
+        "imp": [
+          {
+            "id": "1",
+            "banner": {
+              "w": 300,
+              "h": 250
+            },
+            "bidfloor": 1,
+            "bidfloorcur": "USD"
+          }
+        ]
+      }
+    },
+    {
+      "name": "fractional_integer",
+      "kind": "request",
+      "input": {
+        "id": "a",
+        "at": 1.25,
+        "cur": [
+          "USD"
+        ],
+        "imp": [
+          {
+            "id": "1",
+            "banner": {
+              "w": 300,
+              "h": 250
+            },
+            "bidfloor": 1,
+            "bidfloorcur": "USD"
+          }
+        ]
+      }
+    },
+    {
+      "name": "string_ext",
+      "kind": "request",
+      "input": {
+        "id": "a",
+        "at": 1,
+        "cur": [
+          "USD"
+        ],
+        "imp": [
+          {
+            "id": "1",
+            "banner": {
+              "w": 300,
+              "h": 250
+            },
+            "bidfloor": 1,
+            "bidfloorcur": "USD"
+          }
+        ],
+        "ext": "{}"
+      }
+    },
+    {
+      "name": "array_ext",
+      "kind": "request",
+      "input": {
+        "id": "a",
+        "at": 1,
+        "cur": [
+          "USD"
+        ],
+        "imp": [
+          {
+            "id": "1",
+            "banner": {
+              "w": 300,
+              "h": 250
+            },
+            "bidfloor": 1,
+            "bidfloorcur": "USD"
+          }
+        ],
+        "ext": []
+      }
+    },
+    {
+      "name": "bad_seatbid",
+      "kind": "response",
+      "input": {
+        "id": "a",
+        "cur": "USD",
+        "seatbid": {}
+      }
+    },
+    {
+      "name": "numeric_cur",
+      "kind": "response",
+      "input": {
+        "id": "a",
+        "cur": 1,
+        "seatbid": [
+          {
+            "bid": [
+              {
+                "id": "b",
+                "impid": "1",
+                "price": 2,
+                "mtype": 1
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "null_imp",
+      "kind": "request",
+      "input": {
+        "id": "a",
+        "at": 1,
+        "cur": [
+          "USD"
+        ],
+        "imp": [
+          null
+        ]
+      }
+    },
+    {
+      "name": "NaN",
+      "kind": "response",
+      "input": {
+        "id": "a",
+        "cur": "USD",
+        "seatbid": [
+          {
+            "bid": [
+              {
+                "id": "b",
+                "impid": "1",
+                "price": "NaN",
+                "mtype": 1
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "Infinity",
+      "kind": "response",
+      "input": {
+        "id": "a",
+        "cur": "USD",
+        "seatbid": [
+          {
+            "bid": [
+              {
+                "id": "b",
+                "impid": "1",
+                "price": "Infinity",
+                "mtype": 1
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "fraction_rounding",
+      "kind": "request",
+      "input": {
+        "at": 1.0000000000000001
+      }
+    },
+    {
+      "name": "fraction_near_max",
+      "kind": "request",
+      "input": {
+        "at": 2147483647.00000001
+      }
+    },
+    {
+      "name": "fraction_tiny",
+      "kind": "request",
+      "input": {
+        "at": 1e-400
+      }
+    }
+  ],
+  "basic": [
+    {
+      "name": "request_ok",
+      "kind": "request",
+      "input": {
+        "id": "a",
+        "at": 1,
+        "cur": [
+          "USD"
+        ],
+        "imp": [
+          {
+            "id": "1",
+            "banner": {
+              "w": 300,
+              "h": 250
+            },
+            "bidfloor": 1,
+            "bidfloorcur": "USD"
+          }
+        ]
+      },
+      "ok": true
+    },
+    {
+      "name": "response_ok",
+      "kind": "response",
+      "input": {
+        "id": "a",
+        "cur": "USD",
+        "seatbid": [
+          {
+            "bid": [
+              {
+                "id": "b",
+                "impid": "1",
+                "price": 2,
+                "mtype": 1
+              }
+            ]
+          }
+        ]
+      },
+      "ok": true
+    },
+    {
+      "name": "blank_id",
+      "kind": "request",
+      "input": {
+        "id": " ",
+        "at": 1,
+        "cur": [
+          "USD"
+        ],
+        "imp": [
+          {
+            "id": "1",
+            "banner": {
+              "w": 300,
+              "h": 250
+            },
+            "bidfloor": 1,
+            "bidfloorcur": "USD"
+          }
+        ]
+      },
+      "ok": false
+    },
+    {
+      "name": "missing_at",
+      "kind": "request",
+      "input": {
+        "id": "a",
+        "cur": [
+          "USD"
+        ],
+        "imp": [
+          {
+            "id": "1",
+            "banner": {
+              "w": 300,
+              "h": 250
+            },
+            "bidfloor": 1,
+            "bidfloorcur": "USD"
+          }
+        ]
+      },
+      "ok": false
+    },
+    {
+      "name": "empty_cur",
+      "kind": "request",
+      "input": {
+        "id": "a",
+        "at": 1,
+        "cur": [],
+        "imp": [
+          {
+            "id": "1",
+            "banner": {
+              "w": 300,
+              "h": 250
+            },
+            "bidfloor": 1,
+            "bidfloorcur": "USD"
+          }
+        ]
+      },
+      "ok": false
+    },
+    {
+      "name": "empty_imp",
+      "kind": "request",
+      "input": {
+        "id": "a",
+        "at": 1,
+        "cur": [
+          "USD"
+        ],
+        "imp": []
+      },
+      "ok": false
+    },
+    {
+      "name": "two_inventories",
+      "kind": "request",
+      "input": {
+        "id": "a",
+        "at": 1,
+        "cur": [
+          "USD"
+        ],
+        "imp": [
+          {
+            "id": "1",
+            "banner": {
+              "w": 300,
+              "h": 250
+            },
+            "bidfloor": 1,
+            "bidfloorcur": "USD"
+          }
+        ],
+        "site": {},
+        "app": {}
+      },
+      "ok": false
+    },
+    {
+      "name": "empty_bids",
+      "kind": "response",
+      "input": {
+        "id": "a",
+        "cur": "USD",
+        "seatbid": [
+          {
+            "bid": []
+          }
+        ]
+      },
+      "ok": false
+    },
+    {
+      "name": "duplicate_imp_id",
+      "kind": "request",
+      "input": {
+        "id": "a",
+        "at": 1,
+        "cur": [
+          "USD"
+        ],
+        "imp": [
+          {
+            "id": "1",
+            "banner": {
+              "w": 300,
+              "h": 250
+            }
+          },
+          {
+            "id": "1",
+            "banner": {
+              "w": 300,
+              "h": 250
+            }
+          }
+        ]
+      },
+      "ok": false
+    },
+    {
+      "name": "duplicate_deal_ids",
+      "kind": "request",
+      "input": {
+        "id": "a",
+        "at": 1,
+        "cur": [
+          "USD"
+        ],
+        "imp": [
+          {
+            "id": "1",
+            "banner": {
+              "w": 300,
+              "h": 250
+            },
+            "pmp": {
+              "deals": [
+                {
+                  "id": "d"
+                },
+                {
+                  "id": "d"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "ok": false
+    },
+    {
+      "name": "blank_deal_id",
+      "kind": "request",
+      "input": {
+        "id": "a",
+        "at": 1,
+        "cur": [
+          "USD"
+        ],
+        "imp": [
+          {
+            "id": "1",
+            "banner": {
+              "w": 300,
+              "h": 250
+            },
+            "pmp": {
+              "deals": [
+                {
+                  "id": ""
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "ok": false
+    },
+    {
+      "name": "negative_deal_floor",
+      "kind": "request",
+      "input": {
+        "id": "a",
+        "at": 1,
+        "cur": [
+          "USD"
+        ],
+        "imp": [
+          {
+            "id": "1",
+            "banner": {
+              "w": 300,
+              "h": 250
+            },
+            "pmp": {
+              "deals": [
+                {
+                  "id": "d",
+                  "bidfloor": -1
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "ok": false
+    },
+    {
+      "name": "fixed_deal_missing_price",
+      "kind": "request",
+      "input": {
+        "id": "a",
+        "at": 1,
+        "cur": [
+          "USD"
+        ],
+        "imp": [
+          {
+            "id": "1",
+            "banner": {
+              "w": 300,
+              "h": 250
+            },
+            "pmp": {
+              "deals": [
+                {
+                  "id": "d",
+                  "at": 3
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "ok": false
+    },
+    {
+      "name": "request_at_-1",
+      "kind": "request",
+      "input": {
+        "id": "a",
+        "at": -1,
+        "cur": [
+          "USD"
+        ],
+        "imp": [
+          {
+            "id": "1",
+            "banner": {
+              "w": 300,
+              "h": 250
+            },
+            "bidfloor": 1,
+            "bidfloorcur": "USD"
+          }
+        ]
+      },
+      "ok": false
+    },
+    {
+      "name": "request_at_0",
+      "kind": "request",
+      "input": {
+        "id": "a",
+        "at": 0,
+        "cur": [
+          "USD"
+        ],
+        "imp": [
+          {
+            "id": "1",
+            "banner": {
+              "w": 300,
+              "h": 250
+            },
+            "bidfloor": 1,
+            "bidfloorcur": "USD"
+          }
+        ]
+      },
+      "ok": false
+    },
+    {
+      "name": "request_at_2",
+      "kind": "request",
+      "input": {
+        "id": "a",
+        "at": 2,
+        "cur": [
+          "USD"
+        ],
+        "imp": [
+          {
+            "id": "1",
+            "banner": {
+              "w": 300,
+              "h": 250
+            },
+            "bidfloor": 1,
+            "bidfloorcur": "USD"
+          }
+        ]
+      },
+      "ok": true
+    },
+    {
+      "name": "request_at_3",
+      "kind": "request",
+      "input": {
+        "id": "a",
+        "at": 3,
+        "cur": [
+          "USD"
+        ],
+        "imp": [
+          {
+            "id": "1",
+            "banner": {
+              "w": 300,
+              "h": 250
+            },
+            "bidfloor": 1,
+            "bidfloorcur": "USD"
+          }
+        ]
+      },
+      "ok": false
+    },
+    {
+      "name": "request_at_4",
+      "kind": "request",
+      "input": {
+        "id": "a",
+        "at": 4,
+        "cur": [
+          "USD"
+        ],
+        "imp": [
+          {
+            "id": "1",
+            "banner": {
+              "w": 300,
+              "h": 250
+            },
+            "bidfloor": 1,
+            "bidfloorcur": "USD"
+          }
+        ]
+      },
+      "ok": false
+    },
+    {
+      "name": "request_at_499",
+      "kind": "request",
+      "input": {
+        "id": "a",
+        "at": 499,
+        "cur": [
+          "USD"
+        ],
+        "imp": [
+          {
+            "id": "1",
+            "banner": {
+              "w": 300,
+              "h": 250
+            },
+            "bidfloor": 1,
+            "bidfloorcur": "USD"
+          }
+        ]
+      },
+      "ok": false
+    },
+    {
+      "name": "request_at_500",
+      "kind": "request",
+      "input": {
+        "id": "a",
+        "at": 500,
+        "cur": [
+          "USD"
+        ],
+        "imp": [
+          {
+            "id": "1",
+            "banner": {
+              "w": 300,
+              "h": 250
+            },
+            "bidfloor": 1,
+            "bidfloorcur": "USD"
+          }
+        ]
+      },
+      "ok": true
+    },
+    {
+      "name": "request_at_501",
+      "kind": "request",
+      "input": {
+        "id": "a",
+        "at": 501,
+        "cur": [
+          "USD"
+        ],
+        "imp": [
+          {
+            "id": "1",
+            "banner": {
+              "w": 300,
+              "h": 250
+            },
+            "bidfloor": 1,
+            "bidfloorcur": "USD"
+          }
+        ]
+      },
+      "ok": true
+    }
+  ],
+  "facts": [
+    {
+      "name": "zero_presence",
+      "request": {
+        "id": "a",
+        "at": 1,
+        "cur": [
+          "USD"
+        ],
+        "imp": [
+          {
+            "id": "1",
+            "banner": {
+              "w": 0
+            },
+            "native": {
+              "request": " "
+            }
+          }
+        ]
+      },
+      "response": {
+        "id": "a",
+        "cur": "USD",
+        "seatbid": [
+          {
+            "bid": [
+              {
+                "id": "b",
+                "impid": "1",
+                "price": 2,
+                "adm": " "
+              }
+            ]
+          }
+        ]
+      },
+      "banner_w": 0,
+      "banner_h": null,
+      "native_request": " ",
+      "has_adm": true
+    }
+  ],
+  "ready": [
+    {
+      "name": "banner_one_dimension",
+      "request": {
+        "id": "a",
+        "at": 1,
+        "cur": [
+          "USD"
+        ],
+        "imp": [
+          {
+            "id": "1",
+            "banner": {
+              "w": 300
+            }
+          }
+        ]
+      },
+      "mtype": 1,
+      "ok": false,
+      "builder_ok": false,
+      "codes": [
+        "BANNER_SIZE_MISSING"
+      ]
+    },
+    {
+      "name": "video_no_mimes",
+      "request": {
+        "id": "a",
+        "at": 1,
+        "cur": [
+          "USD"
+        ],
+        "imp": [
+          {
+            "id": "1",
+            "video": {}
+          }
+        ]
+      },
+      "mtype": 2,
+      "ok": false,
+      "builder_ok": false,
+      "codes": [
+        "VIDEO_MIMES_MISSING"
+      ]
+    },
+    {
+      "name": "audio_no_mimes",
+      "request": {
+        "id": "a",
+        "at": 1,
+        "cur": [
+          "USD"
+        ],
+        "imp": [
+          {
+            "id": "1",
+            "audio": {}
+          }
+        ]
+      },
+      "mtype": 3,
+      "ok": false,
+      "builder_ok": false,
+      "codes": [
+        "AUDIO_MIMES_MISSING"
+      ]
+    },
+    {
+      "name": "native_blank",
+      "request": {
+        "id": "a",
+        "at": 1,
+        "cur": [
+          "USD"
+        ],
+        "imp": [
+          {
+            "id": "1",
+            "native": {
+              "request": " "
+            }
+          }
+        ]
+      },
+      "mtype": 4,
+      "ok": false,
+      "builder_ok": false,
+      "codes": [
+        "NATIVE_REQUEST_MISSING"
+      ]
+    },
+    {
+      "name": "valid_banner",
+      "request": {
+        "id": "a",
+        "at": 1,
+        "cur": [
+          "USD"
+        ],
+        "imp": [
+          {
+            "id": "1",
+            "banner": {
+              "w": 300,
+              "h": 250
+            }
+          }
+        ]
+      },
+      "mtype": 1,
+      "ok": true,
+      "builder_ok": true,
+      "codes": []
+    },
+    {
+      "name": "video_warnings_allow_build",
+      "request": {
+        "id": "a",
+        "at": 1,
+        "cur": [
+          "USD"
+        ],
+        "imp": [
+          {
+            "id": "1",
+            "video": {
+              "mimes": [
+                "video/mp4"
+              ]
+            }
+          }
+        ]
+      },
+      "mtype": 2,
+      "ok": true,
+      "builder_ok": true,
+      "codes": [
+        "VIDEO_DURATION_UNSET",
+        "VIDEO_PROTOCOLS_UNSET"
+      ]
+    },
+    {
+      "name": "selected_banner_ok_other_format_invalid",
+      "request": {
+        "id": "a",
+        "at": 1,
+        "cur": [
+          "USD"
+        ],
+        "imp": [
+          {
+            "id": "1",
+            "banner": {
+              "w": 300,
+              "h": 250
+            },
+            "audio": {}
+          }
+        ]
+      },
+      "mtype": 1,
+      "ok": true,
+      "builder_ok": false,
+      "codes": []
+    },
+    {
+      "name": "selected_format_absent",
+      "request": {
+        "id": "a",
+        "at": 1,
+        "cur": [
+          "USD"
+        ],
+        "imp": [
+          {
+            "id": "1",
+            "banner": {
+              "w": 300,
+              "h": 250
+            }
+          }
+        ]
+      },
+      "mtype": 2,
+      "ok": false,
+      "builder_ok": true,
+      "codes": [
+        "FORMAT_NOT_ON_IMP"
+      ]
+    }
+  ],
+  "bidcheck": [
+    {
+      "name": "happy",
+      "request": {
+        "id": "a",
+        "at": 1,
+        "cur": [
+          "USD"
+        ],
+        "imp": [
+          {
+            "id": "1",
+            "banner": {
+              "w": 300,
+              "h": 250
+            },
+            "bidfloor": 1,
+            "bidfloorcur": "USD"
+          }
+        ]
+      },
+      "response": {
+        "id": "a",
+        "cur": "USD",
+        "seatbid": [
+          {
+            "bid": [
+              {
+                "id": "b",
+                "impid": "1",
+                "price": 2,
+                "mtype": 1
+              }
+            ]
+          }
+        ]
+      },
+      "codes": [],
+      "ok": true
+    },
+    {
+      "name": "wrong_id",
+      "request": {
+        "id": "a",
+        "at": 1,
+        "cur": [
+          "USD"
+        ],
+        "imp": [
+          {
+            "id": "1",
+            "banner": {
+              "w": 300,
+              "h": 250
+            },
+            "bidfloor": 1,
+            "bidfloorcur": "USD"
+          }
+        ]
+      },
+      "response": {
+        "id": "other",
+        "cur": "USD",
+        "seatbid": [
+          {
+            "bid": [
+              {
+                "id": "b",
+                "impid": "1",
+                "price": 2,
+                "mtype": 1
+              }
+            ]
+          }
+        ]
+      },
+      "codes": [
+        "REQUEST_ID_MISMATCH"
+      ],
+      "ok": false
+    },
+    {
+      "name": "wrong_no_bid",
+      "request": {
+        "id": "a",
+        "at": 1,
+        "cur": [
+          "USD"
+        ],
+        "imp": [
+          {
+            "id": "1",
+            "banner": {
+              "w": 300,
+              "h": 250
+            },
+            "bidfloor": 1,
+            "bidfloorcur": "USD"
+          }
+        ]
+      },
+      "response": {
+        "id": "other",
+        "cur": "USD",
+        "nbr": 0
+      },
+      "codes": [
+        "REQUEST_ID_MISMATCH"
+      ],
+      "ok": false
+    },
+    {
+      "name": "floor",
+      "request": {
+        "id": "a",
+        "at": 1,
+        "cur": [
+          "USD"
+        ],
+        "imp": [
+          {
+            "id": "1",
+            "banner": {
+              "w": 300,
+              "h": 250
+            },
+            "bidfloor": 1,
+            "bidfloorcur": "USD"
+          }
+        ]
+      },
+      "response": {
+        "id": "a",
+        "cur": "USD",
+        "seatbid": [
+          {
+            "bid": [
+              {
+                "id": "b",
+                "impid": "1",
+                "price": 0.5,
+                "mtype": 1
+              }
+            ]
+          }
+        ]
+      },
+      "codes": [
+        "PRICE_BELOW_FLOOR"
+      ],
+      "ok": true
+    },
+    {
+      "name": "format",
+      "request": {
+        "id": "a",
+        "at": 1,
+        "cur": [
+          "USD"
+        ],
+        "imp": [
+          {
+            "id": "1",
+            "banner": {
+              "w": 300,
+              "h": 250
+            },
+            "bidfloor": 1,
+            "bidfloorcur": "USD"
+          }
+        ]
+      },
+      "response": {
+        "id": "a",
+        "cur": "USD",
+        "seatbid": [
+          {
+            "bid": [
+              {
+                "id": "b",
+                "impid": "1",
+                "price": 2,
+                "mtype": 2
+              }
+            ]
+          }
+        ]
+      },
+      "codes": [
+        "MTYPE_MISMATCH"
+      ],
+      "ok": false
+    },
+    {
+      "name": "multi_format",
+      "request": {
+        "id": "a",
+        "at": 1,
+        "cur": [
+          "USD"
+        ],
+        "imp": [
+          {
+            "id": "1",
+            "banner": {
+              "w": 300,
+              "h": 250
+            },
+            "bidfloor": 1,
+            "bidfloorcur": "USD",
+            "video": {
+              "mimes": [
+                "video/mp4"
+              ]
+            }
+          }
+        ]
+      },
+      "response": {
+        "id": "a",
+        "cur": "USD",
+        "seatbid": [
+          {
+            "bid": [
+              {
+                "id": "b",
+                "impid": "1",
+                "price": 2
+              }
+            ]
+          }
+        ]
+      },
+      "codes": [
+        "MTYPE_REQUIRED"
+      ],
+      "ok": false
+    },
+    {
+      "name": "blocks",
+      "request": {
+        "id": "a",
+        "at": 1,
+        "cur": [
+          "USD"
+        ],
+        "imp": [
+          {
+            "id": "1",
+            "banner": {
+              "w": 300,
+              "h": 250
+            },
+            "bidfloor": 1,
+            "bidfloorcur": "USD"
+          }
+        ],
+        "badv": [
+          "BLOCKED.COM"
+        ],
+        "bapp": [
+          "COM.BLOCKED"
+        ],
+        "bcat": [
+          "IAB25"
+        ]
+      },
+      "response": {
+        "id": "a",
+        "cur": "USD",
+        "seatbid": [
+          {
+            "bid": [
+              {
+                "id": "b",
+                "impid": "1",
+                "price": 2,
+                "mtype": 1,
+                "adomain": [
+                  "blocked.com"
+                ],
+                "bundle": " com.blocked ",
+                "cat": [
+                  "iab25"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "codes": [
+        "ADOMAIN_BLOCKED",
+        "BUNDLE_BLOCKED",
+        "CAT_BLOCKED"
+      ],
+      "ok": true
+    },
+    {
+      "name": "ascii_case_policy",
+      "request": {
+        "id": "a",
+        "at": 1,
+        "cur": [
+          "USD"
+        ],
+        "imp": [
+          {
+            "id": "1",
+            "banner": {
+              "w": 300,
+              "h": 250
+            },
+            "bidfloor": 1,
+            "bidfloorcur": "USD"
+          }
+        ],
+        "badv": [
+          "Ä.COM"
+        ]
+      },
+      "response": {
+        "id": "a",
+        "cur": "USD",
+        "seatbid": [
+          {
+            "bid": [
+              {
+                "id": "b",
+                "impid": "1",
+                "price": 2,
+                "mtype": 1,
+                "adomain": [
+                  "ä.com"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "codes": [],
+      "ok": true
+    },
+    {
+      "name": "private_deal_missing",
+      "request": {
+        "id": "a",
+        "at": 1,
+        "cur": [
+          "USD"
+        ],
+        "imp": [
+          {
+            "id": "1",
+            "banner": {
+              "w": 300,
+              "h": 250
+            },
+            "bidfloor": 1,
+            "bidfloorcur": "USD",
+            "pmp": {
+              "private_auction": 1,
+              "deals": [
+                {
+                  "id": "d",
+                  "bidfloor": 1,
+                  "bidfloorcur": "USD"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "response": {
+        "id": "a",
+        "cur": "USD",
+        "seatbid": [
+          {
+            "seat": "s",
+            "bid": [
+              {
+                "id": "b",
+                "impid": "1",
+                "price": 2,
+                "mtype": 1
+              }
+            ]
+          }
+        ]
+      },
+      "ok": false,
+      "codes": [
+        "DEAL_REQUIRED"
+      ]
+    },
+    {
+      "name": "deal_unknown",
+      "request": {
+        "id": "a",
+        "at": 1,
+        "cur": [
+          "USD"
+        ],
+        "imp": [
+          {
+            "id": "1",
+            "banner": {
+              "w": 300,
+              "h": 250
+            },
+            "bidfloor": 1,
+            "bidfloorcur": "USD",
+            "pmp": {
+              "private_auction": 1,
+              "deals": [
+                {
+                  "id": "d",
+                  "bidfloor": 1,
+                  "bidfloorcur": "USD"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "response": {
+        "id": "a",
+        "cur": "USD",
+        "seatbid": [
+          {
+            "seat": "s",
+            "bid": [
+              {
+                "id": "b",
+                "impid": "1",
+                "price": 2,
+                "mtype": 1,
+                "dealid": "missing"
+              }
+            ]
+          }
+        ]
+      },
+      "ok": false,
+      "codes": [
+        "DEAL_NOT_FOUND"
+      ]
+    },
+    {
+      "name": "public_unknown_deal",
+      "request": {
+        "id": "a",
+        "at": 1,
+        "cur": [
+          "USD"
+        ],
+        "imp": [
+          {
+            "id": "1",
+            "banner": {
+              "w": 300,
+              "h": 250
+            },
+            "bidfloor": 1,
+            "bidfloorcur": "USD",
+            "pmp": {
+              "private_auction": 0,
+              "deals": [
+                {
+                  "id": "d",
+                  "bidfloor": 1,
+                  "bidfloorcur": "USD"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "response": {
+        "id": "a",
+        "cur": "USD",
+        "seatbid": [
+          {
+            "seat": "s",
+            "bid": [
+              {
+                "id": "b",
+                "impid": "1",
+                "price": 2,
+                "mtype": 1,
+                "dealid": "missing"
+              }
+            ]
+          }
+        ]
+      },
+      "ok": false,
+      "codes": [
+        "DEAL_NOT_FOUND"
+      ]
+    },
+    {
+      "name": "public_open_bid",
+      "request": {
+        "id": "a",
+        "at": 1,
+        "cur": [
+          "USD"
+        ],
+        "imp": [
+          {
+            "id": "1",
+            "banner": {
+              "w": 300,
+              "h": 250
+            },
+            "bidfloor": 1,
+            "bidfloorcur": "USD",
+            "pmp": {
+              "private_auction": 0,
+              "deals": [
+                {
+                  "id": "d",
+                  "bidfloor": 1,
+                  "bidfloorcur": "USD"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "response": {
+        "id": "a",
+        "cur": "USD",
+        "seatbid": [
+          {
+            "seat": "s",
+            "bid": [
+              {
+                "id": "b",
+                "impid": "1",
+                "price": 2,
+                "mtype": 1
+              }
+            ]
+          }
+        ]
+      },
+      "ok": true,
+      "codes": []
+    },
+    {
+      "name": "valid_private_deal",
+      "request": {
+        "id": "a",
+        "at": 1,
+        "cur": [
+          "USD"
+        ],
+        "imp": [
+          {
+            "id": "1",
+            "banner": {
+              "w": 300,
+              "h": 250
+            },
+            "bidfloor": 1,
+            "bidfloorcur": "USD",
+            "pmp": {
+              "private_auction": 1,
+              "deals": [
+                {
+                  "id": "d",
+                  "bidfloor": 1,
+                  "bidfloorcur": "USD"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "response": {
+        "id": "a",
+        "cur": "USD",
+        "seatbid": [
+          {
+            "seat": "s",
+            "bid": [
+              {
+                "id": "b",
+                "impid": "1",
+                "price": 2,
+                "mtype": 1,
+                "dealid": "d"
+              }
+            ]
+          }
+        ]
+      },
+      "ok": true,
+      "codes": []
+    },
+    {
+      "name": "deal_floor_applied",
+      "request": {
+        "id": "a",
+        "at": 1,
+        "cur": [
+          "USD"
+        ],
+        "imp": [
+          {
+            "id": "1",
+            "banner": {
+              "w": 300,
+              "h": 250
+            },
+            "bidfloor": 1,
+            "bidfloorcur": "USD",
+            "pmp": {
+              "private_auction": 1,
+              "deals": [
+                {
+                  "id": "d",
+                  "bidfloor": 100,
+                  "bidfloorcur": "USD"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "response": {
+        "id": "a",
+        "cur": "USD",
+        "seatbid": [
+          {
+            "seat": "s",
+            "bid": [
+              {
+                "id": "b",
+                "impid": "1",
+                "price": 2,
+                "mtype": 1,
+                "dealid": "d"
+              }
+            ]
+          }
+        ]
+      },
+      "ok": true,
+      "codes": [
+        "PRICE_BELOW_FLOOR"
+      ]
+    },
+    {
+      "name": "deal_floor_overrides_imp",
+      "request": {
+        "id": "a",
+        "at": 1,
+        "cur": [
+          "USD"
+        ],
+        "imp": [
+          {
+            "id": "1",
+            "banner": {
+              "w": 300,
+              "h": 250
+            },
+            "bidfloor": 100,
+            "bidfloorcur": "USD",
+            "pmp": {
+              "private_auction": 1,
+              "deals": [
+                {
+                  "id": "d",
+                  "bidfloor": 1,
+                  "bidfloorcur": "USD"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "response": {
+        "id": "a",
+        "cur": "USD",
+        "seatbid": [
+          {
+            "seat": "s",
+            "bid": [
+              {
+                "id": "b",
+                "impid": "1",
+                "price": 2,
+                "mtype": 1,
+                "dealid": "d"
+              }
+            ]
+          }
+        ]
+      },
+      "ok": true,
+      "codes": []
+    },
+    {
+      "name": "deal_explicit_zero_overrides_imp",
+      "request": {
+        "id": "a",
+        "at": 1,
+        "cur": [
+          "USD"
+        ],
+        "imp": [
+          {
+            "id": "1",
+            "banner": {
+              "w": 300,
+              "h": 250
+            },
+            "bidfloor": 100,
+            "bidfloorcur": "USD",
+            "pmp": {
+              "private_auction": 1,
+              "deals": [
+                {
+                  "id": "d",
+                  "bidfloor": 0,
+                  "bidfloorcur": "USD"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "response": {
+        "id": "a",
+        "cur": "USD",
+        "seatbid": [
+          {
+            "seat": "s",
+            "bid": [
+              {
+                "id": "b",
+                "impid": "1",
+                "price": 2,
+                "mtype": 1,
+                "dealid": "d"
+              }
+            ]
+          }
+        ]
+      },
+      "ok": true,
+      "codes": []
+    },
+    {
+      "name": "deal_absent_floor_uses_imp",
+      "request": {
+        "id": "a",
+        "at": 1,
+        "cur": [
+          "USD"
+        ],
+        "imp": [
+          {
+            "id": "1",
+            "banner": {
+              "w": 300,
+              "h": 250
+            },
+            "bidfloor": 100,
+            "bidfloorcur": "USD",
+            "pmp": {
+              "private_auction": 1,
+              "deals": [
+                {
+                  "id": "d"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "response": {
+        "id": "a",
+        "cur": "USD",
+        "seatbid": [
+          {
+            "seat": "s",
+            "bid": [
+              {
+                "id": "b",
+                "impid": "1",
+                "price": 2,
+                "mtype": 1,
+                "dealid": "d"
+              }
+            ]
+          }
+        ]
+      },
+      "ok": true,
+      "codes": [
+        "PRICE_BELOW_FLOOR"
+      ]
+    },
+    {
+      "name": "deal_currency_mismatch",
+      "request": {
+        "id": "a",
+        "at": 1,
+        "cur": [
+          "USD"
+        ],
+        "imp": [
+          {
+            "id": "1",
+            "banner": {
+              "w": 300,
+              "h": 250
+            },
+            "bidfloor": 1,
+            "bidfloorcur": "USD",
+            "pmp": {
+              "private_auction": 1,
+              "deals": [
+                {
+                  "id": "d",
+                  "bidfloor": 100,
+                  "bidfloorcur": "EUR"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "response": {
+        "id": "a",
+        "cur": "USD",
+        "seatbid": [
+          {
+            "seat": "s",
+            "bid": [
+              {
+                "id": "b",
+                "impid": "1",
+                "price": 2,
+                "mtype": 1,
+                "dealid": "d"
+              }
+            ]
+          }
+        ]
+      },
+      "ok": true,
+      "codes": [
+        "FLOOR_CUR_DIFF"
+      ]
+    },
+    {
+      "name": "deal_seat_denied",
+      "request": {
+        "id": "a",
+        "at": 1,
+        "cur": [
+          "USD"
+        ],
+        "imp": [
+          {
+            "id": "1",
+            "banner": {
+              "w": 300,
+              "h": 250
+            },
+            "bidfloor": 1,
+            "bidfloorcur": "USD",
+            "pmp": {
+              "private_auction": 1,
+              "deals": [
+                {
+                  "id": "d",
+                  "wseat": [
+                    "allowed"
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "response": {
+        "id": "a",
+        "cur": "USD",
+        "seatbid": [
+          {
+            "seat": "s",
+            "bid": [
+              {
+                "id": "b",
+                "impid": "1",
+                "price": 2,
+                "mtype": 1,
+                "dealid": "d"
+              }
+            ]
+          }
+        ]
+      },
+      "ok": false,
+      "codes": [
+        "DEAL_SEAT_NOT_ALLOWED"
+      ]
+    },
+    {
+      "name": "deal_seat_allowed",
+      "request": {
+        "id": "a",
+        "at": 1,
+        "cur": [
+          "USD"
+        ],
+        "imp": [
+          {
+            "id": "1",
+            "banner": {
+              "w": 300,
+              "h": 250
+            },
+            "bidfloor": 1,
+            "bidfloorcur": "USD",
+            "pmp": {
+              "private_auction": 1,
+              "deals": [
+                {
+                  "id": "d",
+                  "wseat": [
+                    "s"
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "response": {
+        "id": "a",
+        "cur": "USD",
+        "seatbid": [
+          {
+            "seat": "s",
+            "bid": [
+              {
+                "id": "b",
+                "impid": "1",
+                "price": 2,
+                "mtype": 1,
+                "dealid": "d"
+              }
+            ]
+          }
+        ]
+      },
+      "ok": true,
+      "codes": []
+    },
+    {
+      "name": "deal_adomain_denied",
+      "request": {
+        "id": "a",
+        "at": 1,
+        "cur": [
+          "USD"
+        ],
+        "imp": [
+          {
+            "id": "1",
+            "banner": {
+              "w": 300,
+              "h": 250
+            },
+            "bidfloor": 1,
+            "bidfloorcur": "USD",
+            "pmp": {
+              "private_auction": 1,
+              "deals": [
+                {
+                  "id": "d",
+                  "wadomain": [
+                    "allowed.com"
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "response": {
+        "id": "a",
+        "cur": "USD",
+        "seatbid": [
+          {
+            "seat": "s",
+            "bid": [
+              {
+                "id": "b",
+                "impid": "1",
+                "price": 2,
+                "mtype": 1,
+                "dealid": "d",
+                "adomain": [
+                  "other.com"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "ok": false,
+      "codes": [
+        "DEAL_ADOMAIN_NOT_ALLOWED"
+      ]
+    },
+    {
+      "name": "deal_adomain_missing",
+      "request": {
+        "id": "a",
+        "at": 1,
+        "cur": [
+          "USD"
+        ],
+        "imp": [
+          {
+            "id": "1",
+            "banner": {
+              "w": 300,
+              "h": 250
+            },
+            "bidfloor": 1,
+            "bidfloorcur": "USD",
+            "pmp": {
+              "private_auction": 1,
+              "deals": [
+                {
+                  "id": "d",
+                  "wadomain": [
+                    "allowed.com"
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "response": {
+        "id": "a",
+        "cur": "USD",
+        "seatbid": [
+          {
+            "seat": "s",
+            "bid": [
+              {
+                "id": "b",
+                "impid": "1",
+                "price": 2,
+                "mtype": 1,
+                "dealid": "d"
+              }
+            ]
+          }
+        ]
+      },
+      "ok": false,
+      "codes": [
+        "DEAL_ADOMAIN_NOT_ALLOWED"
+      ]
+    },
+    {
+      "name": "deal_adomain_allowed",
+      "request": {
+        "id": "a",
+        "at": 1,
+        "cur": [
+          "USD"
+        ],
+        "imp": [
+          {
+            "id": "1",
+            "banner": {
+              "w": 300,
+              "h": 250
+            },
+            "bidfloor": 1,
+            "bidfloorcur": "USD",
+            "pmp": {
+              "private_auction": 1,
+              "deals": [
+                {
+                  "id": "d",
+                  "wadomain": [
+                    "allowed.com"
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "response": {
+        "id": "a",
+        "cur": "USD",
+        "seatbid": [
+          {
+            "seat": "s",
+            "bid": [
+              {
+                "id": "b",
+                "impid": "1",
+                "price": 2,
+                "mtype": 1,
+                "dealid": "d",
+                "adomain": [
+                  "ALLOWED.COM"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "ok": true,
+      "codes": []
+    },
+    {
+      "name": "fixed_price_high",
+      "request": {
+        "id": "a",
+        "at": 1,
+        "cur": [
+          "USD"
+        ],
+        "imp": [
+          {
+            "id": "1",
+            "banner": {
+              "w": 300,
+              "h": 250
+            },
+            "bidfloor": 1,
+            "bidfloorcur": "USD",
+            "pmp": {
+              "private_auction": 1,
+              "deals": [
+                {
+                  "id": "d",
+                  "at": 3,
+                  "bidfloor": 1,
+                  "bidfloorcur": "USD"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "response": {
+        "id": "a",
+        "cur": "USD",
+        "seatbid": [
+          {
+            "seat": "s",
+            "bid": [
+              {
+                "id": "b",
+                "impid": "1",
+                "price": 2,
+                "mtype": 1,
+                "dealid": "d"
+              }
+            ]
+          }
+        ]
+      },
+      "ok": false,
+      "codes": [
+        "DEAL_PRICE_MISMATCH"
+      ]
+    },
+    {
+      "name": "fixed_price_equal",
+      "request": {
+        "id": "a",
+        "at": 1,
+        "cur": [
+          "USD"
+        ],
+        "imp": [
+          {
+            "id": "1",
+            "banner": {
+              "w": 300,
+              "h": 250
+            },
+            "bidfloor": 1,
+            "bidfloorcur": "USD",
+            "pmp": {
+              "private_auction": 1,
+              "deals": [
+                {
+                  "id": "d",
+                  "at": 3,
+                  "bidfloor": 2,
+                  "bidfloorcur": "USD"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "response": {
+        "id": "a",
+        "cur": "USD",
+        "seatbid": [
+          {
+            "seat": "s",
+            "bid": [
+              {
+                "id": "b",
+                "impid": "1",
+                "price": 2,
+                "mtype": 1,
+                "dealid": "d"
+              }
+            ]
+          }
+        ]
+      },
+      "ok": true,
+      "codes": []
+    },
+    {
+      "name": "fixed_price_low",
+      "request": {
+        "id": "a",
+        "at": 1,
+        "cur": [
+          "USD"
+        ],
+        "imp": [
+          {
+            "id": "1",
+            "banner": {
+              "w": 300,
+              "h": 250
+            },
+            "bidfloor": 1,
+            "bidfloorcur": "USD",
+            "pmp": {
+              "private_auction": 1,
+              "deals": [
+                {
+                  "id": "d",
+                  "at": 3,
+                  "bidfloor": 3,
+                  "bidfloorcur": "USD"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "response": {
+        "id": "a",
+        "cur": "USD",
+        "seatbid": [
+          {
+            "seat": "s",
+            "bid": [
+              {
+                "id": "b",
+                "impid": "1",
+                "price": 2,
+                "mtype": 1,
+                "dealid": "d"
+              }
+            ]
+          }
+        ]
+      },
+      "ok": false,
+      "codes": [
+        "DEAL_PRICE_MISMATCH"
+      ]
+    }
+  ]
+}

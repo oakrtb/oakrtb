@@ -18,7 +18,7 @@ info:
     name: Apache-2.0
     url: https://www.apache.org/licenses/LICENSE-2.0
   contact:
-    url: https://github.com/oakrtb/openrtb
+    url: https://github.com/oakrtb/oakrtb
 
 servers:
   - url: https://bidder.example.com

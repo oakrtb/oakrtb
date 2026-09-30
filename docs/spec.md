@@ -6,7 +6,7 @@ OakRTB 0.2.0 定义 Exchange（供给）与 Bidder（需求）之间的实时竞
 
 - [transport.md](transport.md) — HTTP、压缩、超时
 - [objects.md](objects.md) — 对象与必填字段
-- [view-usage.md](view-usage.md) — SDK view / Pipeline 使用与 2.6 接入对照
+- [view-usage.md](view-usage.md) — SDK View 使用与 2.6 接入对照
 - [versioning.md](versioning.md) — 兼容策略
 
 机器可读定义：
@@ -14,7 +14,7 @@ OakRTB 0.2.0 定义 Exchange（供给）与 Bidder（需求）之间的实时竞
 - `schema/jsonschema/bid-request.schema.json` — **JSON 校验权威**（必填、互斥、类型约束）
 - `schema/jsonschema/bid-response.schema.json`
 - `schema/jsonschema/native.schema.json`
-- `proto/oakrtb/v2/openrtb.proto` — protobuf **编解码**（不能表达 schema 的 required / oneOf；缺省 0 ≠ JSON 缺字段）
+- `proto/oakrtb/v2/openrtb.proto` — protobuf **编解码**（不能表达 schema 的 required / oneOf；数值 optional 保留显式零值）
 - `openapi/openrtb.yaml` — **JSON HTTP** 路径/状态码/头（对象体 `$ref` schema；protobuf 见 transport）
 
 `Bid.mtype`：JSON Schema 仅允许 `1–4`；proto 枚举含 `UNSPECIFIED=0` 表示未设。多形态 Imp 出价前须选定并写出非 0 的 `mtype`。
@@ -37,7 +37,7 @@ BidRequest
 ├── imp[]                  必填，至少一个
 │   ├── banner | video | audio | native
 │   └── pmp.deals[]
-├── site | app | dooh      三选一
+├── site | app | dooh      可省略，最多一个
 ├── device, user
 ├── source.schain
 └── regs
@@ -59,7 +59,7 @@ BidResponse
 BidRequest：
 
 - `id`、`imp`（长度 ≥ 1）
-- `at`（≥ 1；拒绝未指定的 0）
+- `at`（1、2 或 ≥500；3 仅用于 Deal）
 - `cur`（至少 1 个 ISO-4217）
 - 每个 `imp.id`
 - 每个 `imp` 至少有 `banner`、`video`、`audio`、`native` 之一
@@ -77,11 +77,11 @@ BidResponse：
 
 | 项 | IAB 2.6 | OakRTB |
 |---|---|---|
-| BidRequest.`at` | 可选，缺省常按 2（二价+）理解 | **必填**（≥1） |
-| BidRequest.`cur` | 可选 | **必填**（≥1） |
+| BidRequest.`at` | 可选，缺省常按 2（二价+）理解 | **必填**（1、2 或 ≥500） |
+| BidRequest.`cur` | 可选 | **必填**（1、2 或 ≥500） |
 | BidResponse.`cur` | 可选，缺省常 USD | **必填** |
 
-对接只认 IAB 最小集的旧流量时，缺 `at`/`cur` 会被 schema / LightGate 拒绝。对象名与语义仍对齐 2.6-202606。
+对接只认 IAB 最小集的旧流量时，缺 `at`/`cur` 会被 JSON Schema / 基础校验 拒绝。对象名与语义仍对齐 2.6-202606。
 
 缺字段表示 **unknown**，不是默认 0（规范写明 default 的字段除外）。未知字段必须忽略。扩展放在 `ext`。
 

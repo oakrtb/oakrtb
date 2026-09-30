@@ -10,4 +10,6 @@ venv/
 sdk/java/target/
 sdk/rust/target/
 
-# Schema 权威仍在仓库根 schema/jsonschema/；Go/Java/Rust 提交 vendored 副本（make sync-schemas）供包发布。
+# Canonical schemas live in schema/jsonschema/; Go/Java/Rust commit vendored copies (make sync-schemas) for package distribution.
+
+/examples/rust/target/

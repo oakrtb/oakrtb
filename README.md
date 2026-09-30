@@ -1,123 +1,161 @@
 # OakRTB
 
-[![CI](https://github.com/oakrtb/openrtb/actions/workflows/ci.yml/badge.svg)](https://github.com/oakrtb/openrtb/actions/workflows/ci.yml)
+[![CI](https://github.com/oakrtb/oakrtb/actions/workflows/ci.yml/badge.svg)](https://github.com/oakrtb/oakrtb/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
-[![Release](https://img.shields.io/github/v/release/oakrtb/openrtb?include_prereleases)](https://github.com/oakrtb/openrtb/releases)
 
-**English** · [中文](#oakrtb-竞价协议)
+**面向实时广告竞价的协议定义与 Java、Go、Rust SDK。**
 
-OakRTB is a machine-readable **OpenRTB-compatible** bidding protocol (JSON Schema, OpenAPI, optional protobuf) plus **Go / Java / Rust** SDKs for models, builders, hot-path `view` (LightGate), optional `fit`, and off-path `schema` validation.
+OakRTB provides OpenRTB-aligned protocol definitions and typed SDKs for Java, Go, and Rust, with builders, JSON codecs, query views, and validation.
 
-It does **not** implement an SSP, DSP, or auction engine. It is an **independent project**, not an official IAB Tech Lab product. Field names follow IAB OpenRTB **2.6-202606** (see [NOTICE](NOTICE)).
+OakRTB 将请求与响应的结构、编码和校验规则放在同一个仓库维护，帮助 SSP、Exchange 和 DSP 团队对接竞价协议。你可以使用 SDK 构建报文、解析请求、查询展示位、检查出价与请求是否匹配，也可以直接使用 JSON Schema 和 OpenAPI 对接其他语言的服务。
 
-**Current version:** `0.2.0` · wire `x-openrtb-version: 2.6`
+当前项目版本为 **0.2.0**，字段与对象语义对齐 **OpenRTB 2.6-202606**，HTTP 版本头使用 `x-openrtb-version: 2.6`。OakRTB 是独立项目，标准来源与署名见 [NOTICE](NOTICE)。
 
-### Install SDKs
+[快速开始](#快速开始) · [接入指南](docs/getting-started.md) · [完整示例](examples/README.md) · [SDK 架构](docs/sdk.md) · [协议规范](docs/spec.md)
 
-```bash
-# Go (repo tag v0.2.0)
-go get github.com/oakrtb/openrtb/sdk/go@v0.2.0
+## 可以用来做什么
 
-# Rust / Java — see docs/publishing.md; until registries are live:
-cargo add oakrtb-sdk@0.2.0   # after crates.io
-make jar                     # local Java jars under gen/java/dist/ (JDK 21)
+- **SSP / Exchange 接入**：构建网站、应用和数字户外库存的竞价请求，解析并检查买方响应。
+- **DSP 接入**：读取展示位、底价、格式和交易信息，生成出价或结构化 no-bid 响应。
+- **协议联调**：使用 JSON Schema 检查报文结构，通过统一诊断定位缺失字段、类型错误和竞价约束冲突。
+- **多语言协作**：以同一份 protobuf 定义生成模型，用共享测试数据验证三种 SDK 的数据语义与检查结果。
+
+HTTP 服务、广告选择、预算控制、拍卖结算和通知回调由接入方实现。SDK 提供协议处理能力；端点、状态码与压缩约定见 [传输文档](docs/transport.md)。
+
+## 主要能力
+
+| 能力 | 内容 |
+|---|---|
+| 协议对象 | BidRequest、BidResponse、Imp、SeatBid、Bid 及其子对象 |
+| 广告形态 | Banner、Video、Audio、Native；内嵌 Native 请求的 Schema 校验 |
+| 库存上下文 | Site、App、DOOH，以及设备、用户、内容、供应链与隐私信号 |
+| 编解码 | OpenRTB JSON 与可选 protobuf 二进制编码，共用强类型模型 |
+| 构建与查询 | 流式 Builder、请求/响应 View、按 ID 和格式查询、字段摘要 |
+| 校验 | 模型基础检查、格式就绪检查、完整 JSON Schema 校验 |
+| 竞价检查 | 请求与响应 ID、展示位、markup 类型、底价、屏蔽项及 PMP Deal 约束 |
+| 一致性 | 显式零值与缺失值区分、`ext` 转换及跨语言共享测试 |
+
+OakRTB 定义了比 OpenRTB 基础要求更严格的校验约束，例如请求必须显式提供 `at`、`cur`。接入已有 OpenRTB 流量时，应先核对 [协议必填规则](docs/spec.md#必填规则)。具体 JSON 合同以 [JSON Schema](schema/jsonschema/) 为准。
+
+## 快速开始
+
+克隆仓库后，选择一种语言运行即可。下面的示例使用本地 SDK 源码，不依赖 OakRTB 是否已发布到公共包仓库。
+
+```sh
+git clone https://github.com/oakrtb/oakrtb.git
+cd oakrtb
 ```
 
-Until Maven Central / crates.io are live, clone this repo and depend on the `sdk/` tree, or use `make jar`. Details: [docs/publishing.md](docs/publishing.md).
+### Go
 
-Hot path: **build → view (LightGate) → fit**; full JSON Schema stays off the hot path. See [docs/sdk.md](docs/sdk.md) and [docs/view-usage.md](docs/view-usage.md).
+需要 Go 1.25 或更高版本：
 
-### Validate fixtures
-
-```bash
-python3 -m pip install -r scripts/requirements.txt
-make validate && make proto-check && make sdk-test
+```sh
+(cd sdk/go && go run ../../examples/go/main.go)
 ```
 
-### Contributing / security
+源码：[examples/go/main.go](examples/go/main.go)。
 
-- [CONTRIBUTING.md](CONTRIBUTING.md)
-- [SECURITY.md](SECURITY.md)
-- [CHANGELOG.md](CHANGELOG.md) · [docs/versioning.md](docs/versioning.md)
+### Java
 
----
+需要 JDK 21 和 Maven：
 
-# OakRTB 竞价协议
-
-https://github.com/oakrtb/openrtb
-
-版本 **0.2.0**，JSON 线格式对齐 [IAB OpenRTB **2.6-202606**](https://github.com/InteractiveAdvertisingBureau/openrtb2.x/releases/tag/2.6-202606)（`x-openrtb-version` 仍填 `2.6`）。
-
-本仓库定义协议（对象、字段、传输与校验），并提供 Go / Java / Rust **模型生成与统一校验 SDK**。不实现 SSP / DSP / 拍卖引擎。**非 IAB 官方实现**；对象名与字段名遵循 OpenRTB，见 [NOTICE](NOTICE)。
-
-## 这份规范管什么
-
-| 层 | 本仓库中的定义 | 路径 |
-|---|---|---|
-| 传输 | HTTP POST、状态码、多算法压缩、`x-openrtb-version` | [docs/transport.md](docs/transport.md)、[openapi/openrtb.yaml](openapi/openrtb.yaml) |
-| JSON 对象 | BidRequest / BidResponse 及全部子对象 | [schema/jsonschema](schema/jsonschema)、[docs/objects.md](docs/objects.md) |
-| Native | `imp.native.request` 内嵌的 Native 1.2 | [schema/jsonschema/native.schema.json](schema/jsonschema/native.schema.json) |
-| 二进制 | 与 JSON 字段同名的 protobuf | [proto/oakrtb/v2/openrtb.proto](proto/oakrtb/v2/openrtb.proto) |
-| SDK | Go / Java / Rust 模型 + 构建器 + view 读模型 + fit 契合检查 + `Report`（`schema` 模块） | [docs/sdk.md](docs/sdk.md)、[docs/view-usage.md](docs/view-usage.md)、[sdk/](sdk/) |
-| 校验失败体 | 统一 `Report` JSON（形状见 `validation-result.schema.json`；建议作 HTTP 400） | [schema/jsonschema/validation-result.schema.json](schema/jsonschema/validation-result.schema.json) |
-
-权威顺序：**JSON Schema 为准**。OpenAPI 描述 HTTP 面；protobuf 是可选编码。文档解释语义。
-
-## 安装 SDK
-
-```bash
-# Go（需仓库已打 v0.2.0 tag）
-go get github.com/oakrtb/openrtb/sdk/go@v0.2.0
-
-# Rust（crates.io 发布后）
-cargo add oakrtb-sdk@0.2.0
-
-# Java：Maven Central 发布前可用本地包（见 docs/publishing.md）
-make jar   # → gen/java/dist/oakrtb-sdk-0.2.0*.jar（JDK 21）
+```sh
+mvn -f sdk/java/pom.xml package -DskipTests
+java --class-path "sdk/java/target/oakrtb-sdk-$(cat VERSION)-all.jar" examples/java/AuctionExample.java
 ```
 
-热路径：`build → view（LightGate）→ fit`；完整 schema 用于 `buildValidated` / 夹具 / 可选边界 400，勿与 LightGate 叠跑。发包步骤见 [docs/publishing.md](docs/publishing.md)。
+源码：[examples/java/AuctionExample.java](examples/java/AuctionExample.java)。
 
-## 一次拍卖
+### Rust
 
-```
-Publisher ──► Exchange ──POST /openrtb/v2/auction──► Bidder
-                 ▲                                      │
-                 └──────── BidResponse / 204 ───────────┘
-                 │
-                 ├─ nurl  赢价通知
-                 ├─ burl  计费通知
-                 └─ lurl  丢单通知
+需要 Rust 1.88+，建议使用当前 stable 工具链，并确保 `protoc` 在 `PATH` 中：
+
+```sh
+cargo run --locked --manifest-path examples/rust/Cargo.toml --target-dir sdk/rust/target
 ```
 
-- `200` + `seatbid`：出价
-- `204`：不竞价
-- `200` + `nbr`：不竞价并带原因
-- `400`：报文无法解析，或（可选）未通过边界 schema 校验（body 为 `Report` JSON）。热路径结构门禁用 LightGate，勿与 schema 叠跑
+源码：[examples/rust/src/main.rs](examples/rust/src/main.rs)。
 
-完整语义见 [docs/spec.md](docs/spec.md)。
+三个程序均模拟 **SSP 构建请求 → DSP 校验与出价 → SSP 解析响应**，依次验证以下结果：
 
-## 校验样例
+| 场景 | 预期 |
+|---|---|
+| 出价 2 CPM，底价 1 CPM | 返回出价，`no_bid=false` |
+| 出价 0.5 CPM，底价 1 CPM | 产生低价 WARN，按示例策略返回 no-bid |
+| 没有候选广告 | 返回结构化 no-bid |
 
-```bash
+程序会输出请求、响应和拒投诊断，执行过程中不发送网络竞价请求。初次构建需要下载依赖。项目集成方式见 [接入指南](docs/getting-started.md)，示例说明见 [examples/README.md](examples/README.md)。
+
+## SDK 使用流程
+
+```mermaid
+flowchart LR
+    input[请求 JSON] --> decode[codec 解码]
+    decode --> request[RequestView 基础校验与查询]
+    request --> decision[业务决策]
+    decision --> response[builder 构建响应]
+    response --> check[bidcheck 关联检查]
+    check --> policy[业务策略处理 ERROR / WARN]
+    policy --> encode[codec 编码响应]
+```
+
+完整 JSON Schema 校验由 `jsonschema` 独立提供，可用于接入边界、联调和离线校验。protobuf 输入使用各语言的原生 protobuf 解码方法，随后进入同一套 View 与竞价检查流程。
+
+| 模块 | 使用时机 |
+|---|---|
+| `codec` | 在 JSON 报文与生成模型之间转换 |
+| `builder` | 构建请求、展示位、出价及响应 |
+| `view` | 基础校验后，按 ID、格式或摘要读取模型 |
+| `validation` | 单独执行基础检查、格式就绪检查，或读取诊断类型 |
+| `bidcheck` | 检查响应是否符合原请求的关联与竞价约束 |
+| `jsonschema` | 按完整 JSON 合同校验原始报文 |
+
+`CheckResult.OK/ok` 表示没有 ERROR；WARN 仍需业务处理。示例采用“任意 WARN 都拒投”的策略，SDK 本身不会自动执行该策略。完整响应检查应使用 `bidcheck.Response/response`，以获得币种和席位上下文。
+
+## 仓库结构
+
+```text
+oakrtb/
+├── schema/jsonschema/  JSON 合同与 Native 校验规则
+├── proto/             共享模型和 protobuf 定义
+├── openapi/           HTTP 接口合同
+├── sdk/               Java、Go、Rust SDK
+├── examples/          JSON 报文与可运行接入示例
+├── testdata/          全字段、非法报文及跨语言一致性测试数据
+├── scripts/           校验、同步检查与架构检查工具
+└── docs/              协议、接入、架构和发布文档
+```
+
+SDK 内的 schema/proto 副本用于独立构建和打包；根目录保存权威定义。修改协议后通过 `make sync-schemas` 同步，修改 proto 后再执行 `make proto-go` 更新已提交的 Go 模型。
+
+## 开发与验证
+
+完整仓库检查需要 Python 3.10+、Go 1.25+、JDK 21、Maven、Rust 1.88+ 和 `protoc`。CI 的 Python 版本为 3.12。
+
+```sh
 python3 -m pip install -r scripts/requirements.txt
 make validate
-make proto-check   # 需要系统安装 protoc
-make sdk-test      # Go / Java / Rust
-make jar           # 产出 gen/java/dist/oakrtb-sdk-*.jar（需 JDK 21）
+make proto-check
+make sdk-test
 ```
 
-`examples/bid-request/` 与 `examples/bid-response/` 必须通过 schema；`testdata/full/` 为全字段填充样例；`testdata/invalid/` 必须被拒绝。SDK 用法见 [docs/sdk.md](docs/sdk.md)。贡献见 [CONTRIBUTING.md](CONTRIBUTING.md)；安全报告见 [SECURITY.md](SECURITY.md)。
+也可以单独运行 `make sdk-test-go`、`make sdk-test-java` 或 `make sdk-test-rust`。CI 同时执行协议副本检查、SDK 架构检查、测试和三种语言的接入示例。
 
-## 版本
+## 文档导航
 
-| OakRTB | 兼容 OpenRTB | 说明 |
-|---|---|---|
-| 0.2.0 | 2.6-202606 | 对齐最新 dated snapshot（Content 直播字段、折扣宏等）；SDK `view`/`schema`/`fit` 命名落地 |
-| 0.1.0 | 2.6 | 首个可校验的对象模型与 HTTP 合同 |
+| 想了解什么 | 文档 |
+|---|---|
+| 将 SDK 接入现有项目 | [接入指南](docs/getting-started.md) |
+| 运行和修改完整示例 | [示例说明](examples/README.md) |
+| 模块依赖、数据语义与 API 迁移 | [SDK 架构](docs/sdk.md) |
+| View 查询与竞价检查 | [View 使用](docs/view-usage.md) |
+| 对象、字段和协议约束 | [协议规范](docs/spec.md)、[对象说明](docs/objects.md) |
+| HTTP、编码、压缩与状态码 | [传输约定](docs/transport.md)、[OpenAPI](openapi/openrtb.yaml) |
+| 版本和发布 | [版本策略](docs/versioning.md)、[发布指南](docs/publishing.md)、[变更记录](CHANGELOG.md) |
 
-新增可选字段不升主版本。删除或改变必填字段才升主版本。详见 [docs/versioning.md](docs/versioning.md)。
+## 贡献与许可
 
-## 版权
+提交问题或改进前请阅读 [贡献指南](CONTRIBUTING.md)。安全问题按 [SECURITY.md](SECURITY.md) 报告。
 
-代码与 schema 为 Apache-2.0。对象名与 JSON 字段名遵循 IAB Tech Lab OpenRTB 2.6（CC BY 3.0），见 [NOTICE](NOTICE)。
+代码与 Schema 使用 [Apache License 2.0](LICENSE)。OpenRTB 对象与字段的来源、许可及署名见 [NOTICE](NOTICE)。

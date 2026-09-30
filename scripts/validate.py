@@ -92,7 +92,9 @@ def main() -> int:
     failed = 0
 
     print("== valid examples ==")
-    example_paths = sorted(EXAMPLES.rglob("*.json"))
+    example_paths = sorted(
+        path for kind in SCHEMA_BY_KIND for path in (EXAMPLES / kind).rglob("*.json")
+    )
     if not example_paths:
         print("FAIL  no examples found under examples/")
         return 1

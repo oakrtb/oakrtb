@@ -4,19 +4,21 @@ Authority stays in the monorepo (`schema/jsonschema/`, `proto/`). Language packa
 
 ```bash
 make sync-schemas   # refresh Go / Java / Rust vendored schema + proto
-git add sdk/go/schema/schemas sdk/java/src/main/resources sdk/java/src/main/proto sdk/rust/schemas sdk/rust/proto
+git add sdk/go/jsonschema/schemas sdk/java/src/main/resources sdk/java/src/main/proto sdk/rust/schemas sdk/rust/proto
 ```
 
 ## Go (`pkg.go.dev`)
 
-Module path: `github.com/oakrtb/openrtb/sdk/go`
+Module path: `github.com/oakrtb/oakrtb/sdk/go`
 
-After tagging the **repository root** (already done for `v0.2.0`):
+The module lives in the `sdk/go` subdirectory, so its release tag must include that prefix: **`sdk/go/v0.2.0`**. A repository release tag such as `v0.2.0` alone does not publish this module version. See the [Go module version rules](https://go.dev/ref/mod#vcs-version).
+
+After creating and pushing the module tag for the release commit:
 
 ```bash
-go get github.com/oakrtb/openrtb/sdk/go@v0.2.0
-# force proxy refresh if needed:
-curl -s 'https://proxy.golang.org/github.com/oakrtb/openrtb/sdk/go/@v/v0.2.0.info'
+go get github.com/oakrtb/oakrtb/sdk/go@v0.2.0
+# Check whether the module version is available:
+curl -s 'https://proxy.golang.org/github.com/oakrtb/oakrtb/sdk/go/@v/v0.2.0.info'
 ```
 
 No extra publish step beyond the Git tag.
@@ -27,7 +29,7 @@ Prerequisites:
 
 1. [crates.io](https://crates.io) account linked to GitHub
 2. API token: `cargo login`
-3. `protoc` on `PATH` (for local dry-run / consumers’ first build)
+3. Rust 1.88+ and `protoc` on `PATH` (for local dry-run / consumers’ first build)
 
 ```bash
 make sync-schemas
@@ -98,7 +100,7 @@ make publish-java-dry
 
 ## GitHub Actions (optional)
 
-After secrets exist, add a workflow that on `v*` tags runs:
+The existing [publish workflow](../.github/workflows/publish.yml) handles `v*` tags and manual dispatch. Both jobs currently have `if: ${{ false }}`. Configure the credentials below, then remove those gates when ready to enable publishing. Adding secrets alone does not enable the jobs. Go module tags (`sdk/go/v*`) are separate from the repository release tags.
 
 | Secret | Used for |
 |---|---|
@@ -111,7 +113,7 @@ Do **not** commit tokens. Prefer manual first publish, then automate.
 ## Checklist per release
 
 1. Bump `VERSION`, SDK `pom.xml` / `Cargo.toml` / `go.mod` docs, CHANGELOG
-2. `make sync-schemas && make validate && make sdk-test`
-3. Tag `vX.Y.Z` + GitHub Release
+2. Run `make sync-schemas`; after proto changes, also run `make proto-go` and commit the generated Go models. Run `make validate proto-check sdk-test`.
+3. Create the repository tag `vX.Y.Z` and Go module tag `sdk/go/vX.Y.Z` on the release commit, then create the GitHub Release
 4. `cargo publish` + `mvn -Prelease deploy`
 5. Update README install snippets if coordinates changed

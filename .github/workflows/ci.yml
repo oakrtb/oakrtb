@@ -14,6 +14,11 @@ jobs:
           python-version: "3.12"
       - name: Install validator
         run: python3 -m pip install -r scripts/requirements.txt
+      - name: Check SDK copies without rewriting
+        run: |
+          python3 scripts/check_copies.py
+          python3 scripts/check_architecture.py
+          python3 -m unittest discover -s scripts -p 'test_*.py'
       - name: Validate examples
         run: python3 scripts/validate.py
 
@@ -35,6 +40,9 @@ jobs:
           go-version: "1.25.0"
       - name: Test Go SDK
         run: make sdk-test-go
+      - name: Run Go integration example
+        working-directory: sdk/go
+        run: go run ../../examples/go/main.go
 
   sdk-java:
     runs-on: ubuntu-latest
@@ -47,9 +55,14 @@ jobs:
           cache: maven
       - name: Test and package Java SDK
         run: make sdk-test-java jar
+      - name: Run Java integration example
+        run: java --class-path "sdk/java/target/oakrtb-sdk-$(cat VERSION)-all.jar" examples/java/AuctionExample.java
 
   sdk-rust:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        toolchain: [stable, "1.88.0"]
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-java@v5
@@ -59,5 +72,9 @@ jobs:
       - name: Install protoc
         run: sudo apt-get update && sudo apt-get install -y protobuf-compiler
       - uses: actions-rust-lang/setup-rust-toolchain@v2
+        with:
+          toolchain: ${{ matrix.toolchain }}
       - name: Test Rust SDK
         run: make sdk-test-rust
+      - name: Run Rust integration example
+        run: cargo run --locked --manifest-path examples/rust/Cargo.toml --target-dir sdk/rust/target

@@ -1,38 +1,40 @@
 package view
 
-// MarkupMask 是 Imp 上 markup 类型（banner/video/audio/native）的位掩码。
-// 注意：与 oakrtb.v2.Format（Banner 尺寸条目）不是同一概念。
+import openrtb "github.com/oakrtb/oakrtb/sdk/go/oakrtb/v2"
+
+// MarkupMask is a bitmask of markup types on an Imp (banner/video/audio/native).
+// Note: this differs from oakrtb.v2.Format (a Banner size entry).
 type MarkupMask uint8
 
 const (
-	// MarkupNone 表示未设置任何 markup 类型。
+	// MarkupNone indicates that no markup type is set.
 	MarkupNone MarkupMask = 0
-	// MarkupBanner 对应 imp.banner，Bid.mtype 为 1。
+	// MarkupBanner corresponds to imp.banner and Bid.mtype 1.
 	MarkupBanner MarkupMask = 1 << 0
-	// MarkupVideo 对应 imp.video，Bid.mtype 为 2。
+	// MarkupVideo corresponds to imp.video and Bid.mtype 2.
 	MarkupVideo MarkupMask = 1 << 1
-	// MarkupAudio 对应 imp.audio，Bid.mtype 为 3。
+	// MarkupAudio corresponds to imp.audio and Bid.mtype 3.
 	MarkupAudio MarkupMask = 1 << 2
-	// MarkupNative 对应 imp.native，Bid.mtype 为 4。
+	// MarkupNative corresponds to imp.native and Bid.mtype 4.
 	MarkupNative MarkupMask = 1 << 3
 )
 
-// Has 报告位掩码是否包含指定标志。
+// Has reports whether the bitmask contains the specified flag.
 func (f MarkupMask) Has(flag MarkupMask) bool { return f&flag != 0 }
 
-// HasBanner 报告是否包含 Banner markup。
+// HasBanner reports whether Banner markup is present.
 func (f MarkupMask) HasBanner() bool { return f.Has(MarkupBanner) }
 
-// HasVideo 报告是否包含 Video markup。
+// HasVideo reports whether Video markup is present.
 func (f MarkupMask) HasVideo() bool { return f.Has(MarkupVideo) }
 
-// HasAudio 报告是否包含 Audio markup。
+// HasAudio reports whether Audio markup is present.
 func (f MarkupMask) HasAudio() bool { return f.Has(MarkupAudio) }
 
-// HasNative 报告是否包含 Native markup。
+// HasNative reports whether Native markup is present.
 func (f MarkupMask) HasNative() bool { return f.Has(MarkupNative) }
 
-// Count 返回位掩码中已置位的 markup 类型数量。
+// Count returns the number of markup types set in the bitmask.
 func (f MarkupMask) Count() int {
 	n := 0
 	for x := f; x != 0; x >>= 1 {
@@ -41,7 +43,7 @@ func (f MarkupMask) Count() int {
 	return n
 }
 
-// Primary 在恰好一种 markup 置位时返回该位；否则返回 MarkupNone。
+// Primary returns the single set markup bit, or MarkupNone if zero or multiple bits are set.
 func (f MarkupMask) Primary() MarkupMask {
 	if f.Count() == 1 {
 		return f
@@ -49,7 +51,7 @@ func (f MarkupMask) Primary() MarkupMask {
 	return MarkupNone
 }
 
-// Mtype 将单一 markup 位映射为 Bid.mtype（1–4）；多选或空时返回 0。
+// Mtype maps a single markup bit to Bid.mtype (1–4); returns 0 for zero or multiple bits.
 func (f MarkupMask) Mtype() int32 {
 	switch f.Primary() {
 	case MarkupBanner:
@@ -65,22 +67,22 @@ func (f MarkupMask) Mtype() int32 {
 	}
 }
 
-// Inventory 表示 BidRequest 的库存面（site/app/dooh，互斥）。
-// 注意：与 proto Content.Channel（内容分发渠道）不是同一概念。
+// Inventory is the mutually exclusive BidRequest inventory type (site/app/dooh).
+// Note: this differs from proto Content.Channel (content distribution channel).
 type Inventory uint8
 
 const (
-	// InventoryNone 表示未设置 site/app/dooh。
+	// InventoryNone indicates that site/app/dooh is unset.
 	InventoryNone Inventory = iota
-	// InventorySite 表示网站库存（BidRequest.site）。
+	// InventorySite indicates website inventory (BidRequest.site).
 	InventorySite
-	// InventoryApp 表示应用库存（BidRequest.app）。
+	// InventoryApp indicates app inventory (BidRequest.app).
 	InventoryApp
-	// InventoryDooh 表示数字户外库存（BidRequest.dooh）。
+	// InventoryDooh indicates digital out-of-home inventory (BidRequest.dooh).
 	InventoryDooh
 )
 
-// String 返回库存面的短名称（site/app/dooh/none）。
+// String returns the short inventory type name (site/app/dooh/none).
 func (c Inventory) String() string {
 	switch c {
 	case InventorySite:
@@ -91,5 +93,42 @@ func (c Inventory) String() string {
 		return "dooh"
 	default:
 		return "none"
+	}
+}
+
+// MarkupFromImp returns the Imp markup bitmask without full validation.
+func MarkupFromImp(imp *openrtb.Imp) MarkupMask {
+	if imp == nil {
+		return MarkupNone
+	}
+	var f MarkupMask
+	if imp.Banner != nil {
+		f |= MarkupBanner
+	}
+	if imp.Video != nil {
+		f |= MarkupVideo
+	}
+	if imp.Audio != nil {
+		f |= MarkupAudio
+	}
+	if imp.Native != nil {
+		f |= MarkupNative
+	}
+	return f
+}
+
+// MarkupFromMtype maps Bid.mtype / MarkupType to a MarkupMask bit (or MarkupNone).
+func MarkupFromMtype(m openrtb.MarkupType) MarkupMask {
+	switch m {
+	case openrtb.MarkupType_MARKUP_TYPE_BANNER:
+		return MarkupBanner
+	case openrtb.MarkupType_MARKUP_TYPE_VIDEO:
+		return MarkupVideo
+	case openrtb.MarkupType_MARKUP_TYPE_AUDIO:
+		return MarkupAudio
+	case openrtb.MarkupType_MARKUP_TYPE_NATIVE:
+		return MarkupNative
+	default:
+		return MarkupNone
 	}
 }

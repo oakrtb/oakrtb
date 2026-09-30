@@ -1,4 +1,4 @@
-.PHONY: validate install-dev sync-schemas proto-check proto-go proto-java proto-rust proto \
+.PHONY: validate install-dev check-copies check-architecture sync-schemas proto-check proto-go proto-java proto-rust proto \
 	sdk-test sdk-test-go sdk-test-java sdk-test-rust jar \
 	publish-rust-dry publish-java-dry
 
@@ -9,16 +9,22 @@ JAVA_HOME ?= $(shell echo $$JAVA_HOME)
 install-dev:
 	python3 -m pip install -r scripts/requirements.txt
 
-validate:
+check-architecture:
+	python3 scripts/check_architecture.py
+
+check-copies:
+	python3 scripts/check_copies.py
+
+validate: check-copies check-architecture
 	python3 scripts/validate.py
 
-# 权威 schema/proto → 各语言 vendored 副本（包发布 / go get / crates.io / Maven 需要）。
+# Copy canonical schema/proto files into vendored SDK directories for package distribution (go get, crates.io and Maven).
 sync-schemas:
-	@mkdir -p sdk/go/schema/schemas
+	@mkdir -p sdk/go/jsonschema/schemas
 	@mkdir -p sdk/java/src/main/resources/schema/jsonschema
 	@mkdir -p sdk/java/src/main/proto/oakrtb/v2
 	@mkdir -p sdk/rust/schemas sdk/rust/proto/oakrtb/v2
-	cp schema/jsonschema/*.json sdk/go/schema/schemas/
+	cp schema/jsonschema/*.json sdk/go/jsonschema/schemas/
 	cp schema/jsonschema/*.json sdk/java/src/main/resources/schema/jsonschema/
 	cp schema/jsonschema/*.json sdk/rust/schemas/
 	cp $(PROTO) sdk/java/src/main/proto/oakrtb/v2/
@@ -33,7 +39,7 @@ proto-check:
 proto-go: proto-check
 	@mkdir -p sdk/go gen/go
 	protoc -I proto \
-		--go_out=sdk/go --go_opt=module=github.com/oakrtb/openrtb/sdk/go \
+		--go_out=sdk/go --go_opt=module=github.com/oakrtb/oakrtb/sdk/go \
 		$(PROTO)
 	@rm -rf gen/go/oakrtb && mkdir -p gen/go/oakrtb && cp -R sdk/go/oakrtb/v2 gen/go/oakrtb/
 
@@ -51,19 +57,20 @@ proto-rust: proto-check
 
 proto: proto-go proto-java proto-rust
 
-sdk-test-go: sync-schemas
+sdk-test-go: check-copies check-architecture
 	cd sdk/go && go test ./...
 
-sdk-test-java:
+sdk-test-java: check-copies check-architecture
 	cd sdk/java && mvn -q test
 
-sdk-test-rust:
+sdk-test-rust: check-copies check-architecture
 	cd sdk/rust && cargo test -q
+	cd sdk/rust && cargo check -q --no-default-features --lib
 
 sdk-test: sdk-test-go sdk-test-java sdk-test-rust
 
 # Thin jar + shaded all-in-one jar under gen/java/dist/
-jar:
+jar: check-copies
 	cd sdk/java && mvn -q package -DskipTests
 	@mkdir -p gen/java/dist
 	cp sdk/java/target/oakrtb-sdk-$(VERSION).jar gen/java/dist/

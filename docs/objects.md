@@ -9,7 +9,7 @@ OakRTB 相对 IAB 2.6 最小集收紧了 `at`/`cur`（请求）与响应 `cur`�
 |---|---|---|
 | `id` | 是 | 本场拍卖 ID |
 | `imp` | 是 | 至少一个 Imp |
-| `at` | 是 | 拍卖类型（≥1；常用 1/2） |
+| `at` | 是 | 拍卖类型（1、2 或 ≥500；3 仅用于 Deal） |
 | `cur` | 是 | 可接受币种，至少 1 个 ISO-4217 |
 | `site` / `app` / `dooh` | 推荐，互斥 | 库存所在媒体 |
 | `device` | 推荐 | 投放设备 |
@@ -65,7 +65,7 @@ OakRTB 相对 IAB 2.6 最小集收紧了 `at`/`cur`（请求）与响应 `cur`�
 | `adm` | 推荐 | 素材 markup |
 | `adomain` | 推荐 | 广告主域名，供屏蔽检查 |
 | `crid` | 推荐 | 创意 ID |
-| `mtype` | 多形态 imp 时推荐 | 1–4 |
+| `mtype` | 多形态 Imp 时必填（BidCheck） | JSON Schema 中若提供，只允许 1–4 |
 | `dealid` | deal 出价时是 | 对应 Deal.id |
 
 完整属性表见 `schema/jsonschema/openrtb.schema.json` 中的 `$defs`。

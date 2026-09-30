@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/oakrtb/openrtb/schema/jsonschema/validation-result.schema.json",
+  "$id": "https://github.com/oakrtb/oakrtb/schema/jsonschema/validation-result.schema.json",
   "title": "OakRTB ValidationResult",
   "description": "Unified validation outcome for BidRequest / BidResponse checks. Use as HTTP 400 body when validation fails.",
   "type": "object",

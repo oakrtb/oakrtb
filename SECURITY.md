@@ -13,8 +13,8 @@ Please **do not** open a public GitHub issue for security-sensitive reports.
 
 Prefer one of:
 
-1. **[GitHub Security Advisories](https://github.com/oakrtb/openrtb/security/advisories/new)**（private disclosure）
-2. Email the maintainers via the contact listed on the [GitHub org / repo](https://github.com/oakrtb/openrtb) if Advisories are unavailable
+1. **[GitHub Security Advisories](https://github.com/oakrtb/oakrtb/security/advisories/new)**（private disclosure）
+2. Email the maintainers via the contact listed on the [GitHub org / repo](https://github.com/oakrtb/oakrtb) if Advisories are unavailable
 
 Include: affected component (schema / transport / Go / Java / Rust), version or commit, reproduction steps, and impact.
 

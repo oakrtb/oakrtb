@@ -951,7 +951,6 @@ dependencies = [
  "prost-build",
  "serde",
  "serde_json",
- "thiserror",
  "walkdir",
 ]
 

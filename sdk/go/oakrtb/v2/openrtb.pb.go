@@ -21,16 +21,17 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-// MarkupType：素材形态，对应 Bid.mtype，并暗示 Imp 下应出现的子对象。
-// 场景：同一 Imp 同时带 banner/video 等多形态时，出价必须用 mtype 声明中了哪一种。
+// MarkupType identifies the creative format for Bid.mtype and the corresponding Imp child object.
+// When an Imp offers multiple formats, such as banner and video, the bid must identify its selected format using mtype.
+// JSON Schema allows only 1-4; zero is the unset protobuf sentinel and must not appear as mtype:0 in valid JSON bids.
 type MarkupType int32
 
 const (
-	MarkupType_MARKUP_TYPE_UNSPECIFIED MarkupType = 0 // 未指定；多形态 Imp 时不推荐
-	MarkupType_MARKUP_TYPE_BANNER      MarkupType = 1 // 横幅/展示；对应 Imp.banner
-	MarkupType_MARKUP_TYPE_VIDEO       MarkupType = 2 // 视频；对应 Imp.video
-	MarkupType_MARKUP_TYPE_AUDIO       MarkupType = 3 // 音频；对应 Imp.audio
-	MarkupType_MARKUP_TYPE_NATIVE      MarkupType = 4 // 原生；对应 Imp.native
+	MarkupType_MARKUP_TYPE_UNSPECIFIED MarkupType = 0 // Unspecified (protobuf default); do not use in the JSON wire format.
+	MarkupType_MARKUP_TYPE_BANNER      MarkupType = 1 // Banner/display; corresponds to Imp.banner.
+	MarkupType_MARKUP_TYPE_VIDEO       MarkupType = 2 // Video; corresponds to Imp.video.
+	MarkupType_MARKUP_TYPE_AUDIO       MarkupType = 3 // Audio; corresponds to Imp.audio.
+	MarkupType_MARKUP_TYPE_NATIVE      MarkupType = 4 // Native; corresponds to Imp.native.
 )
 
 // Enum value maps for MarkupType.
@@ -78,15 +79,15 @@ func (MarkupType) EnumDescriptor() ([]byte, []int) {
 	return file_oakrtb_v2_openrtb_proto_rawDescGZIP(), []int{0}
 }
 
-// AuctionType：拍卖结算方式。
-// 场景：BidRequest.at 描述整场拍卖；Deal.at 可额外用固定价（3）。
+// AuctionType identifies the auction pricing mechanism.
+// BidRequest.at applies to the auction; Deal.at additionally supports fixed price (3).
 type AuctionType int32
 
 const (
-	AuctionType_AUCTION_TYPE_UNSPECIFIED       AuctionType = 0 // 未指定
-	AuctionType_AUCTION_TYPE_FIRST_PRICE       AuctionType = 1 // 一价：胜出者付自己的出价
-	AuctionType_AUCTION_TYPE_SECOND_PRICE_PLUS AuctionType = 2 // 二价+：付次高价（可加增量）；BidRequest.at 默认常为此值
-	AuctionType_AUCTION_TYPE_FIXED_PRICE       AuctionType = 3 // 固定价；仅 Deal.at
+	AuctionType_AUCTION_TYPE_UNSPECIFIED       AuctionType = 0 // Unspecified.
+	AuctionType_AUCTION_TYPE_FIRST_PRICE       AuctionType = 1 // First price: the winner pays its own bid.
+	AuctionType_AUCTION_TYPE_SECOND_PRICE_PLUS AuctionType = 2 // Second price plus: pay the second-highest price, optionally with an increment; commonly used for the now-required BidRequest.at.
+	AuctionType_AUCTION_TYPE_FIXED_PRICE       AuctionType = 3 // Fixed price; Deal.at only.
 )
 
 // Enum value maps for AuctionType.
@@ -132,14 +133,14 @@ func (AuctionType) EnumDescriptor() ([]byte, []int) {
 	return file_oakrtb_v2_openrtb_proto_rawDescGZIP(), []int{1}
 }
 
-// BannerAdType：Banner.btype 屏蔽的横幅类型（OpenRTB Banner Ad Types）。
+// BannerAdType identifies banner types blocked by Banner.btype (OpenRTB Banner Ad Types).
 type BannerAdType int32
 
 const (
-	BannerAdType_BANNER_AD_TYPE_UNSPECIFIED  BannerAdType = 0
-	BannerAdType_BANNER_AD_TYPE_XHTML_TEXT   BannerAdType = 1 // XHTML 文本广告（多为移动）
+	BannerAdType_BANNER_AD_TYPE_UNSPECIFIED  BannerAdType = 0 // Unspecified.
+	BannerAdType_BANNER_AD_TYPE_XHTML_TEXT   BannerAdType = 1 // XHTML text ad, typically mobile.
 	BannerAdType_BANNER_AD_TYPE_XHTML_BANNER BannerAdType = 2 // XHTML Banner
-	BannerAdType_BANNER_AD_TYPE_JAVASCRIPT   BannerAdType = 3 // JavaScript 广告
+	BannerAdType_BANNER_AD_TYPE_JAVASCRIPT   BannerAdType = 3 // JavaScript ad.
 	BannerAdType_BANNER_AD_TYPE_IFRAME       BannerAdType = 4 // iframe
 )
 
@@ -188,30 +189,30 @@ func (BannerAdType) EnumDescriptor() ([]byte, []int) {
 	return file_oakrtb_v2_openrtb_proto_rawDescGZIP(), []int{2}
 }
 
-// CreativeAttribute：Banner/Video/Audio/Native.battr 与 Bid.attr。
-// >=500 为厂商自定义。
+// CreativeAttribute applies to Banner/Video/Audio/Native.battr and Bid.attr.
+// Values >=500 are vendor-specific.
 type CreativeAttribute int32
 
 const (
-	CreativeAttribute_CREATIVE_ATTRIBUTE_UNSPECIFIED              CreativeAttribute = 0
-	CreativeAttribute_CREATIVE_ATTRIBUTE_AUDIO_AUTOPLAY           CreativeAttribute = 1  // 音频广告（自动播放）
-	CreativeAttribute_CREATIVE_ATTRIBUTE_AUDIO_USER_INITIATED     CreativeAttribute = 2  // 音频广告（用户触发）
-	CreativeAttribute_CREATIVE_ATTRIBUTE_EXPANDABLE_AUTOMATIC     CreativeAttribute = 3  // 可扩展（自动）
-	CreativeAttribute_CREATIVE_ATTRIBUTE_EXPANDABLE_CLICK         CreativeAttribute = 4  // 可扩展（点击触发）
-	CreativeAttribute_CREATIVE_ATTRIBUTE_EXPANDABLE_ROLLOVER      CreativeAttribute = 5  // 可扩展（悬停触发）
-	CreativeAttribute_CREATIVE_ATTRIBUTE_IN_BANNER_VIDEO_AUTOPLAY CreativeAttribute = 6  // Banner 内视频（自动播放）
-	CreativeAttribute_CREATIVE_ATTRIBUTE_IN_BANNER_VIDEO_USER     CreativeAttribute = 7  // Banner 内视频（用户触发）
-	CreativeAttribute_CREATIVE_ATTRIBUTE_POP                      CreativeAttribute = 8  // 弹出（Over/Under/Exit）
-	CreativeAttribute_CREATIVE_ATTRIBUTE_PROVOCATIVE              CreativeAttribute = 9  // 挑逗/暗示性画面
-	CreativeAttribute_CREATIVE_ATTRIBUTE_ANNOYING                 CreativeAttribute = 10 // 抖动/闪烁/极端动画等
-	CreativeAttribute_CREATIVE_ATTRIBUTE_SURVEYS                  CreativeAttribute = 11 // 问卷
-	CreativeAttribute_CREATIVE_ATTRIBUTE_TEXT_ONLY                CreativeAttribute = 12 // 纯文本
-	CreativeAttribute_CREATIVE_ATTRIBUTE_USER_INTERACTIVE         CreativeAttribute = 13 // 用户互动（如嵌入游戏）
-	CreativeAttribute_CREATIVE_ATTRIBUTE_ALERT_STYLE              CreativeAttribute = 14 // 系统对话框/警告样式
-	CreativeAttribute_CREATIVE_ATTRIBUTE_HAS_AUDIO_TOGGLE         CreativeAttribute = 15 // 有声音开关
-	CreativeAttribute_CREATIVE_ATTRIBUTE_HAS_SKIP_BUTTON          CreativeAttribute = 16 // 提供跳过按钮
+	CreativeAttribute_CREATIVE_ATTRIBUTE_UNSPECIFIED              CreativeAttribute = 0  // Unspecified.
+	CreativeAttribute_CREATIVE_ATTRIBUTE_AUDIO_AUTOPLAY           CreativeAttribute = 1  // Audio ad with autoplay.
+	CreativeAttribute_CREATIVE_ATTRIBUTE_AUDIO_USER_INITIATED     CreativeAttribute = 2  // User-initiated audio ad.
+	CreativeAttribute_CREATIVE_ATTRIBUTE_EXPANDABLE_AUTOMATIC     CreativeAttribute = 3  // Automatically expandable.
+	CreativeAttribute_CREATIVE_ATTRIBUTE_EXPANDABLE_CLICK         CreativeAttribute = 4  // Expandable on click.
+	CreativeAttribute_CREATIVE_ATTRIBUTE_EXPANDABLE_ROLLOVER      CreativeAttribute = 5  // Expandable on rollover.
+	CreativeAttribute_CREATIVE_ATTRIBUTE_IN_BANNER_VIDEO_AUTOPLAY CreativeAttribute = 6  // Autoplay in-banner video.
+	CreativeAttribute_CREATIVE_ATTRIBUTE_IN_BANNER_VIDEO_USER     CreativeAttribute = 7  // User-initiated in-banner video.
+	CreativeAttribute_CREATIVE_ATTRIBUTE_POP                      CreativeAttribute = 8  // Pop-over, pop-under or pop-on-exit.
+	CreativeAttribute_CREATIVE_ATTRIBUTE_PROVOCATIVE              CreativeAttribute = 9  // Provocative or suggestive imagery.
+	CreativeAttribute_CREATIVE_ATTRIBUTE_ANNOYING                 CreativeAttribute = 10 // Shaking, flashing or extreme animation.
+	CreativeAttribute_CREATIVE_ATTRIBUTE_SURVEYS                  CreativeAttribute = 11 // Surveys.
+	CreativeAttribute_CREATIVE_ATTRIBUTE_TEXT_ONLY                CreativeAttribute = 12 // Text only.
+	CreativeAttribute_CREATIVE_ATTRIBUTE_USER_INTERACTIVE         CreativeAttribute = 13 // User interaction, such as an embedded game.
+	CreativeAttribute_CREATIVE_ATTRIBUTE_ALERT_STYLE              CreativeAttribute = 14 // System dialog or alert styling.
+	CreativeAttribute_CREATIVE_ATTRIBUTE_HAS_AUDIO_TOGGLE         CreativeAttribute = 15 // Includes an audio toggle.
+	CreativeAttribute_CREATIVE_ATTRIBUTE_HAS_SKIP_BUTTON          CreativeAttribute = 16 // Includes a skip button.
 	CreativeAttribute_CREATIVE_ATTRIBUTE_FLASH                    CreativeAttribute = 17 // Adobe Flash
-	CreativeAttribute_CREATIVE_ATTRIBUTE_RESPONSIVE               CreativeAttribute = 18 // 响应式/无固定尺寸/流体
+	CreativeAttribute_CREATIVE_ATTRIBUTE_RESPONSIVE               CreativeAttribute = 18 // Responsive, fluid or without fixed dimensions.
 )
 
 // Enum value maps for CreativeAttribute.
@@ -287,18 +288,18 @@ func (CreativeAttribute) EnumDescriptor() ([]byte, []int) {
 	return file_oakrtb_v2_openrtb_proto_rawDescGZIP(), []int{3}
 }
 
-// AdPosition：Banner.pos / Video.pos（AdCOM Placement Positions）。
+// AdPosition: Banner.pos / Video.pos (AdCOM Placement Positions).
 type AdPosition int32
 
 const (
-	AdPosition_AD_POSITION_UNKNOWN        AdPosition = 0 // 未知
-	AdPosition_AD_POSITION_ABOVE_THE_FOLD AdPosition = 1 // 首屏上方
-	AdPosition_AD_POSITION_LOCKED         AdPosition = 2 // 固定锁定位置
-	AdPosition_AD_POSITION_BELOW_THE_FOLD AdPosition = 3 // 首屏下方
-	AdPosition_AD_POSITION_HEADER         AdPosition = 4 // 页头
-	AdPosition_AD_POSITION_FOOTER         AdPosition = 5 // 页脚
-	AdPosition_AD_POSITION_SIDEBAR        AdPosition = 6 // 侧栏
-	AdPosition_AD_POSITION_FULLSCREEN     AdPosition = 7 // 全屏
+	AdPosition_AD_POSITION_UNKNOWN        AdPosition = 0 // Unknown.
+	AdPosition_AD_POSITION_ABOVE_THE_FOLD AdPosition = 1 // Above the fold.
+	AdPosition_AD_POSITION_LOCKED         AdPosition = 2 // Locked position.
+	AdPosition_AD_POSITION_BELOW_THE_FOLD AdPosition = 3 // Below the fold.
+	AdPosition_AD_POSITION_HEADER         AdPosition = 4 // Header.
+	AdPosition_AD_POSITION_FOOTER         AdPosition = 5 // Footer.
+	AdPosition_AD_POSITION_SIDEBAR        AdPosition = 6 // Sidebar.
+	AdPosition_AD_POSITION_FULLSCREEN     AdPosition = 7 // Fullscreen.
 )
 
 // Enum value maps for AdPosition.
@@ -352,17 +353,17 @@ func (AdPosition) EnumDescriptor() ([]byte, []int) {
 	return file_oakrtb_v2_openrtb_proto_rawDescGZIP(), []int{4}
 }
 
-// ExpandableDirection：Banner.expdir。
+// ExpandableDirection: Banner.expdir.
 type ExpandableDirection int32
 
 const (
-	ExpandableDirection_EXPANDABLE_DIRECTION_UNSPECIFIED ExpandableDirection = 0
-	ExpandableDirection_EXPANDABLE_DIRECTION_LEFT        ExpandableDirection = 1 // 向左
-	ExpandableDirection_EXPANDABLE_DIRECTION_RIGHT       ExpandableDirection = 2 // 向右
-	ExpandableDirection_EXPANDABLE_DIRECTION_UP          ExpandableDirection = 3 // 向上
-	ExpandableDirection_EXPANDABLE_DIRECTION_DOWN        ExpandableDirection = 4 // 向下
-	ExpandableDirection_EXPANDABLE_DIRECTION_FULLSCREEN  ExpandableDirection = 5 // 全屏
-	ExpandableDirection_EXPANDABLE_DIRECTION_RESIZE      ExpandableDirection = 6 // 缩小/最小化
+	ExpandableDirection_EXPANDABLE_DIRECTION_UNSPECIFIED ExpandableDirection = 0 // Unspecified.
+	ExpandableDirection_EXPANDABLE_DIRECTION_LEFT        ExpandableDirection = 1 // Left.
+	ExpandableDirection_EXPANDABLE_DIRECTION_RIGHT       ExpandableDirection = 2 // Right.
+	ExpandableDirection_EXPANDABLE_DIRECTION_UP          ExpandableDirection = 3 // Up.
+	ExpandableDirection_EXPANDABLE_DIRECTION_DOWN        ExpandableDirection = 4 // Down.
+	ExpandableDirection_EXPANDABLE_DIRECTION_FULLSCREEN  ExpandableDirection = 5 // Fullscreen.
+	ExpandableDirection_EXPANDABLE_DIRECTION_RESIZE      ExpandableDirection = 6 // Resize or minimize.
 )
 
 // Enum value maps for ExpandableDirection.
@@ -414,18 +415,18 @@ func (ExpandableDirection) EnumDescriptor() ([]byte, []int) {
 	return file_oakrtb_v2_openrtb_proto_rawDescGZIP(), []int{5}
 }
 
-// ApiFramework：banner/video/audio/native.api 与 Bid.apis。>=500 厂商自定义。
+// ApiFramework applies to banner/video/audio/native.api and Bid.apis; values >=500 are vendor-specific.
 type ApiFramework int32
 
 const (
-	ApiFramework_API_FRAMEWORK_UNSPECIFIED ApiFramework = 0
+	ApiFramework_API_FRAMEWORK_UNSPECIFIED ApiFramework = 0 // Unspecified.
 	ApiFramework_API_FRAMEWORK_VPAID_1     ApiFramework = 1 // VPAID 1.0
 	ApiFramework_API_FRAMEWORK_VPAID_2     ApiFramework = 2 // VPAID 2.0
 	ApiFramework_API_FRAMEWORK_MRAID_1     ApiFramework = 3 // MRAID 1.0
 	ApiFramework_API_FRAMEWORK_ORMMA       ApiFramework = 4 // ORMMA
 	ApiFramework_API_FRAMEWORK_MRAID_2     ApiFramework = 5 // MRAID 2.0
 	ApiFramework_API_FRAMEWORK_MRAID_3     ApiFramework = 6 // MRAID 3.0
-	ApiFramework_API_FRAMEWORK_OMID_1      ApiFramework = 7 // OMID 1.0（Open Measurement）
+	ApiFramework_API_FRAMEWORK_OMID_1      ApiFramework = 7 // OMID 1.0 (Open Measurement)
 	ApiFramework_API_FRAMEWORK_SIMID_1     ApiFramework = 8 // SIMID 1.0
 	ApiFramework_API_FRAMEWORK_SIMID_1_1   ApiFramework = 9 // SIMID 1.1
 )
@@ -485,27 +486,27 @@ func (ApiFramework) EnumDescriptor() ([]byte, []int) {
 	return file_oakrtb_v2_openrtb_proto_rawDescGZIP(), []int{6}
 }
 
-// Protocol：Video/Audio.protocols 与 Bid.protocol（VAST/DAAST 版本）。
+// Protocol identifies VAST/DAAST versions for Video/Audio.protocols and Bid.protocol.
 type Protocol int32
 
 const (
-	Protocol_PROTOCOL_UNSPECIFIED       Protocol = 0
-	Protocol_PROTOCOL_VAST_1_0          Protocol = 1
-	Protocol_PROTOCOL_VAST_2_0          Protocol = 2
-	Protocol_PROTOCOL_VAST_3_0          Protocol = 3
-	Protocol_PROTOCOL_VAST_1_0_WRAPPER  Protocol = 4
-	Protocol_PROTOCOL_VAST_2_0_WRAPPER  Protocol = 5
-	Protocol_PROTOCOL_VAST_3_0_WRAPPER  Protocol = 6
-	Protocol_PROTOCOL_VAST_4_0          Protocol = 7
-	Protocol_PROTOCOL_VAST_4_0_WRAPPER  Protocol = 8
-	Protocol_PROTOCOL_DAAST_1_0         Protocol = 9
-	Protocol_PROTOCOL_DAAST_1_0_WRAPPER Protocol = 10
-	Protocol_PROTOCOL_VAST_4_1          Protocol = 11
-	Protocol_PROTOCOL_VAST_4_1_WRAPPER  Protocol = 12
-	Protocol_PROTOCOL_VAST_4_2          Protocol = 13
-	Protocol_PROTOCOL_VAST_4_2_WRAPPER  Protocol = 14
-	Protocol_PROTOCOL_VAST_4_3          Protocol = 15
-	Protocol_PROTOCOL_VAST_4_3_WRAPPER  Protocol = 16
+	Protocol_PROTOCOL_UNSPECIFIED       Protocol = 0  // Unspecified.
+	Protocol_PROTOCOL_VAST_1_0          Protocol = 1  // VAST 1.0
+	Protocol_PROTOCOL_VAST_2_0          Protocol = 2  // VAST 2.0
+	Protocol_PROTOCOL_VAST_3_0          Protocol = 3  // VAST 3.0
+	Protocol_PROTOCOL_VAST_1_0_WRAPPER  Protocol = 4  // VAST 1.0 Wrapper
+	Protocol_PROTOCOL_VAST_2_0_WRAPPER  Protocol = 5  // VAST 2.0 Wrapper
+	Protocol_PROTOCOL_VAST_3_0_WRAPPER  Protocol = 6  // VAST 3.0 Wrapper
+	Protocol_PROTOCOL_VAST_4_0          Protocol = 7  // VAST 4.0
+	Protocol_PROTOCOL_VAST_4_0_WRAPPER  Protocol = 8  // VAST 4.0 Wrapper
+	Protocol_PROTOCOL_DAAST_1_0         Protocol = 9  // DAAST 1.0
+	Protocol_PROTOCOL_DAAST_1_0_WRAPPER Protocol = 10 // DAAST 1.0 Wrapper
+	Protocol_PROTOCOL_VAST_4_1          Protocol = 11 // VAST 4.1
+	Protocol_PROTOCOL_VAST_4_1_WRAPPER  Protocol = 12 // VAST 4.1 Wrapper
+	Protocol_PROTOCOL_VAST_4_2          Protocol = 13 // VAST 4.2
+	Protocol_PROTOCOL_VAST_4_2_WRAPPER  Protocol = 14 // VAST 4.2 Wrapper
+	Protocol_PROTOCOL_VAST_4_3          Protocol = 15 // VAST 4.3
+	Protocol_PROTOCOL_VAST_4_3_WRAPPER  Protocol = 16 // VAST 4.3 Wrapper
 )
 
 // Enum value maps for Protocol.
@@ -577,20 +578,20 @@ func (Protocol) EnumDescriptor() ([]byte, []int) {
 	return file_oakrtb_v2_openrtb_proto_rawDescGZIP(), []int{7}
 }
 
-// VideoPlcmt：Video.plcmt（OpenRTB 2.6-202303+，替代旧 placement）。
+// VideoPlcmt applies to Video.plcmt (OpenRTB 2.6-202303+), replacing placement.
 type VideoPlcmt int32
 
 const (
-	VideoPlcmt_VIDEO_PLCMT_UNSPECIFIED          VideoPlcmt = 0
-	VideoPlcmt_VIDEO_PLCMT_INSTREAM             VideoPlcmt = 1 // 随主内容播；默认有声；前/中/后贴
-	VideoPlcmt_VIDEO_PLCMT_ACCOMPANYING_CONTENT VideoPlcmt = 2 // 伴随图文；入视口播放
-	VideoPlcmt_VIDEO_PLCMT_INTERSTITIAL         VideoPlcmt = 3 // 插屏占满视口，不可滚走
-	VideoPlcmt_VIDEO_PLCMT_NO_CONTENT           VideoPlcmt = 4 // 无视频内容：幻灯/信息流/悬浮播放器等
-	VideoPlcmt_VIDEO_PLCMT_PAUSE                VideoPlcmt = 5 // 用户暂停内容时展示（AdCOM 新增值）
-	VideoPlcmt_VIDEO_PLCMT_SCREENSAVER          VideoPlcmt = 6 // 屏保场景
-	VideoPlcmt_VIDEO_PLCMT_OVERLAY              VideoPlcmt = 7 // 叠在内容上（非传统广告歇）
-	VideoPlcmt_VIDEO_PLCMT_SQUEEZEBACK          VideoPlcmt = 8 // 内容缩小与广告分屏
-	VideoPlcmt_VIDEO_PLCMT_IN_SCENE             VideoPlcmt = 9 // 植入内容画面
+	VideoPlcmt_VIDEO_PLCMT_UNSPECIFIED          VideoPlcmt = 0 // Unspecified.
+	VideoPlcmt_VIDEO_PLCMT_INSTREAM             VideoPlcmt = 1 // Instream with main content, sound on by default; pre-, mid- or post-roll.
+	VideoPlcmt_VIDEO_PLCMT_ACCOMPANYING_CONTENT VideoPlcmt = 2 // Accompanying text/image content; playback starts in the viewport.
+	VideoPlcmt_VIDEO_PLCMT_INTERSTITIAL         VideoPlcmt = 3 // Interstitial filling the viewport and not scrollable out of view.
+	VideoPlcmt_VIDEO_PLCMT_NO_CONTENT           VideoPlcmt = 4 // No video content: slideshows, feeds or floating players.
+	VideoPlcmt_VIDEO_PLCMT_PAUSE                VideoPlcmt = 5 // Shown when the user pauses content (new AdCOM value).
+	VideoPlcmt_VIDEO_PLCMT_SCREENSAVER          VideoPlcmt = 6 // Screensaver placement.
+	VideoPlcmt_VIDEO_PLCMT_OVERLAY              VideoPlcmt = 7 // Overlay on content, outside a traditional ad break.
+	VideoPlcmt_VIDEO_PLCMT_SQUEEZEBACK          VideoPlcmt = 8 // Content shrinks to share the screen with an ad.
+	VideoPlcmt_VIDEO_PLCMT_IN_SCENE             VideoPlcmt = 9 // Placement within the content scene.
 )
 
 // Enum value maps for VideoPlcmt.
@@ -648,13 +649,13 @@ func (VideoPlcmt) EnumDescriptor() ([]byte, []int) {
 	return file_oakrtb_v2_openrtb_proto_rawDescGZIP(), []int{8}
 }
 
-// VideoLinearity：Video.linearity（期望的 VAST 响应形态）。
+// VideoLinearity applies to Video.linearity and the expected VAST response format.
 type VideoLinearity int32
 
 const (
-	VideoLinearity_VIDEO_LINEARITY_UNSPECIFIED VideoLinearity = 0
-	VideoLinearity_VIDEO_LINEARITY_LINEAR      VideoLinearity = 1 // 线性贴片（含视频资产）
-	VideoLinearity_VIDEO_LINEARITY_NON_LINEAR  VideoLinearity = 2 // 非线性/Overlay
+	VideoLinearity_VIDEO_LINEARITY_UNSPECIFIED VideoLinearity = 0 // Unspecified.
+	VideoLinearity_VIDEO_LINEARITY_LINEAR      VideoLinearity = 1 // Linear ad, including video assets.
+	VideoLinearity_VIDEO_LINEARITY_NON_LINEAR  VideoLinearity = 2 // Non-linear/overlay.
 )
 
 // Enum value maps for VideoLinearity.
@@ -698,18 +699,18 @@ func (VideoLinearity) EnumDescriptor() ([]byte, []int) {
 	return file_oakrtb_v2_openrtb_proto_rawDescGZIP(), []int{9}
 }
 
-// PlaybackMethod：Video.playbackmethod。
+// PlaybackMethod: Video.playbackmethod.
 type PlaybackMethod int32
 
 const (
-	PlaybackMethod_PLAYBACK_METHOD_UNSPECIFIED         PlaybackMethod = 0
-	PlaybackMethod_PLAYBACK_METHOD_PAGE_LOAD_SOUND_ON  PlaybackMethod = 1 // 页加载即播，有声
-	PlaybackMethod_PLAYBACK_METHOD_PAGE_LOAD_SOUND_OFF PlaybackMethod = 2 // 页加载即播，默认静音
-	PlaybackMethod_PLAYBACK_METHOD_CLICK_SOUND_ON      PlaybackMethod = 3 // 点击播放，有声
-	PlaybackMethod_PLAYBACK_METHOD_MOUSE_OVER_SOUND_ON PlaybackMethod = 4 // 悬停播放，有声
-	PlaybackMethod_PLAYBACK_METHOD_VIEWPORT_SOUND_ON   PlaybackMethod = 5 // 进入视口播放，有声
-	PlaybackMethod_PLAYBACK_METHOD_VIEWPORT_SOUND_OFF  PlaybackMethod = 6 // 进入视口播放，默认静音
-	PlaybackMethod_PLAYBACK_METHOD_CONTINUOUS          PlaybackMethod = 7 // 连续播放直至用户停止
+	PlaybackMethod_PLAYBACK_METHOD_UNSPECIFIED         PlaybackMethod = 0 // Unspecified.
+	PlaybackMethod_PLAYBACK_METHOD_PAGE_LOAD_SOUND_ON  PlaybackMethod = 1 // Page-load playback with sound on.
+	PlaybackMethod_PLAYBACK_METHOD_PAGE_LOAD_SOUND_OFF PlaybackMethod = 2 // Page-load playback muted by default.
+	PlaybackMethod_PLAYBACK_METHOD_CLICK_SOUND_ON      PlaybackMethod = 3 // Click-to-play with sound on.
+	PlaybackMethod_PLAYBACK_METHOD_MOUSE_OVER_SOUND_ON PlaybackMethod = 4 // Mouse-over playback with sound on.
+	PlaybackMethod_PLAYBACK_METHOD_VIEWPORT_SOUND_ON   PlaybackMethod = 5 // Viewport-triggered playback with sound on.
+	PlaybackMethod_PLAYBACK_METHOD_VIEWPORT_SOUND_OFF  PlaybackMethod = 6 // Viewport-triggered playback muted by default.
+	PlaybackMethod_PLAYBACK_METHOD_CONTINUOUS          PlaybackMethod = 7 // Continuous playback until stopped by the user.
 )
 
 // Enum value maps for PlaybackMethod.
@@ -763,14 +764,14 @@ func (PlaybackMethod) EnumDescriptor() ([]byte, []int) {
 	return file_oakrtb_v2_openrtb_proto_rawDescGZIP(), []int{10}
 }
 
-// PlaybackCessationMode：Video.playbackend。
+// PlaybackCessationMode: Video.playbackend.
 type PlaybackCessationMode int32
 
 const (
-	PlaybackCessationMode_PLAYBACK_CESSATION_UNSPECIFIED               PlaybackCessationMode = 0
-	PlaybackCessationMode_PLAYBACK_CESSATION_COMPLETION_OR_USER        PlaybackCessationMode = 1 // 播完或用户终止
-	PlaybackCessationMode_PLAYBACK_CESSATION_LEAVING_VIEWPORT_OR_USER  PlaybackCessationMode = 2 // 离开视口或用户终止
-	PlaybackCessationMode_PLAYBACK_CESSATION_FLOATING_UNTIL_COMPLETION PlaybackCessationMode = 3 // 离视口后悬浮继续直至播完/用户终止
+	PlaybackCessationMode_PLAYBACK_CESSATION_UNSPECIFIED               PlaybackCessationMode = 0 // Unspecified.
+	PlaybackCessationMode_PLAYBACK_CESSATION_COMPLETION_OR_USER        PlaybackCessationMode = 1 // Stop on completion or user action.
+	PlaybackCessationMode_PLAYBACK_CESSATION_LEAVING_VIEWPORT_OR_USER  PlaybackCessationMode = 2 // Stop on leaving the viewport or user action.
+	PlaybackCessationMode_PLAYBACK_CESSATION_FLOATING_UNTIL_COMPLETION PlaybackCessationMode = 3 // Continue in a floating player after leaving the viewport until completion or user action.
 )
 
 // Enum value maps for PlaybackCessationMode.
@@ -816,14 +817,14 @@ func (PlaybackCessationMode) EnumDescriptor() ([]byte, []int) {
 	return file_oakrtb_v2_openrtb_proto_rawDescGZIP(), []int{11}
 }
 
-// DeliveryMethod：Video/Audio.delivery。
+// DeliveryMethod: Video/Audio.delivery.
 type DeliveryMethod int32
 
 const (
-	DeliveryMethod_DELIVERY_METHOD_UNSPECIFIED DeliveryMethod = 0
-	DeliveryMethod_DELIVERY_METHOD_STREAMING   DeliveryMethod = 1 // 流式
-	DeliveryMethod_DELIVERY_METHOD_PROGRESSIVE DeliveryMethod = 2 // 渐进下载
-	DeliveryMethod_DELIVERY_METHOD_DOWNLOAD    DeliveryMethod = 3 // 完整下载
+	DeliveryMethod_DELIVERY_METHOD_UNSPECIFIED DeliveryMethod = 0 // Unspecified.
+	DeliveryMethod_DELIVERY_METHOD_STREAMING   DeliveryMethod = 1 // Streaming.
+	DeliveryMethod_DELIVERY_METHOD_PROGRESSIVE DeliveryMethod = 2 // Progressive download.
+	DeliveryMethod_DELIVERY_METHOD_DOWNLOAD    DeliveryMethod = 3 // Full download.
 )
 
 // Enum value maps for DeliveryMethod.
@@ -869,11 +870,11 @@ func (DeliveryMethod) EnumDescriptor() ([]byte, []int) {
 	return file_oakrtb_v2_openrtb_proto_rawDescGZIP(), []int{12}
 }
 
-// CompanionType：Video/Audio.companiontype。
+// CompanionType: Video/Audio.companiontype.
 type CompanionType int32
 
 const (
-	CompanionType_COMPANION_TYPE_UNSPECIFIED CompanionType = 0
+	CompanionType_COMPANION_TYPE_UNSPECIFIED CompanionType = 0 // Unspecified.
 	CompanionType_COMPANION_TYPE_STATIC      CompanionType = 1 // Static Resource
 	CompanionType_COMPANION_TYPE_HTML        CompanionType = 2 // HTML Resource
 	CompanionType_COMPANION_TYPE_IFRAME      CompanionType = 3 // iframe Resource
@@ -922,12 +923,12 @@ func (CompanionType) EnumDescriptor() ([]byte, []int) {
 	return file_oakrtb_v2_openrtb_proto_rawDescGZIP(), []int{13}
 }
 
-// VideoCompanionMode：Banner.vcm（视频伴生模式）。
+// VideoCompanionMode applies to Banner.vcm (video companion mode).
 type VideoCompanionMode int32
 
 const (
-	VideoCompanionMode_VIDEO_COMPANION_MODE_CONCURRENT VideoCompanionMode = 0 // 与视频同时展示
-	VideoCompanionMode_VIDEO_COMPANION_MODE_END_CARD   VideoCompanionMode = 1 // 视频结束后的 end card
+	VideoCompanionMode_VIDEO_COMPANION_MODE_CONCURRENT VideoCompanionMode = 0 // Shown concurrently with video.
+	VideoCompanionMode_VIDEO_COMPANION_MODE_END_CARD   VideoCompanionMode = 1 // End card after video completion.
 )
 
 // Enum value maps for VideoCompanionMode.
@@ -969,19 +970,19 @@ func (VideoCompanionMode) EnumDescriptor() ([]byte, []int) {
 	return file_oakrtb_v2_openrtb_proto_rawDescGZIP(), []int{14}
 }
 
-// DeviceType：Device.devicetype（AdCOM Device Types）。
+// DeviceType: Device.devicetype (AdCOM Device Types).
 type DeviceType int32
 
 const (
-	DeviceType_DEVICE_TYPE_UNSPECIFIED           DeviceType = 0
-	DeviceType_DEVICE_TYPE_MOBILE_TABLET_GENERAL DeviceType = 1 // 通用移动（4/5 未知时）
-	DeviceType_DEVICE_TYPE_PERSONAL_COMPUTER     DeviceType = 2 // PC/笔记本浏览器
-	DeviceType_DEVICE_TYPE_CONNECTED_TV          DeviceType = 3 // 智能电视 / CTV
-	DeviceType_DEVICE_TYPE_PHONE                 DeviceType = 4 // 手机
-	DeviceType_DEVICE_TYPE_TABLET                DeviceType = 5 // 平板
-	DeviceType_DEVICE_TYPE_CONNECTED_DEVICE      DeviceType = 6 // 主机/流媒体盒等非 TV
-	DeviceType_DEVICE_TYPE_SET_TOP_BOX           DeviceType = 7 // 运营商机顶盒
-	DeviceType_DEVICE_TYPE_OOH_DEVICE            DeviceType = 8 // 户外屏设备
+	DeviceType_DEVICE_TYPE_UNSPECIFIED           DeviceType = 0 // Unspecified.
+	DeviceType_DEVICE_TYPE_MOBILE_TABLET_GENERAL DeviceType = 1 // General mobile device when phone/tablet (4/5) is unknown.
+	DeviceType_DEVICE_TYPE_PERSONAL_COMPUTER     DeviceType = 2 // Desktop or laptop browser.
+	DeviceType_DEVICE_TYPE_CONNECTED_TV          DeviceType = 3 // Smart TV / CTV.
+	DeviceType_DEVICE_TYPE_PHONE                 DeviceType = 4 // Phone.
+	DeviceType_DEVICE_TYPE_TABLET                DeviceType = 5 // Tablet.
+	DeviceType_DEVICE_TYPE_CONNECTED_DEVICE      DeviceType = 6 // Non-TV connected device, such as a console or streaming box.
+	DeviceType_DEVICE_TYPE_SET_TOP_BOX           DeviceType = 7 // Operator set-top box.
+	DeviceType_DEVICE_TYPE_OOH_DEVICE            DeviceType = 8 // Digital out-of-home screen.
 )
 
 // Enum value maps for DeviceType.
@@ -1037,18 +1038,18 @@ func (DeviceType) EnumDescriptor() ([]byte, []int) {
 	return file_oakrtb_v2_openrtb_proto_rawDescGZIP(), []int{15}
 }
 
-// ConnectionType：Device.connectiontype。0=未知。
+// ConnectionType applies to Device.connectiontype; zero means unknown.
 type ConnectionType int32
 
 const (
-	ConnectionType_CONNECTION_TYPE_UNKNOWN          ConnectionType = 0 // 未知
-	ConnectionType_CONNECTION_TYPE_ETHERNET         ConnectionType = 1 // 有线以太网
+	ConnectionType_CONNECTION_TYPE_UNKNOWN          ConnectionType = 0 // Unknown.
+	ConnectionType_CONNECTION_TYPE_ETHERNET         ConnectionType = 1 // Wired Ethernet.
 	ConnectionType_CONNECTION_TYPE_WIFI             ConnectionType = 2 // Wi‑Fi
-	ConnectionType_CONNECTION_TYPE_CELLULAR_UNKNOWN ConnectionType = 3 // 蜂窝（代数未知）
-	ConnectionType_CONNECTION_TYPE_CELLULAR_2G      ConnectionType = 4
-	ConnectionType_CONNECTION_TYPE_CELLULAR_3G      ConnectionType = 5
-	ConnectionType_CONNECTION_TYPE_CELLULAR_4G      ConnectionType = 6
-	ConnectionType_CONNECTION_TYPE_CELLULAR_5G      ConnectionType = 7
+	ConnectionType_CONNECTION_TYPE_CELLULAR_UNKNOWN ConnectionType = 3 // Cellular, generation unknown.
+	ConnectionType_CONNECTION_TYPE_CELLULAR_2G      ConnectionType = 4 // Cellular 2G.
+	ConnectionType_CONNECTION_TYPE_CELLULAR_3G      ConnectionType = 5 // Cellular 3G.
+	ConnectionType_CONNECTION_TYPE_CELLULAR_4G      ConnectionType = 6 // Cellular 4G.
+	ConnectionType_CONNECTION_TYPE_CELLULAR_5G      ConnectionType = 7 // Cellular 5G.
 )
 
 // Enum value maps for ConnectionType.
@@ -1102,14 +1103,14 @@ func (ConnectionType) EnumDescriptor() ([]byte, []int) {
 	return file_oakrtb_v2_openrtb_proto_rawDescGZIP(), []int{16}
 }
 
-// LocationType：Geo.type。
+// LocationType: Geo.type.
 type LocationType int32
 
 const (
-	LocationType_LOCATION_TYPE_UNSPECIFIED   LocationType = 0
-	LocationType_LOCATION_TYPE_GPS           LocationType = 1 // GPS/系统定位服务
-	LocationType_LOCATION_TYPE_IP            LocationType = 2 // IP 推断
-	LocationType_LOCATION_TYPE_USER_PROVIDED LocationType = 3 // 用户提供（如注册资料）
+	LocationType_LOCATION_TYPE_UNSPECIFIED   LocationType = 0 // Unspecified.
+	LocationType_LOCATION_TYPE_GPS           LocationType = 1 // GPS or operating-system location services.
+	LocationType_LOCATION_TYPE_IP            LocationType = 2 // Inferred from IP address.
+	LocationType_LOCATION_TYPE_USER_PROVIDED LocationType = 3 // User-provided, such as registration data.
 )
 
 // Enum value maps for LocationType.
@@ -1155,14 +1156,14 @@ func (LocationType) EnumDescriptor() ([]byte, []int) {
 	return file_oakrtb_v2_openrtb_proto_rawDescGZIP(), []int{17}
 }
 
-// IpLocationService：Geo.ipservice。
+// IpLocationService: Geo.ipservice.
 type IpLocationService int32
 
 const (
-	IpLocationService_IP_LOCATION_SERVICE_UNSPECIFIED IpLocationService = 0
-	IpLocationService_IP_LOCATION_SERVICE_IP2LOCATION IpLocationService = 1
+	IpLocationService_IP_LOCATION_SERVICE_UNSPECIFIED IpLocationService = 0 // Unspecified.
+	IpLocationService_IP_LOCATION_SERVICE_IP2LOCATION IpLocationService = 1 // IP2Location
 	IpLocationService_IP_LOCATION_SERVICE_NEUSTAR     IpLocationService = 2 // Neustar (Quova)
-	IpLocationService_IP_LOCATION_SERVICE_MAXMIND     IpLocationService = 3
+	IpLocationService_IP_LOCATION_SERVICE_MAXMIND     IpLocationService = 3 // MaxMind
 	IpLocationService_IP_LOCATION_SERVICE_NETACUITY   IpLocationService = 4 // Digital Element
 )
 
@@ -1211,18 +1212,18 @@ func (IpLocationService) EnumDescriptor() ([]byte, []int) {
 	return file_oakrtb_v2_openrtb_proto_rawDescGZIP(), []int{18}
 }
 
-// ContentContext：Content.context。
+// ContentContext: Content.context.
 type ContentContext int32
 
 const (
-	ContentContext_CONTENT_CONTEXT_UNSPECIFIED ContentContext = 0
-	ContentContext_CONTENT_CONTEXT_VIDEO       ContentContext = 1 // 视频文件/流
-	ContentContext_CONTENT_CONTEXT_GAME        ContentContext = 2 // 游戏
-	ContentContext_CONTENT_CONTEXT_MUSIC       ContentContext = 3 // 音乐/电台流
-	ContentContext_CONTENT_CONTEXT_APPLICATION ContentContext = 4 // 应用
-	ContentContext_CONTENT_CONTEXT_TEXT        ContentContext = 5 // 文本页/文章
-	ContentContext_CONTENT_CONTEXT_OTHER       ContentContext = 6 // 其他
-	ContentContext_CONTENT_CONTEXT_UNKNOWN     ContentContext = 7 // 未知
+	ContentContext_CONTENT_CONTEXT_UNSPECIFIED ContentContext = 0 // Unspecified.
+	ContentContext_CONTENT_CONTEXT_VIDEO       ContentContext = 1 // Video file or stream.
+	ContentContext_CONTENT_CONTEXT_GAME        ContentContext = 2 // Game.
+	ContentContext_CONTENT_CONTEXT_MUSIC       ContentContext = 3 // Music or radio stream.
+	ContentContext_CONTENT_CONTEXT_APPLICATION ContentContext = 4 // Application.
+	ContentContext_CONTENT_CONTEXT_TEXT        ContentContext = 5 // Text page or article.
+	ContentContext_CONTENT_CONTEXT_OTHER       ContentContext = 6 // Other.
+	ContentContext_CONTENT_CONTEXT_UNKNOWN     ContentContext = 7 // Unknown.
 )
 
 // Enum value maps for ContentContext.
@@ -1276,13 +1277,13 @@ func (ContentContext) EnumDescriptor() ([]byte, []int) {
 	return file_oakrtb_v2_openrtb_proto_rawDescGZIP(), []int{19}
 }
 
-// ProductionQuality：Content.prodq。
+// ProductionQuality: Content.prodq.
 type ProductionQuality int32
 
 const (
-	ProductionQuality_PRODUCTION_QUALITY_UNKNOWN        ProductionQuality = 0 // 未知
-	ProductionQuality_PRODUCTION_QUALITY_PROFESSIONAL   ProductionQuality = 1 // 专业制作
-	ProductionQuality_PRODUCTION_QUALITY_PROSUMER       ProductionQuality = 2 // 准专业
+	ProductionQuality_PRODUCTION_QUALITY_UNKNOWN        ProductionQuality = 0 // Unknown.
+	ProductionQuality_PRODUCTION_QUALITY_PROFESSIONAL   ProductionQuality = 1 // Professional production.
+	ProductionQuality_PRODUCTION_QUALITY_PROSUMER       ProductionQuality = 2 // Prosumer production.
 	ProductionQuality_PRODUCTION_QUALITY_USER_GENERATED ProductionQuality = 3 // UGC
 )
 
@@ -1329,14 +1330,14 @@ func (ProductionQuality) EnumDescriptor() ([]byte, []int) {
 	return file_oakrtb_v2_openrtb_proto_rawDescGZIP(), []int{20}
 }
 
-// MediaRating：Content.qagmediarating / Bid.qagmediarating（QAG/IQG）。
+// MediaRating: Content.qagmediarating / Bid.qagmediarating (QAG/IQG).
 type MediaRating int32
 
 const (
-	MediaRating_MEDIA_RATING_UNSPECIFIED   MediaRating = 0
-	MediaRating_MEDIA_RATING_ALL_AUDIENCES MediaRating = 1 // 全年龄
-	MediaRating_MEDIA_RATING_OVER_12       MediaRating = 2 // 12 岁以上
-	MediaRating_MEDIA_RATING_MATURE        MediaRating = 3 // 成人向
+	MediaRating_MEDIA_RATING_UNSPECIFIED   MediaRating = 0 // Unspecified.
+	MediaRating_MEDIA_RATING_ALL_AUDIENCES MediaRating = 1 // All audiences.
+	MediaRating_MEDIA_RATING_OVER_12       MediaRating = 2 // Ages 12 and above.
+	MediaRating_MEDIA_RATING_MATURE        MediaRating = 3 // Mature audiences.
 )
 
 // Enum value maps for MediaRating.
@@ -1382,18 +1383,18 @@ func (MediaRating) EnumDescriptor() ([]byte, []int) {
 	return file_oakrtb_v2_openrtb_proto_rawDescGZIP(), []int{21}
 }
 
-// CategoryTaxonomy：*.cattax。>=500 厂商自定义。
+// CategoryTaxonomy applies to *.cattax; values >=500 are vendor-specific.
 type CategoryTaxonomy int32
 
 const (
-	CategoryTaxonomy_CATEGORY_TAXONOMY_UNSPECIFIED        CategoryTaxonomy = 0
-	CategoryTaxonomy_CATEGORY_TAXONOMY_IAB_CONTENT_1_0    CategoryTaxonomy = 1 // IAB Content Category 1.0（已不推荐）
-	CategoryTaxonomy_CATEGORY_TAXONOMY_IAB_CONTENT_2_0    CategoryTaxonomy = 2 // IAB Content Category 2.0（已不推荐）
+	CategoryTaxonomy_CATEGORY_TAXONOMY_UNSPECIFIED        CategoryTaxonomy = 0 // Unspecified.
+	CategoryTaxonomy_CATEGORY_TAXONOMY_IAB_CONTENT_1_0    CategoryTaxonomy = 1 // IAB Content Category 1.0 (no longer recommended).
+	CategoryTaxonomy_CATEGORY_TAXONOMY_IAB_CONTENT_2_0    CategoryTaxonomy = 2 // IAB Content Category 2.0 (no longer recommended).
 	CategoryTaxonomy_CATEGORY_TAXONOMY_IAB_AD_PRODUCT_1_0 CategoryTaxonomy = 3 // IAB Ad Product Taxonomy 1.0
 	CategoryTaxonomy_CATEGORY_TAXONOMY_IAB_AUDIENCE_1_1   CategoryTaxonomy = 4 // IAB Audience Taxonomy 1.1
 	CategoryTaxonomy_CATEGORY_TAXONOMY_IAB_CONTENT_2_1    CategoryTaxonomy = 5 // IAB Content Taxonomy 2.1
 	CategoryTaxonomy_CATEGORY_TAXONOMY_IAB_CONTENT_2_2    CategoryTaxonomy = 6 // IAB Content Taxonomy 2.2
-	CategoryTaxonomy_CATEGORY_TAXONOMY_IAB_CONTENT_3_0    CategoryTaxonomy = 7 // IAB Content Taxonomy 3.0（若实现支持）
+	CategoryTaxonomy_CATEGORY_TAXONOMY_IAB_CONTENT_3_0    CategoryTaxonomy = 7 // IAB Content Taxonomy 3.0, where supported.
 )
 
 // Enum value maps for CategoryTaxonomy.
@@ -1447,14 +1448,14 @@ func (CategoryTaxonomy) EnumDescriptor() ([]byte, []int) {
 	return file_oakrtb_v2_openrtb_proto_rawDescGZIP(), []int{22}
 }
 
-// FeedType：Audio.feed。
+// FeedType: Audio.feed.
 type FeedType int32
 
 const (
-	FeedType_FEED_TYPE_UNSPECIFIED     FeedType = 0
-	FeedType_FEED_TYPE_MUSIC_SERVICE   FeedType = 1 // 音乐服务
-	FeedType_FEED_TYPE_FM_AM_BROADCAST FeedType = 2 // 调频/调幅广播
-	FeedType_FEED_TYPE_PODCAST         FeedType = 3 // 播客
+	FeedType_FEED_TYPE_UNSPECIFIED     FeedType = 0 // Unspecified.
+	FeedType_FEED_TYPE_MUSIC_SERVICE   FeedType = 1 // Music service.
+	FeedType_FEED_TYPE_FM_AM_BROADCAST FeedType = 2 // FM/AM radio.
+	FeedType_FEED_TYPE_PODCAST         FeedType = 3 // Podcast.
 )
 
 // Enum value maps for FeedType.
@@ -1500,15 +1501,15 @@ func (FeedType) EnumDescriptor() ([]byte, []int) {
 	return file_oakrtb_v2_openrtb_proto_rawDescGZIP(), []int{23}
 }
 
-// VolumeNormalizationMode：Audio.nvol。
+// VolumeNormalizationMode: Audio.nvol.
 type VolumeNormalizationMode int32
 
 const (
-	VolumeNormalizationMode_VOLUME_NORM_NONE     VolumeNormalizationMode = 0 // 无
-	VolumeNormalizationMode_VOLUME_NORM_AVERAGE  VolumeNormalizationMode = 1 // 按内容平均音量归一
-	VolumeNormalizationMode_VOLUME_NORM_PEAK     VolumeNormalizationMode = 2 // 按内容峰值归一
-	VolumeNormalizationMode_VOLUME_NORM_LOUDNESS VolumeNormalizationMode = 3 // 响度归一
-	VolumeNormalizationMode_VOLUME_NORM_CUSTOM   VolumeNormalizationMode = 4 // 自定义归一
+	VolumeNormalizationMode_VOLUME_NORM_NONE     VolumeNormalizationMode = 0 // None.
+	VolumeNormalizationMode_VOLUME_NORM_AVERAGE  VolumeNormalizationMode = 1 // Normalize to average content volume.
+	VolumeNormalizationMode_VOLUME_NORM_PEAK     VolumeNormalizationMode = 2 // Normalize to peak content volume.
+	VolumeNormalizationMode_VOLUME_NORM_LOUDNESS VolumeNormalizationMode = 3 // Loudness normalization.
+	VolumeNormalizationMode_VOLUME_NORM_CUSTOM   VolumeNormalizationMode = 4 // Custom normalization.
 )
 
 // Enum value maps for VolumeNormalizationMode.
@@ -1556,14 +1557,14 @@ func (VolumeNormalizationMode) EnumDescriptor() ([]byte, []int) {
 	return file_oakrtb_v2_openrtb_proto_rawDescGZIP(), []int{24}
 }
 
-// AgentType：UID.atype。>=500 厂商自定义。
+// AgentType applies to UID.atype; values >=500 are vendor-specific.
 type AgentType int32
 
 const (
-	AgentType_AGENT_TYPE_UNSPECIFIED   AgentType = 0
-	AgentType_AGENT_TYPE_WEB_OR_DEVICE AgentType = 1 // 浏览器/设备级 ID（cookie 等）
-	AgentType_AGENT_TYPE_IN_APP        AgentType = 2 // App 内（设备广告 ID 等）
-	AgentType_AGENT_TYPE_PERSON        AgentType = 3 // 跨设备人物级 ID
+	AgentType_AGENT_TYPE_UNSPECIFIED   AgentType = 0 // Unspecified.
+	AgentType_AGENT_TYPE_WEB_OR_DEVICE AgentType = 1 // Browser/device-level ID, such as a cookie.
+	AgentType_AGENT_TYPE_IN_APP        AgentType = 2 // In-app ID, such as a device advertising ID.
+	AgentType_AGENT_TYPE_PERSON        AgentType = 3 // Person-level ID across devices.
 )
 
 // Enum value maps for AgentType.
@@ -1609,21 +1610,21 @@ func (AgentType) EnumDescriptor() ([]byte, []int) {
 	return file_oakrtb_v2_openrtb_proto_rawDescGZIP(), []int{25}
 }
 
-// NoBidReason：BidResponse.nbr。>=500 Exchange 自定义。
+// NoBidReason applies to BidResponse.nbr; values >=500 are exchange-specific.
 type NoBidReason int32
 
 const (
-	NoBidReason_NO_BID_REASON_UNKNOWN_ERROR      NoBidReason = 0  // 未知错误
-	NoBidReason_NO_BID_REASON_TECHNICAL_ERROR    NoBidReason = 1  // 技术错误
-	NoBidReason_NO_BID_REASON_INVALID_REQUEST    NoBidReason = 2  // 请求非法
-	NoBidReason_NO_BID_REASON_KNOWN_WEB_SPIDER   NoBidReason = 3  // 已知爬虫
-	NoBidReason_NO_BID_REASON_SUSPECTED_NONHUMAN NoBidReason = 4  // 疑似非人流量
-	NoBidReason_NO_BID_REASON_CLOUD_OR_PROXY_IP  NoBidReason = 5  // 云/机房/代理 IP
-	NoBidReason_NO_BID_REASON_UNSUPPORTED_DEVICE NoBidReason = 6  // 不支持的设备
-	NoBidReason_NO_BID_REASON_BLOCKED_PUBLISHER  NoBidReason = 7  // 屏蔽的发布商/站点
-	NoBidReason_NO_BID_REASON_UNMATCHED_USER     NoBidReason = 8  // 用户未匹配
-	NoBidReason_NO_BID_REASON_DAILY_READER_CAP   NoBidReason = 9  // 日读者上限
-	NoBidReason_NO_BID_REASON_DAILY_DOMAIN_CAP   NoBidReason = 10 // 日域名上限
+	NoBidReason_NO_BID_REASON_UNKNOWN_ERROR      NoBidReason = 0  // Unknown error.
+	NoBidReason_NO_BID_REASON_TECHNICAL_ERROR    NoBidReason = 1  // Technical error.
+	NoBidReason_NO_BID_REASON_INVALID_REQUEST    NoBidReason = 2  // Invalid request.
+	NoBidReason_NO_BID_REASON_KNOWN_WEB_SPIDER   NoBidReason = 3  // Known crawler.
+	NoBidReason_NO_BID_REASON_SUSPECTED_NONHUMAN NoBidReason = 4  // Suspected non-human traffic.
+	NoBidReason_NO_BID_REASON_CLOUD_OR_PROXY_IP  NoBidReason = 5  // Cloud, data-center or proxy IP address.
+	NoBidReason_NO_BID_REASON_UNSUPPORTED_DEVICE NoBidReason = 6  // Unsupported device.
+	NoBidReason_NO_BID_REASON_BLOCKED_PUBLISHER  NoBidReason = 7  // Blocked publisher or site.
+	NoBidReason_NO_BID_REASON_UNMATCHED_USER     NoBidReason = 8  // Unmatched user.
+	NoBidReason_NO_BID_REASON_DAILY_READER_CAP   NoBidReason = 9  // Daily reader cap.
+	NoBidReason_NO_BID_REASON_DAILY_DOMAIN_CAP   NoBidReason = 10 // Daily domain cap.
 )
 
 // Enum value maps for NoBidReason.
@@ -1683,12 +1684,12 @@ func (NoBidReason) EnumDescriptor() ([]byte, []int) {
 	return file_oakrtb_v2_openrtb_proto_rawDescGZIP(), []int{26}
 }
 
-// FlagBool：通用 0/1 开关字段（test/instl/secure/skip/rwdd 等）。
+// FlagBool provides common 0/1 flags, such as test/instl/secure/skip/rwdd.
 type FlagBool int32
 
 const (
-	FlagBool_FLAG_FALSE FlagBool = 0 // 否 / 关闭 / 生产（视字段而定）
-	FlagBool_FLAG_TRUE  FlagBool = 1 // 是 / 开启 / 测试（视字段而定）
+	FlagBool_FLAG_FALSE FlagBool = 0 // No, off or production, depending on the field.
+	FlagBool_FLAG_TRUE  FlagBool = 1 // Yes, on or test, depending on the field.
 )
 
 // Enum value maps for FlagBool.
@@ -1730,14 +1731,14 @@ func (FlagBool) EnumDescriptor() ([]byte, []int) {
 	return file_oakrtb_v2_openrtb_proto_rawDescGZIP(), []int{27}
 }
 
-// Ssai：Imp.ssai 服务端广告插入。
+// Ssai identifies server-side ad insertion for Imp.ssai.
 type Ssai int32
 
 const (
-	Ssai_SSAI_UNKNOWN Ssai = 0 // 未知
-	Ssai_SSAI_CLIENT  Ssai = 1 // 客户端插入
-	Ssai_SSAI_SERVER  Ssai = 2 // 服务端插入（SSAI）
-	Ssai_SSAI_MIXED   Ssai = 3 // 客户端+服务端混合
+	Ssai_SSAI_UNKNOWN Ssai = 0 // Unknown.
+	Ssai_SSAI_CLIENT  Ssai = 1 // Client-side insertion.
+	Ssai_SSAI_SERVER  Ssai = 2 // Server-side ad insertion (SSAI).
+	Ssai_SSAI_MIXED   Ssai = 3 // Hybrid client-side/server-side insertion.
 )
 
 // Enum value maps for Ssai.
@@ -1783,12 +1784,12 @@ func (Ssai) EnumDescriptor() ([]byte, []int) {
 	return file_oakrtb_v2_openrtb_proto_rawDescGZIP(), []int{28}
 }
 
-// QtySourceType：Qty.sourcetype。
+// QtySourceType: Qty.sourcetype.
 type QtySourceType int32
 
 const (
-	QtySourceType_QTY_SOURCE_MEASUREMENT_VENDOR QtySourceType = 0 // 度量厂商通用方法（CMM 等）
-	QtySourceType_QTY_SOURCE_PUBLISHER          QtySourceType = 1 // 发布商/厂商特定方法
+	QtySourceType_QTY_SOURCE_MEASUREMENT_VENDOR QtySourceType = 0 // Measurement-provider common method, such as CMM.
+	QtySourceType_QTY_SOURCE_PUBLISHER          QtySourceType = 1 // Publisher- or vendor-specific method.
 )
 
 // Enum value maps for QtySourceType.
@@ -1830,14 +1831,14 @@ func (QtySourceType) EnumDescriptor() ([]byte, []int) {
 	return file_oakrtb_v2_openrtb_proto_rawDescGZIP(), []int{29}
 }
 
-// SlotInPod：Video/Audio/Bid.slotinpod（标准非负取值；-1=最后槽见字段注释）。
+// SlotInPod applies to Video/Audio/Bid.slotinpod; standard nonnegative values are listed here, with -1 (last slot) documented on fields.
 type SlotInPod int32
 
 const (
-	SlotInPod_SLOT_IN_POD_ANY                  SlotInPod = 0 // 任意槽
-	SlotInPod_SLOT_IN_POD_FIRST                SlotInPod = 1 // 仅第一/开头
-	SlotInPod_SLOT_IN_POD_FIRST_OR_LAST        SlotInPod = 2 // 第一或最后
-	SlotInPod_SLOT_IN_POD_FIRST_MIDDLE_OR_LAST SlotInPod = 3 // 第一/中间/最后均可
+	SlotInPod_SLOT_IN_POD_ANY                  SlotInPod = 0 // Any slot.
+	SlotInPod_SLOT_IN_POD_FIRST                SlotInPod = 1 // First/start slot only.
+	SlotInPod_SLOT_IN_POD_FIRST_OR_LAST        SlotInPod = 2 // First or last slot.
+	SlotInPod_SLOT_IN_POD_FIRST_MIDDLE_OR_LAST SlotInPod = 3 // First, middle or last slot.
 )
 
 // Enum value maps for SlotInPod.
@@ -1883,12 +1884,12 @@ func (SlotInPod) EnumDescriptor() ([]byte, []int) {
 	return file_oakrtb_v2_openrtb_proto_rawDescGZIP(), []int{30}
 }
 
-// PodSequence：Video/Audio.podseq（标准非负；-1=最后一个 pod 见字段注释）。
+// PodSequence applies to Video/Audio.podseq; standard nonnegative values are listed here, with -1 (last pod) documented on fields.
 type PodSequence int32
 
 const (
-	PodSequence_POD_SEQUENCE_ANY   PodSequence = 0 // 任意 pod
-	PodSequence_POD_SEQUENCE_FIRST PodSequence = 1 // 第一个 pod
+	PodSequence_POD_SEQUENCE_ANY   PodSequence = 0 // Any pod.
+	PodSequence_POD_SEQUENCE_FIRST PodSequence = 1 // First pod.
 )
 
 // Enum value maps for PodSequence.
@@ -1930,12 +1931,12 @@ func (PodSequence) EnumDescriptor() ([]byte, []int) {
 	return file_oakrtb_v2_openrtb_proto_rawDescGZIP(), []int{31}
 }
 
-// SourceRelationship：Content.sourcerelationship。
+// SourceRelationship: Content.sourcerelationship.
 type SourceRelationship int32
 
 const (
-	SourceRelationship_SOURCE_RELATIONSHIP_INDIRECT SourceRelationship = 0 // 间接
-	SourceRelationship_SOURCE_RELATIONSHIP_DIRECT   SourceRelationship = 1 // 直接
+	SourceRelationship_SOURCE_RELATIONSHIP_INDIRECT SourceRelationship = 0 // Indirect.
+	SourceRelationship_SOURCE_RELATIONSHIP_DIRECT   SourceRelationship = 1 // Direct.
 )
 
 // Enum value maps for SourceRelationship.
@@ -1977,14 +1978,14 @@ func (SourceRelationship) EnumDescriptor() ([]byte, []int) {
 	return file_oakrtb_v2_openrtb_proto_rawDescGZIP(), []int{32}
 }
 
-// UserAgentSource：UserAgent.source（SUA 数据来源）。
+// UserAgentSource identifies the source of SUA data in UserAgent.source.
 type UserAgentSource int32
 
 const (
-	UserAgentSource_USER_AGENT_SOURCE_UNSPECIFIED       UserAgentSource = 0 // 未知/不适用
-	UserAgentSource_USER_AGENT_SOURCE_CLIENT_HINTS_LOW  UserAgentSource = 1 // 仅低熵 Client Hints
-	UserAgentSource_USER_AGENT_SOURCE_CLIENT_HINTS_HIGH UserAgentSource = 2 // 含高熵 Client Hints
-	UserAgentSource_USER_AGENT_SOURCE_USER_AGENT_STRING UserAgentSource = 3 // 原始 UA 字符串解析
+	UserAgentSource_USER_AGENT_SOURCE_UNSPECIFIED       UserAgentSource = 0 // Unknown or not applicable.
+	UserAgentSource_USER_AGENT_SOURCE_CLIENT_HINTS_LOW  UserAgentSource = 1 // Low-entropy Client Hints only.
+	UserAgentSource_USER_AGENT_SOURCE_CLIENT_HINTS_HIGH UserAgentSource = 2 // Includes high-entropy Client Hints.
+	UserAgentSource_USER_AGENT_SOURCE_USER_AGENT_STRING UserAgentSource = 3 // Parsed from the raw UA string.
 )
 
 // Enum value maps for UserAgentSource.
@@ -2030,60 +2031,228 @@ func (UserAgentSource) EnumDescriptor() ([]byte, []int) {
 	return file_oakrtb_v2_openrtb_proto_rawDescGZIP(), []int{33}
 }
 
+// PodDeduplication applies to Video.poddedupe (AdCOM Pod Deduplication Settings); multiple values are allowed.
+type PodDeduplication int32
+
+const (
+	PodDeduplication_POD_DEDUPE_UNSPECIFIED   PodDeduplication = 0 // Unspecified protobuf placeholder; the AdCOM list starts at 1.
+	PodDeduplication_POD_DEDUPE_ADOMAIN       PodDeduplication = 1 // Deduplicate by advertiser domain (adomain).
+	PodDeduplication_POD_DEDUPE_IAB_CATEGORY  PodDeduplication = 2 // Deduplicate by IAB Tech Lab Content Taxonomy category.
+	PodDeduplication_POD_DEDUPE_CREATIVE_ID   PodDeduplication = 3 // Deduplicate by creative ID.
+	PodDeduplication_POD_DEDUPE_MEDIAFILE_URL PodDeduplication = 4 // Deduplicate by mediafile URL.
+)
+
+// Enum value maps for PodDeduplication.
+var (
+	PodDeduplication_name = map[int32]string{
+		0: "POD_DEDUPE_UNSPECIFIED",
+		1: "POD_DEDUPE_ADOMAIN",
+		2: "POD_DEDUPE_IAB_CATEGORY",
+		3: "POD_DEDUPE_CREATIVE_ID",
+		4: "POD_DEDUPE_MEDIAFILE_URL",
+	}
+	PodDeduplication_value = map[string]int32{
+		"POD_DEDUPE_UNSPECIFIED":   0,
+		"POD_DEDUPE_ADOMAIN":       1,
+		"POD_DEDUPE_IAB_CATEGORY":  2,
+		"POD_DEDUPE_CREATIVE_ID":   3,
+		"POD_DEDUPE_MEDIAFILE_URL": 4,
+	}
+)
+
+func (x PodDeduplication) Enum() *PodDeduplication {
+	p := new(PodDeduplication)
+	*p = x
+	return p
+}
+
+func (x PodDeduplication) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (PodDeduplication) Descriptor() protoreflect.EnumDescriptor {
+	return file_oakrtb_v2_openrtb_proto_enumTypes[34].Descriptor()
+}
+
+func (PodDeduplication) Type() protoreflect.EnumType {
+	return &file_oakrtb_v2_openrtb_proto_enumTypes[34]
+}
+
+func (x PodDeduplication) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use PodDeduplication.Descriptor instead.
+func (PodDeduplication) EnumDescriptor() ([]byte, []int) {
+	return file_oakrtb_v2_openrtb_proto_rawDescGZIP(), []int{34}
+}
+
+// AutoRefreshTrigger: RefSettings.reftype (AdCOM Auto Refresh Triggers).
+type AutoRefreshTrigger int32
+
+const (
+	AutoRefreshTrigger_AUTO_REFRESH_TRIGGER_UNKNOWN     AutoRefreshTrigger = 0 // Unknown.
+	AutoRefreshTrigger_AUTO_REFRESH_TRIGGER_USER_ACTION AutoRefreshTrigger = 1 // Refresh triggered by user action.
+	AutoRefreshTrigger_AUTO_REFRESH_TRIGGER_EVENT       AutoRefreshTrigger = 2 // Event-driven refresh, such as content interaction.
+	AutoRefreshTrigger_AUTO_REFRESH_TRIGGER_TIME        AutoRefreshTrigger = 3 // Automatic refresh at timed intervals.
+)
+
+// Enum value maps for AutoRefreshTrigger.
+var (
+	AutoRefreshTrigger_name = map[int32]string{
+		0: "AUTO_REFRESH_TRIGGER_UNKNOWN",
+		1: "AUTO_REFRESH_TRIGGER_USER_ACTION",
+		2: "AUTO_REFRESH_TRIGGER_EVENT",
+		3: "AUTO_REFRESH_TRIGGER_TIME",
+	}
+	AutoRefreshTrigger_value = map[string]int32{
+		"AUTO_REFRESH_TRIGGER_UNKNOWN":     0,
+		"AUTO_REFRESH_TRIGGER_USER_ACTION": 1,
+		"AUTO_REFRESH_TRIGGER_EVENT":       2,
+		"AUTO_REFRESH_TRIGGER_TIME":        3,
+	}
+)
+
+func (x AutoRefreshTrigger) Enum() *AutoRefreshTrigger {
+	p := new(AutoRefreshTrigger)
+	*p = x
+	return p
+}
+
+func (x AutoRefreshTrigger) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (AutoRefreshTrigger) Descriptor() protoreflect.EnumDescriptor {
+	return file_oakrtb_v2_openrtb_proto_enumTypes[35].Descriptor()
+}
+
+func (AutoRefreshTrigger) Type() protoreflect.EnumType {
+	return &file_oakrtb_v2_openrtb_proto_enumTypes[35]
+}
+
+func (x AutoRefreshTrigger) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use AutoRefreshTrigger.Descriptor instead.
+func (AutoRefreshTrigger) EnumDescriptor() ([]byte, []int) {
+	return file_oakrtb_v2_openrtb_proto_rawDescGZIP(), []int{35}
+}
+
+// IdMatchMethod applies to EID.mm (AdCOM ID Match Methods); values >=500 are vendor-specific.
+type IdMatchMethod int32
+
+const (
+	IdMatchMethod_ID_MATCH_METHOD_UNKNOWN             IdMatchMethod = 0 // Unknown.
+	IdMatchMethod_ID_MATCH_METHOD_NO_MATCH            IdMatchMethod = 1 // Unmatched: obtained directly from a third-party cookie or IFA.
+	IdMatchMethod_ID_MATCH_METHOD_BROWSER_COOKIE_SYNC IdMatchMethod = 2 // Real-time browser cookie synchronization.
+	IdMatchMethod_ID_MATCH_METHOD_AUTHENTICATED       IdMatchMethod = 3 // Authenticated user match, such as email login or hashed PII.
+	IdMatchMethod_ID_MATCH_METHOD_OBSERVED            IdMatchMethod = 4 // Unauthenticated first-party observation, such as GUID, SharedID or session data.
+	IdMatchMethod_ID_MATCH_METHOD_INFERENCE           IdMatchMethod = 5 // Inferred across browsers/devices, such as IP plus UA.
+)
+
+// Enum value maps for IdMatchMethod.
+var (
+	IdMatchMethod_name = map[int32]string{
+		0: "ID_MATCH_METHOD_UNKNOWN",
+		1: "ID_MATCH_METHOD_NO_MATCH",
+		2: "ID_MATCH_METHOD_BROWSER_COOKIE_SYNC",
+		3: "ID_MATCH_METHOD_AUTHENTICATED",
+		4: "ID_MATCH_METHOD_OBSERVED",
+		5: "ID_MATCH_METHOD_INFERENCE",
+	}
+	IdMatchMethod_value = map[string]int32{
+		"ID_MATCH_METHOD_UNKNOWN":             0,
+		"ID_MATCH_METHOD_NO_MATCH":            1,
+		"ID_MATCH_METHOD_BROWSER_COOKIE_SYNC": 2,
+		"ID_MATCH_METHOD_AUTHENTICATED":       3,
+		"ID_MATCH_METHOD_OBSERVED":            4,
+		"ID_MATCH_METHOD_INFERENCE":           5,
+	}
+)
+
+func (x IdMatchMethod) Enum() *IdMatchMethod {
+	p := new(IdMatchMethod)
+	*p = x
+	return p
+}
+
+func (x IdMatchMethod) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (IdMatchMethod) Descriptor() protoreflect.EnumDescriptor {
+	return file_oakrtb_v2_openrtb_proto_enumTypes[36].Descriptor()
+}
+
+func (IdMatchMethod) Type() protoreflect.EnumType {
+	return &file_oakrtb_v2_openrtb_proto_enumTypes[36]
+}
+
+func (x IdMatchMethod) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use IdMatchMethod.Descriptor instead.
+func (IdMatchMethod) EnumDescriptor() ([]byte, []int) {
+	return file_oakrtb_v2_openrtb_proto_rawDescGZIP(), []int{36}
+}
+
 // ---------------------------------------------------------------------------
-// BidRequest — Exchange → Bidder 的一次拍卖请求
-// 场景：每次广告位竞价发一单；必填 id + 至少一个 Imp；site/app/dooh 三选一推荐。
+// BidRequest: one auction request from an exchange to a bidder.
+// One request per auction; id, at, cur and at least one Imp are required. One of site/app/dooh is recommended.
 // ---------------------------------------------------------------------------
 type BidRequest struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	// 本场拍卖唯一 ID。必填。BidResponse.id 必须原样回传，用于对账与日志关联。
+	// Unique auction ID. Required. BidResponse.id must echo it unchanged for reconciliation and log correlation.
 	Id string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	// 待售展示机会列表。必填，至少 1 个。一单可多 Imp（多广告位/多形态）。
+	// Impression opportunities for sale. Required and nonempty; a request may include multiple placements or formats.
 	Imp []*Imp `protobuf:"bytes,2,rep,name=imp,proto3" json:"imp,omitempty"`
-	// 网站库存。与 app、dooh 互斥。场景：网页/移动 Web 广告位。
+	// Site inventory, mutually exclusive with app/dooh; used for desktop and mobile web placements.
 	Site *Site `protobuf:"bytes,3,opt,name=site,proto3" json:"site,omitempty"`
-	// 应用库存。与 site、dooh 互斥。场景：iOS/Android App 内广告。
+	// App inventory, mutually exclusive with site/dooh; used for iOS/Android in-app ads.
 	App *App `protobuf:"bytes,4,opt,name=app,proto3" json:"app,omitempty"`
-	// 数字户外库存。与 site、app 互斥。场景：DOOH 屏/看板。
+	// Digital out-of-home inventory, mutually exclusive with site/app; used for DOOH screens and billboards.
 	Dooh *Dooh `protobuf:"bytes,5,opt,name=dooh,proto3" json:"dooh,omitempty"`
-	// 设备与环境。强烈推荐。场景：定向、反作弊、创意适配（尺寸/OS）。
+	// Device and environment. Strongly recommended for targeting, fraud detection and creative size/OS compatibility.
 	Device *Device `protobuf:"bytes,6,opt,name=device,proto3" json:"device,omitempty"`
-	// 用户/受众。推荐。场景：频控、人群定向、同意信号（consent/eids）。
+	// User/audience. Recommended for frequency capping, audience targeting and consent/eids signals.
 	User *User `protobuf:"bytes,7,opt,name=user,proto3" json:"user,omitempty"`
-	// 测试模式。取值 FlagBool：0=生产，1=测试。场景：联调；测试流量不得计入计费。
-	Test int32 `protobuf:"varint,8,opt,name=test,proto3" json:"test,omitempty"`
-	// 拍卖类型。取值 AuctionType：1=一价，2=二价+（默认），3=固定价（仅 Deal）；>=500 Exchange 自定义。
-	// 场景：告诉 DSP 如何理解胜出价格。
-	At int32 `protobuf:"varint,9,opt,name=at,proto3" json:"at,omitempty"`
-	// 超时毫秒（含网络）。场景：DSP 必须在 tmax 内返回，否则 Exchange 当 204。
-	Tmax int32 `protobuf:"varint,10,opt,name=tmax,proto3" json:"tmax,omitempty"`
-	// 白名单 seat。场景：只允许名单内买家席位参竞。
+	// Test mode (FlagBool): 0=production, 1=test. Test traffic is for integration and must not be billed.
+	Test *int32 `protobuf:"varint,8,opt,name=test,proto3,oneof" json:"test,omitempty"`
+	// Auction type. Required. AuctionType: 1=first price, 2=second price plus, 3=fixed price (Deal only), >=500=exchange-specific.
+	// Defines how the DSP interprets the winning price. Schema/builders reject zero (unspecified).
+	At *int32 `protobuf:"varint,9,opt,name=at,proto3,oneof" json:"at,omitempty"`
+	// Timeout in milliseconds, including network time. The DSP must respond within tmax; otherwise the exchange treats it as 204.
+	Tmax *int32 `protobuf:"varint,10,opt,name=tmax,proto3,oneof" json:"tmax,omitempty"`
+	// Allowed seats; only listed buyer seats may participate.
 	Wseat []string `protobuf:"bytes,11,rep,name=wseat,proto3" json:"wseat,omitempty"`
-	// 黑名单 seat。场景：排除特定买家席位。
+	// Blocked seats; excludes specified buyers.
 	Bseat []string `protobuf:"bytes,12,rep,name=bseat,proto3" json:"bseat,omitempty"`
-	// 是否带齐全部 Imp。取值 FlagBool：0=否，1=是。场景：帮助 DSP 做全局预算与互斥决策。
-	Allimps int32 `protobuf:"varint,13,opt,name=allimps,proto3" json:"allimps,omitempty"`
-	// 可接受出价币种（ISO-4217）。场景：多币种结算；未列出则 DSP 勿用该币种。
+	// Whether all Imps are included (FlagBool): 0=no, 1=yes. Supports global budget and exclusivity decisions.
+	Allimps *int32 `protobuf:"varint,13,opt,name=allimps,proto3,oneof" json:"allimps,omitempty"`
+	// Accepted bid currencies (ISO-4217). Required and nonempty; DSPs must not use unlisted currencies.
 	Cur []string `protobuf:"bytes,14,rep,name=cur,proto3" json:"cur,omitempty"`
-	// 允许的创意语言（ISO-639-1）。场景：语言定向过滤。
+	// Allowed creative languages (ISO-639-1) for language targeting.
 	Wlang []string `protobuf:"bytes,15,rep,name=wlang,proto3" json:"wlang,omitempty"`
-	// 允许的创意语言（BCP-47）。场景：比 wlang 更细的语言标签。
+	// Allowed creative languages (BCP-47), providing more detail than wlang.
 	Wlangb []string `protobuf:"bytes,16,rep,name=wlangb,proto3" json:"wlangb,omitempty"`
-	// 允许的广告主行业类目。场景：白名单类目库存。
+	// Allowed advertiser industry categories for category-restricted inventory.
 	Acat []string `protobuf:"bytes,17,rep,name=acat,proto3" json:"acat,omitempty"`
-	// 屏蔽的广告主行业类目。场景：品牌安全/类目黑名单。
+	// Blocked advertiser industry categories for brand safety and category exclusion.
 	Bcat []string `protobuf:"bytes,18,rep,name=bcat,proto3" json:"bcat,omitempty"`
-	// 类目 taxonomy。取值 CategoryTaxonomy：1–7 见枚举；>=500 厂商自定义。场景：解释 cat/bcat/acat。
-	Cattax int32 `protobuf:"varint,19,opt,name=cattax,proto3" json:"cattax,omitempty"`
-	// 屏蔽广告主域名。场景：竞品/敏感域名屏蔽。
+	// Category taxonomy: CategoryTaxonomy values 1-7 are defined in the enum; >=500 are vendor-specific. Interprets cat/bcat/acat.
+	Cattax *int32 `protobuf:"varint,19,opt,name=cattax,proto3,oneof" json:"cattax,omitempty"`
+	// Blocked advertiser domains, such as competitors or sensitive domains.
 	Badv []string `protobuf:"bytes,20,rep,name=badv,proto3" json:"badv,omitempty"`
-	// 屏蔽应用 bundle/包名。场景：App 流量上屏蔽特定广告主 App。
+	// Blocked app bundles/package names; excludes specified advertiser apps on app inventory.
 	Bapp []string `protobuf:"bytes,21,rep,name=bapp,proto3" json:"bapp,omitempty"`
-	// 上游来源与供应链。场景：schain 透明化、header bidding 链路审计。
+	// Upstream source and supply chain, for schain transparency and header-bidding audits.
 	Source *Source `protobuf:"bytes,22,opt,name=source,proto3" json:"source,omitempty"`
-	// 法规与隐私信号。场景：COPPA/GDPR/CCPA/GPP 合规决策。
+	// Regulatory and privacy signals for COPPA/GDPR/CCPA/GPP decisions.
 	Regs *Regs `protobuf:"bytes,23,opt,name=regs,proto3" json:"regs,omitempty"`
-	// 扩展：JSON 对象字符串。场景：Exchange 私有字段，双方约定后使用。
+	// Extension JSON object string for exchange-specific fields agreed by both parties.
 	Ext           string `protobuf:"bytes,99,opt,name=ext,proto3" json:"ext,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -2169,22 +2338,22 @@ func (x *BidRequest) GetUser() *User {
 }
 
 func (x *BidRequest) GetTest() int32 {
-	if x != nil {
-		return x.Test
+	if x != nil && x.Test != nil {
+		return *x.Test
 	}
 	return 0
 }
 
 func (x *BidRequest) GetAt() int32 {
-	if x != nil {
-		return x.At
+	if x != nil && x.At != nil {
+		return *x.At
 	}
 	return 0
 }
 
 func (x *BidRequest) GetTmax() int32 {
-	if x != nil {
-		return x.Tmax
+	if x != nil && x.Tmax != nil {
+		return *x.Tmax
 	}
 	return 0
 }
@@ -2204,8 +2373,8 @@ func (x *BidRequest) GetBseat() []string {
 }
 
 func (x *BidRequest) GetAllimps() int32 {
-	if x != nil {
-		return x.Allimps
+	if x != nil && x.Allimps != nil {
+		return *x.Allimps
 	}
 	return 0
 }
@@ -2246,8 +2415,8 @@ func (x *BidRequest) GetBcat() []string {
 }
 
 func (x *BidRequest) GetCattax() int32 {
-	if x != nil {
-		return x.Cattax
+	if x != nil && x.Cattax != nil {
+		return *x.Cattax
 	}
 	return 0
 }
@@ -2288,56 +2457,56 @@ func (x *BidRequest) GetExt() string {
 }
 
 // ---------------------------------------------------------------------------
-// Imp — 单个展示机会（广告位）
-// 场景：每个可售位置一条；banner/video/audio/native 至少一种，可同时出现但一标只中一种。
+// Imp: one impression opportunity (placement).
+// One entry per saleable placement; at least one of banner/video/audio/native is required. Multiple formats may be offered, but a bid wins one format.
 // ---------------------------------------------------------------------------
 type Imp struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	// Imp 在本请求内唯一。必填。Bid.impid 必须回填此值。
+	// Required ID, unique within the request. Bid.impid must reference this value.
 	Id string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	// 库存质量/可验证指标。场景：viewability、视频完成率等第三方度量。
+	// Inventory quality or verification metrics, such as third-party viewability or video completion rates.
 	Metric []*Metric `protobuf:"bytes,2,rep,name=metric,proto3" json:"metric,omitempty"`
-	// 展示广告规格。场景：横幅、富媒体、插屏图片等。
+	// Display ad specifications for banners, rich media or interstitial images.
 	Banner *Banner `protobuf:"bytes,3,opt,name=banner,proto3" json:"banner,omitempty"`
-	// 视频广告规格。场景：前贴/中贴/后贴、激励视频、CTV pod。
+	// Video ad specifications for pre-/mid-/post-roll, rewarded video or CTV pods.
 	Video *Video `protobuf:"bytes,4,opt,name=video,proto3" json:"video,omitempty"`
-	// 音频广告规格。场景：播客、电台流、音乐 App。
+	// Audio ad specifications for podcasts, radio streams or music apps.
 	Audio *Audio `protobuf:"bytes,5,opt,name=audio,proto3" json:"audio,omitempty"`
-	// 原生广告规格。场景：信息流卡片；request 内嵌 Native 1.2 JSON。
+	// Native ad specifications for feed cards; request embeds Native 1.2 JSON.
 	Native *Native `protobuf:"bytes,6,opt,name=native,proto3" json:"native,omitempty"`
-	// 私有交易。场景：PDB/PD/Preferred Deal，带 deals[]。
+	// Private marketplace data for PDB/PD/Preferred Deals, including deals[].
 	Pmp *Pmp `protobuf:"bytes,7,opt,name=pmp,proto3" json:"pmp,omitempty"`
-	// 广告渲染 SDK/播放器名。场景：识别 Mediation/Player，做兼容定向。
+	// Rendering SDK/player name, used to identify mediation/player compatibility.
 	Displaymanager string `protobuf:"bytes,8,opt,name=displaymanager,proto3" json:"displaymanager,omitempty"`
-	// displaymanager 版本。场景：按 SDK 版本灰度或排障。
+	// displaymanager version, for SDK-version rollout and troubleshooting.
 	Displaymanagerver string `protobuf:"bytes,9,opt,name=displaymanagerver,proto3" json:"displaymanagerver,omitempty"`
-	// 是否插屏/全屏。取值 FlagBool：0=否，1=是。场景：插屏比价与体验策略。
-	Instl int32 `protobuf:"varint,10,opt,name=instl,proto3" json:"instl,omitempty"`
-	// 发布商广告位 ID。场景：按位优化、报表、底价策略。
+	// Interstitial/fullscreen flag (FlagBool): 0=no, 1=yes; used for pricing and experience policies.
+	Instl *int32 `protobuf:"varint,10,opt,name=instl,proto3,oneof" json:"instl,omitempty"`
+	// Publisher placement ID for optimization, reporting and floor policies.
 	Tagid string `protobuf:"bytes,11,opt,name=tagid,proto3" json:"tagid,omitempty"`
-	// CPM 底价。场景：低于此价的出价通常无效。
-	Bidfloor float64 `protobuf:"fixed64,12,opt,name=bidfloor,proto3" json:"bidfloor,omitempty"`
-	// 底价币种（ISO-4217）。场景：与 bidfloor 成对；默认常 USD。
+	// CPM floor; bids below this price are generally invalid.
+	Bidfloor *float64 `protobuf:"fixed64,12,opt,name=bidfloor,proto3,oneof" json:"bidfloor,omitempty"`
+	// Floor currency (ISO-4217), paired with bidfloor; commonly defaults to USD.
 	Bidfloorcur string `protobuf:"bytes,13,opt,name=bidfloorcur,proto3" json:"bidfloorcur,omitempty"`
-	// 点击打开方式。取值 FlagBool：0=嵌入 WebView，1=独立浏览器。场景：移动端落地页与归因。
-	Clickbrowser int32 `protobuf:"varint,14,opt,name=clickbrowser,proto3" json:"clickbrowser,omitempty"`
-	// 是否要求 HTTPS。取值 FlagBool：0=否，1=创意与页面须 HTTPS。场景：混合内容拦截环境。
-	Secure int32 `protobuf:"varint,15,opt,name=secure,proto3" json:"secure,omitempty"`
-	// 支持的 iframe buster 厂商名。场景：可跳出 iframe 的富媒体。
+	// Click destination behavior (FlagBool): 0=embedded WebView, 1=external browser; relevant to mobile landing pages and attribution.
+	Clickbrowser *int32 `protobuf:"varint,14,opt,name=clickbrowser,proto3,oneof" json:"clickbrowser,omitempty"`
+	// HTTPS requirement (FlagBool): 0=no, 1=creative and page must use HTTPS; relevant to mixed-content restrictions.
+	Secure *int32 `protobuf:"varint,15,opt,name=secure,proto3,oneof" json:"secure,omitempty"`
+	// Supported iframe-buster vendor names for rich media that can escape an iframe.
 	Iframebuster []string `protobuf:"bytes,16,rep,name=iframebuster,proto3" json:"iframebuster,omitempty"`
-	// 是否激励广告。取值 FlagBool：0=否，1=看完发奖。场景：激励视频；与普通贴片区分。
-	Rwdd int32 `protobuf:"varint,17,opt,name=rwdd,proto3" json:"rwdd,omitempty"`
-	// 服务端广告插入。取值 Ssai：0=未知，1=客户端，2=服务端，3=混合。场景：CTV/直播 SSAI。
-	Ssai int32 `protobuf:"varint,18,opt,name=ssai,proto3" json:"ssai,omitempty"`
-	// 展示过期秒数建议。场景：长时间会话中创意缓存多久失效。
-	Exp int32 `protobuf:"varint,19,opt,name=exp,proto3" json:"exp,omitempty"`
-	// 数量乘数。场景：DOOH/成组曝光，用 multiplier 换算计费展示量。
+	// Rewarded ad flag (FlagBool): 0=no, 1=reward after completion; distinguishes rewarded video from ordinary in-stream ads.
+	Rwdd *int32 `protobuf:"varint,17,opt,name=rwdd,proto3,oneof" json:"rwdd,omitempty"`
+	// Ad insertion mode (Ssai): 0=unknown, 1=client-side, 2=server-side, 3=hybrid; used for CTV/live SSAI.
+	Ssai *int32 `protobuf:"varint,18,opt,name=ssai,proto3,oneof" json:"ssai,omitempty"`
+	// Suggested impression expiry in seconds; bounds creative caching during long sessions.
+	Exp *int32 `protobuf:"varint,19,opt,name=exp,proto3,oneof" json:"exp,omitempty"`
+	// Quantity multiplier for DOOH/group impressions, converting to billable impression volume.
 	Qty *Qty `protobuf:"bytes,20,opt,name=qty,proto3" json:"qty,omitempty"`
-	// 距展示的估计秒数。场景：提前竞价（early auction）时的时间窗。
-	Dt float64 `protobuf:"fixed64,21,opt,name=dt,proto3" json:"dt,omitempty"`
-	// 自动刷新详情。场景：页内广告位自动轮换。
+	// Estimated seconds until display; defines the window for early auctions.
+	Dt *float64 `protobuf:"fixed64,21,opt,name=dt,proto3,oneof" json:"dt,omitempty"`
+	// Automatic refresh details for rotating in-page placements.
 	Refresh *Refresh `protobuf:"bytes,22,opt,name=refresh,proto3" json:"refresh,omitempty"`
-	// 扩展 JSON 字符串。
+	// Extension JSON string.
 	Ext           string `protobuf:"bytes,99,opt,name=ext,proto3" json:"ext,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -2437,8 +2606,8 @@ func (x *Imp) GetDisplaymanagerver() string {
 }
 
 func (x *Imp) GetInstl() int32 {
-	if x != nil {
-		return x.Instl
+	if x != nil && x.Instl != nil {
+		return *x.Instl
 	}
 	return 0
 }
@@ -2451,8 +2620,8 @@ func (x *Imp) GetTagid() string {
 }
 
 func (x *Imp) GetBidfloor() float64 {
-	if x != nil {
-		return x.Bidfloor
+	if x != nil && x.Bidfloor != nil {
+		return *x.Bidfloor
 	}
 	return 0
 }
@@ -2465,15 +2634,15 @@ func (x *Imp) GetBidfloorcur() string {
 }
 
 func (x *Imp) GetClickbrowser() int32 {
-	if x != nil {
-		return x.Clickbrowser
+	if x != nil && x.Clickbrowser != nil {
+		return *x.Clickbrowser
 	}
 	return 0
 }
 
 func (x *Imp) GetSecure() int32 {
-	if x != nil {
-		return x.Secure
+	if x != nil && x.Secure != nil {
+		return *x.Secure
 	}
 	return 0
 }
@@ -2486,22 +2655,22 @@ func (x *Imp) GetIframebuster() []string {
 }
 
 func (x *Imp) GetRwdd() int32 {
-	if x != nil {
-		return x.Rwdd
+	if x != nil && x.Rwdd != nil {
+		return *x.Rwdd
 	}
 	return 0
 }
 
 func (x *Imp) GetSsai() int32 {
-	if x != nil {
-		return x.Ssai
+	if x != nil && x.Ssai != nil {
+		return *x.Ssai
 	}
 	return 0
 }
 
 func (x *Imp) GetExp() int32 {
-	if x != nil {
-		return x.Exp
+	if x != nil && x.Exp != nil {
+		return *x.Exp
 	}
 	return 0
 }
@@ -2514,8 +2683,8 @@ func (x *Imp) GetQty() *Qty {
 }
 
 func (x *Imp) GetDt() float64 {
-	if x != nil {
-		return x.Dt
+	if x != nil && x.Dt != nil {
+		return *x.Dt
 	}
 	return 0
 }
@@ -2534,16 +2703,17 @@ func (x *Imp) GetExt() string {
 	return ""
 }
 
-// Metric — Imp 附带的可度量指标
-// 场景：Exchange 声明该位的可见度/完成率等，供 DSP 估价。
+// Metric: a measurable property of an Imp.
+// Exchange-declared viewability, completion rate or similar placement metrics for DSP valuation.
 type Metric struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	// 指标类型，如 "viewability"、"completion_rate"。
+	// Metric type, such as "viewability" or "completion_rate".
 	Type string `protobuf:"bytes,1,opt,name=type,proto3" json:"type,omitempty"`
-	// 指标取值，通常 0–1 概率或比率。
-	Value float64 `protobuf:"fixed64,2,opt,name=value,proto3" json:"value,omitempty"`
-	// 度量提供方。场景：IAS、MOAT、发布商自测等。
-	Vendor        string `protobuf:"bytes,3,opt,name=vendor,proto3" json:"vendor,omitempty"`
+	// Metric value, typically a probability or ratio in 0-1.
+	Value *float64 `protobuf:"fixed64,2,opt,name=value,proto3,oneof" json:"value,omitempty"`
+	// Measurement provider, such as IAS, MOAT or publisher measurement.
+	Vendor string `protobuf:"bytes,3,opt,name=vendor,proto3" json:"vendor,omitempty"`
+	// Extension JSON object string.
 	Ext           string `protobuf:"bytes,99,opt,name=ext,proto3" json:"ext,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -2587,8 +2757,8 @@ func (x *Metric) GetType() string {
 }
 
 func (x *Metric) GetValue() float64 {
-	if x != nil {
-		return x.Value
+	if x != nil && x.Value != nil {
+		return *x.Value
 	}
 	return 0
 }
@@ -2608,35 +2778,36 @@ func (x *Metric) GetExt() string {
 }
 
 // ---------------------------------------------------------------------------
-// Banner — 展示广告
-// 场景：推荐提供 w/h 或 format[]；多尺寸用 format 列表让 DSP 择优。
+// Banner: display advertising.
+// Provide w/h or format[]; multiple formats let the DSP select a suitable size.
 // ---------------------------------------------------------------------------
 type Banner struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	// 可接受尺寸集合。场景：弹性/多尺寸位，优先于单独的 w/h。
+	// Accepted sizes for flexible/multi-size placements; takes precedence over standalone w/h.
 	Format []*Format `protobuf:"bytes,1,rep,name=format,proto3" json:"format,omitempty"`
-	// 宽度像素。场景：固定尺寸横幅；与 h 成对。
-	W int32 `protobuf:"varint,2,opt,name=w,proto3" json:"w,omitempty"`
-	// 高度像素。
-	H int32 `protobuf:"varint,3,opt,name=h,proto3" json:"h,omitempty"`
-	// 屏蔽的横幅类型。取值 BannerAdType：1=XHTML文本，2=XHTML Banner，3=JS，4=iframe。
+	// Width in pixels for fixed-size banners, paired with h.
+	W *int32 `protobuf:"varint,2,opt,name=w,proto3,oneof" json:"w,omitempty"`
+	// Height in pixels.
+	H *int32 `protobuf:"varint,3,opt,name=h,proto3,oneof" json:"h,omitempty"`
+	// Blocked banner types (BannerAdType): 1=XHTML text, 2=XHTML banner, 3=JavaScript, 4=iframe.
 	Btype []int32 `protobuf:"varint,4,rep,packed,name=btype,proto3" json:"btype,omitempty"`
-	// 屏蔽的创意属性。取值 CreativeAttribute：1–18 见枚举；>=500 厂商自定义。场景：禁自动播放声等。
+	// Blocked creative attributes (CreativeAttribute): 1-18 as defined in the enum, >=500 vendor-specific; for example, blocking autoplay audio.
 	Battr []int32 `protobuf:"varint,5,rep,packed,name=battr,proto3" json:"battr,omitempty"`
-	// 广告位置。取值 AdPosition：0=未知，1=首屏上，2=锁定，3=首屏下，4=头，5=脚，6=侧栏，7=全屏。
-	Pos int32 `protobuf:"varint,6,opt,name=pos,proto3" json:"pos,omitempty"`
-	// 支持的 MIME。场景：image/jpeg、image/png、text/javascript 等。
+	// Ad position (AdPosition): 0=unknown, 1=above fold, 2=locked, 3=below fold, 4=header, 5=footer, 6=sidebar, 7=fullscreen.
+	Pos *int32 `protobuf:"varint,6,opt,name=pos,proto3,oneof" json:"pos,omitempty"`
+	// Supported MIME types, such as image/jpeg, image/png or text/javascript.
 	Mimes []string `protobuf:"bytes,7,rep,name=mimes,proto3" json:"mimes,omitempty"`
-	// 是否顶层 frame。取值 FlagBool：0=在 iframe 内，1=顶层。场景：是否允许跳出/expand。
-	Topframe int32 `protobuf:"varint,8,opt,name=topframe,proto3" json:"topframe,omitempty"`
-	// 允许扩展方向。取值 ExpandableDirection：1=左，2=右，3=上，4=下，5=全屏，6=缩小。
+	// Top-frame flag (FlagBool): 0=inside iframe, 1=top frame; relevant to expansion or escaping the frame.
+	Topframe *int32 `protobuf:"varint,8,opt,name=topframe,proto3,oneof" json:"topframe,omitempty"`
+	// Allowed expansion directions (ExpandableDirection): 1=left, 2=right, 3=up, 4=down, 5=fullscreen, 6=resize.
 	Expdir []int32 `protobuf:"varint,9,rep,packed,name=expdir,proto3" json:"expdir,omitempty"`
-	// 支持的 API。取值 ApiFramework：1=VPAID1，2=VPAID2，3=MRAID1，4=ORMMA，5=MRAID2，6=MRAID3，7=OMID，8–9=SIMID；>=500 厂商。
+	// Supported APIs (ApiFramework): 1=VPAID1, 2=VPAID2, 3=MRAID1, 4=ORMMA, 5=MRAID2, 6=MRAID3, 7=OMID, 8-9=SIMID; >=500 vendor-specific.
 	Api []int32 `protobuf:"varint,10,rep,packed,name=api,proto3" json:"api,omitempty"`
-	// 同伴广告时区分 Banner 的 ID。场景：视频 companion 多 banner 时关联。
+	// Banner ID for correlating multiple video companion banners.
 	Id string `protobuf:"bytes,11,opt,name=id,proto3" json:"id,omitempty"`
-	// 视频伴生模式。取值 VideoCompanionMode：0=与视频同时，1=结束后 end card。
-	Vcm           int32  `protobuf:"varint,12,opt,name=vcm,proto3" json:"vcm,omitempty"`
+	// Video companion mode (VideoCompanionMode): 0=concurrent with video, 1=end card after completion.
+	Vcm *int32 `protobuf:"varint,12,opt,name=vcm,proto3,oneof" json:"vcm,omitempty"`
+	// Extension JSON object string.
 	Ext           string `protobuf:"bytes,99,opt,name=ext,proto3" json:"ext,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -2680,15 +2851,15 @@ func (x *Banner) GetFormat() []*Format {
 }
 
 func (x *Banner) GetW() int32 {
-	if x != nil {
-		return x.W
+	if x != nil && x.W != nil {
+		return *x.W
 	}
 	return 0
 }
 
 func (x *Banner) GetH() int32 {
-	if x != nil {
-		return x.H
+	if x != nil && x.H != nil {
+		return *x.H
 	}
 	return 0
 }
@@ -2708,8 +2879,8 @@ func (x *Banner) GetBattr() []int32 {
 }
 
 func (x *Banner) GetPos() int32 {
-	if x != nil {
-		return x.Pos
+	if x != nil && x.Pos != nil {
+		return *x.Pos
 	}
 	return 0
 }
@@ -2722,8 +2893,8 @@ func (x *Banner) GetMimes() []string {
 }
 
 func (x *Banner) GetTopframe() int32 {
-	if x != nil {
-		return x.Topframe
+	if x != nil && x.Topframe != nil {
+		return *x.Topframe
 	}
 	return 0
 }
@@ -2750,8 +2921,8 @@ func (x *Banner) GetId() string {
 }
 
 func (x *Banner) GetVcm() int32 {
-	if x != nil {
-		return x.Vcm
+	if x != nil && x.Vcm != nil {
+		return *x.Vcm
 	}
 	return 0
 }
@@ -2763,16 +2934,17 @@ func (x *Banner) GetExt() string {
 	return ""
 }
 
-// Format — 一种可接受的展示尺寸或比例
-// 场景：响应式位用 wratio/hratio；固定位用 w/h。
+// Format: an accepted display size or aspect ratio.
+// Use wratio/hratio for responsive placements and w/h for fixed placements.
 type Format struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	W             int32                  `protobuf:"varint,1,opt,name=w,proto3" json:"w,omitempty"`           // 宽（px）
-	H             int32                  `protobuf:"varint,2,opt,name=h,proto3" json:"h,omitempty"`           // 高（px）
-	Wratio        int32                  `protobuf:"varint,3,opt,name=wratio,proto3" json:"wratio,omitempty"` // 宽比例；与 hratio 描述纵横比
-	Hratio        int32                  `protobuf:"varint,4,opt,name=hratio,proto3" json:"hratio,omitempty"` // 高比例
-	Wmin          int32                  `protobuf:"varint,5,opt,name=wmin,proto3" json:"wmin,omitempty"`     // 最小宽度；弹性布局时的下限
-	Ext           string                 `protobuf:"bytes,99,opt,name=ext,proto3" json:"ext,omitempty"`
+	state  protoimpl.MessageState `protogen:"open.v1"`
+	W      *int32                 `protobuf:"varint,1,opt,name=w,proto3,oneof" json:"w,omitempty"`           // Width in pixels.
+	H      *int32                 `protobuf:"varint,2,opt,name=h,proto3,oneof" json:"h,omitempty"`           // Height in pixels.
+	Wratio *int32                 `protobuf:"varint,3,opt,name=wratio,proto3,oneof" json:"wratio,omitempty"` // Width ratio; together with hratio defines the aspect ratio.
+	Hratio *int32                 `protobuf:"varint,4,opt,name=hratio,proto3,oneof" json:"hratio,omitempty"` // Height ratio.
+	Wmin   *int32                 `protobuf:"varint,5,opt,name=wmin,proto3,oneof" json:"wmin,omitempty"`     // Minimum width for flexible layouts.
+	// Extension JSON object string.
+	Ext           string `protobuf:"bytes,99,opt,name=ext,proto3" json:"ext,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -2808,36 +2980,36 @@ func (*Format) Descriptor() ([]byte, []int) {
 }
 
 func (x *Format) GetW() int32 {
-	if x != nil {
-		return x.W
+	if x != nil && x.W != nil {
+		return *x.W
 	}
 	return 0
 }
 
 func (x *Format) GetH() int32 {
-	if x != nil {
-		return x.H
+	if x != nil && x.H != nil {
+		return *x.H
 	}
 	return 0
 }
 
 func (x *Format) GetWratio() int32 {
-	if x != nil {
-		return x.Wratio
+	if x != nil && x.Wratio != nil {
+		return *x.Wratio
 	}
 	return 0
 }
 
 func (x *Format) GetHratio() int32 {
-	if x != nil {
-		return x.Hratio
+	if x != nil && x.Hratio != nil {
+		return *x.Hratio
 	}
 	return 0
 }
 
 func (x *Format) GetWmin() int32 {
-	if x != nil {
-		return x.Wmin
+	if x != nil && x.Wmin != nil {
+		return *x.Wmin
 	}
 	return 0
 }
@@ -2850,80 +3022,83 @@ func (x *Format) GetExt() string {
 }
 
 // ---------------------------------------------------------------------------
-// Video — 视频广告位
-// 场景：必填 mimes；OTT/CTV pod 使用 podid/poddur/slotinpod；激励用 Imp.rwdd。
+// Video: a video placement.
+// mimes is required; OTT/CTV pods use podid/poddur/slotinpod, and rewarded inventory uses Imp.rwdd.
 // ---------------------------------------------------------------------------
 type Video struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	// 支持的视频 MIME。必填。场景：video/mp4、video/webm 等。
+	// Supported video MIME types. Required; for example video/mp4 or video/webm.
 	Mimes []string `protobuf:"bytes,1,rep,name=mimes,proto3" json:"mimes,omitempty"`
-	// 最短时长（秒）。场景：过滤过短素材。
-	Minduration int32 `protobuf:"varint,2,opt,name=minduration,proto3" json:"minduration,omitempty"`
-	// 最长时长（秒）。场景：过滤过长素材。
-	Maxduration int32 `protobuf:"varint,3,opt,name=maxduration,proto3" json:"maxduration,omitempty"`
-	// 起播延迟（秒）。特殊值：0=前贴，-1=通用中贴，-2=后贴，>0=中贴且延迟该秒数。场景：贴片位置。
-	Startdelay int32 `protobuf:"varint,4,opt,name=startdelay,proto3" json:"startdelay,omitempty"`
-	// pod 内最大广告条数。场景：CTV ad pod 容量。
-	Maxseq int32 `protobuf:"varint,5,opt,name=maxseq,proto3" json:"maxseq,omitempty"`
-	// 整个 pod 总时长（秒）。场景：多条广告共享的时间预算。
-	Poddur int32 `protobuf:"varint,6,opt,name=poddur,proto3" json:"poddur,omitempty"`
-	// 支持的视频协议。取值 Protocol：1–3=VAST1–3，4–6=对应 Wrapper，7–8=VAST4，9–10=DAAST，11–16=VAST4.1–4.3及Wrapper。
+	// Minimum duration in seconds; filters creatives that are too short.
+	Minduration *int32 `protobuf:"varint,2,opt,name=minduration,proto3,oneof" json:"minduration,omitempty"`
+	// Maximum duration in seconds; filters creatives that are too long.
+	Maxduration *int32 `protobuf:"varint,3,opt,name=maxduration,proto3,oneof" json:"maxduration,omitempty"`
+	// Start delay in seconds: 0=pre-roll, -1=generic mid-roll, -2=post-roll, >0=mid-roll after that many seconds.
+	Startdelay *int32 `protobuf:"varint,4,opt,name=startdelay,proto3,oneof" json:"startdelay,omitempty"`
+	// Maximum ads within a pod, defining CTV ad-pod capacity.
+	Maxseq *int32 `protobuf:"varint,5,opt,name=maxseq,proto3,oneof" json:"maxseq,omitempty"`
+	// Total pod duration in seconds, shared by its ads.
+	Poddur *int32 `protobuf:"varint,6,opt,name=poddur,proto3,oneof" json:"poddur,omitempty"`
+	// Supported video protocols (Protocol): 1-3=VAST1-3, 4-6=corresponding wrappers, 7-8=VAST4, 9-10=DAAST, 11-16=VAST4.1-4.3 and wrappers.
 	Protocols []int32 `protobuf:"varint,7,rep,packed,name=protocols,proto3" json:"protocols,omitempty"`
-	// 播放器宽（px）。
-	W int32 `protobuf:"varint,8,opt,name=w,proto3" json:"w,omitempty"`
-	// 播放器高（px）。
-	H int32 `protobuf:"varint,9,opt,name=h,proto3" json:"h,omitempty"`
-	// 广告 pod ID。场景：同一动态 pod 内多 Imp 共享，用于编排。
+	// Player width in pixels.
+	W *int32 `protobuf:"varint,8,opt,name=w,proto3,oneof" json:"w,omitempty"`
+	// Player height in pixels.
+	H *int32 `protobuf:"varint,9,opt,name=h,proto3,oneof" json:"h,omitempty"`
+	// Ad pod ID, shared by Imps within the same dynamic pod for scheduling.
 	Podid string `protobuf:"bytes,10,opt,name=podid,proto3" json:"podid,omitempty"`
-	// 该 Imp 所属 pod 序号策略。取值 PodSequence：0=任意，1=第一个；特殊 -1=最后一个 pod。
-	Podseq int32 `protobuf:"varint,11,opt,name=podseq,proto3" json:"podseq,omitempty"`
-	// 要求的精确时长列表（秒）。场景：只接受 15s/30s 等标准时长。
+	// Pod sequence (PodSequence): 0=any, 1=first; special value -1=last pod.
+	Podseq *int32 `protobuf:"varint,11,opt,name=podseq,proto3,oneof" json:"podseq,omitempty"`
+	// Required exact durations in seconds, such as standard 15s/30s creatives.
 	Rqddurs []int32 `protobuf:"varint,12,rep,packed,name=rqddurs,proto3" json:"rqddurs,omitempty"`
-	// 视频放置类型（替代旧 placement）。取值 VideoPlcmt：1=Instream，2=伴随，3=插屏，4=无内容，5–9 见枚举。
-	Plcmt int32 `protobuf:"varint,13,opt,name=plcmt,proto3" json:"plcmt,omitempty"`
-	// 线性模式。取值 VideoLinearity：1=线性贴片，2=非线性/Overlay。
-	Linearity int32 `protobuf:"varint,14,opt,name=linearity,proto3" json:"linearity,omitempty"`
-	// 是否可跳过。取值 FlagBool：0=不可跳，1=可跳。场景：可跳过前贴 vs 不可跳。
-	Skip int32 `protobuf:"varint,15,opt,name=skip,proto3" json:"skip,omitempty"`
-	// 允许跳过前的最少视频秒数。
-	Skipmin int32 `protobuf:"varint,16,opt,name=skipmin,proto3" json:"skipmin,omitempty"`
-	// 出现跳过按钮前的秒数。
-	Skipafter int32 `protobuf:"varint,17,opt,name=skipafter,proto3" json:"skipafter,omitempty"`
-	// pod 内槽位。取值 SlotInPod：0=任意，1=第一，2=第一或最后，3=第一/中/最后；特殊 -1=最后槽。场景：包段选槽。
-	Slotinpod int32 `protobuf:"varint,18,opt,name=slotinpod,proto3" json:"slotinpod,omitempty"`
-	// 每秒最低 CPM。场景：按时长计价的底价约束。
-	Mincpmpersec float64 `protobuf:"fixed64,19,opt,name=mincpmpersec,proto3" json:"mincpmpersec,omitempty"`
-	// 屏蔽的创意属性。取值 CreativeAttribute（见枚举）；>=500 厂商自定义。
+	// Video placement type replacing placement (VideoPlcmt): 1=instream, 2=accompanying content, 3=interstitial, 4=no content, 5=pause, 6=screensaver, 7=overlay, 8=squeezeback, 9=in-scene.
+	Plcmt *int32 `protobuf:"varint,13,opt,name=plcmt,proto3,oneof" json:"plcmt,omitempty"`
+	// Linearity (VideoLinearity): 1=linear in-stream, 2=non-linear/overlay.
+	Linearity *int32 `protobuf:"varint,14,opt,name=linearity,proto3,oneof" json:"linearity,omitempty"`
+	// Skippable flag (FlagBool): 0=not skippable, 1=skippable; distinguishes skippable and non-skippable pre-roll.
+	Skip *int32 `protobuf:"varint,15,opt,name=skip,proto3,oneof" json:"skip,omitempty"`
+	// Minimum video duration in seconds for skipping to be allowed.
+	Skipmin *int32 `protobuf:"varint,16,opt,name=skipmin,proto3,oneof" json:"skipmin,omitempty"`
+	// Seconds before the skip button appears.
+	Skipafter *int32 `protobuf:"varint,17,opt,name=skipafter,proto3,oneof" json:"skipafter,omitempty"`
+	// Pod slot (SlotInPod): 0=any, 1=first, 2=first/last, 3=first/middle/last; special value -1=last slot.
+	Slotinpod *int32 `protobuf:"varint,18,opt,name=slotinpod,proto3,oneof" json:"slotinpod,omitempty"`
+	// Minimum CPM per second for duration-based floor pricing.
+	Mincpmpersec *float64 `protobuf:"fixed64,19,opt,name=mincpmpersec,proto3,oneof" json:"mincpmpersec,omitempty"`
+	// Blocked creative attributes (CreativeAttribute): 1-18 as defined in the enum; >=500 vendor-specific.
 	Battr []int32 `protobuf:"varint,20,rep,packed,name=battr,proto3" json:"battr,omitempty"`
-	// 允许超出 maxduration 的最大秒数；-1 表示不限。
-	Maxextended int32 `protobuf:"varint,21,opt,name=maxextended,proto3" json:"maxextended,omitempty"`
-	// 最低码率（Kbps）。
-	Minbitrate int32 `protobuf:"varint,22,opt,name=minbitrate,proto3" json:"minbitrate,omitempty"`
-	// 最高码率（Kbps）。
-	Maxbitrate int32 `protobuf:"varint,23,opt,name=maxbitrate,proto3" json:"maxbitrate,omitempty"`
-	// 是否允许 letterboxing。取值 FlagBool：0=否，1=是。场景：画幅不匹配时黑边。
-	Boxingallowed int32 `protobuf:"varint,24,opt,name=boxingallowed,proto3" json:"boxingallowed,omitempty"`
-	// 播放方式。取值 PlaybackMethod：1=加载有声，2=加载静音，3=点击有声，4=悬停有声，5=入视口有声，6=入视口静音，7=连续播。
+	// Maximum seconds beyond maxduration; -1 means unlimited.
+	Maxextended *int32 `protobuf:"varint,21,opt,name=maxextended,proto3,oneof" json:"maxextended,omitempty"`
+	// Minimum bitrate in Kbps.
+	Minbitrate *int32 `protobuf:"varint,22,opt,name=minbitrate,proto3,oneof" json:"minbitrate,omitempty"`
+	// Maximum bitrate in Kbps.
+	Maxbitrate *int32 `protobuf:"varint,23,opt,name=maxbitrate,proto3,oneof" json:"maxbitrate,omitempty"`
+	// Letterboxing allowed (FlagBool): 0=no, 1=yes; permits black bars for mismatched aspect ratios.
+	Boxingallowed *int32 `protobuf:"varint,24,opt,name=boxingallowed,proto3,oneof" json:"boxingallowed,omitempty"`
+	// Playback method (PlaybackMethod): 1=load/sound on, 2=load/muted, 3=click/sound on, 4=hover/sound on, 5=viewport/sound on, 6=viewport/muted, 7=continuous.
 	Playbackmethod []int32 `protobuf:"varint,25,rep,packed,name=playbackmethod,proto3" json:"playbackmethod,omitempty"`
-	// 播放终止方式。取值 PlaybackCessationMode：1=播完/用户停，2=离视口/用户停，3=离视口后悬浮至播完。
-	Playbackend int32 `protobuf:"varint,26,opt,name=playbackend,proto3" json:"playbackend,omitempty"`
-	// 传输方式。取值 DeliveryMethod：1=流式，2=渐进，3=下载。
+	// Playback cessation (PlaybackCessationMode): 1=completion/user, 2=leave viewport/user, 3=float after leaving viewport until completion.
+	Playbackend *int32 `protobuf:"varint,26,opt,name=playbackend,proto3,oneof" json:"playbackend,omitempty"`
+	// Delivery method (DeliveryMethod): 1=streaming, 2=progressive, 3=download.
 	Delivery []int32 `protobuf:"varint,27,rep,packed,name=delivery,proto3" json:"delivery,omitempty"`
-	// 广告位置。取值 AdPosition（同 Banner.pos）。
-	Pos int32 `protobuf:"varint,28,opt,name=pos,proto3" json:"pos,omitempty"`
-	// 伴生 Banner 规格。场景：视频旁/下方 companion。
+	// Ad position (AdPosition), as in Banner.pos.
+	Pos *int32 `protobuf:"varint,28,opt,name=pos,proto3,oneof" json:"pos,omitempty"`
+	// Companion banner specifications, such as banners beside or below a video.
 	Companionad []*Banner `protobuf:"bytes,29,rep,name=companionad,proto3" json:"companionad,omitempty"`
-	// 支持的 API。取值 ApiFramework（见枚举）。
+	// Supported APIs; see ApiFramework.
 	Api []int32 `protobuf:"varint,30,rep,packed,name=api,proto3" json:"api,omitempty"`
-	// 伴生广告类型。取值 CompanionType：1=Static，2=HTML，3=iframe。
+	// Companion types (CompanionType): 1=static, 2=HTML, 3=iframe.
 	Companiontype []int32 `protobuf:"varint,31,rep,packed,name=companiontype,proto3" json:"companiontype,omitempty"`
-	// 已弃用的 placement；请用 plcmt（OpenRTB 2.6-202303+）。
-	Placement int32 `protobuf:"varint,32,opt,name=placement,proto3" json:"placement,omitempty"`
-	// Pod 去重策略（OpenRTB 2.6-202402+）。取值见 AdCOM Pod Deduplication。
+	// Deprecated placement; use plcmt (OpenRTB 2.6-202303+).
+	Placement *int32 `protobuf:"varint,32,opt,name=placement,proto3,oneof" json:"placement,omitempty"`
+	// Pod deduplication policy (OpenRTB 2.6-202402+); see AdCOM Pod Deduplication.
+	// Pod deduplication (OpenRTB 2.6-202402+, PodDeduplication): 1=adomain, 2=IAB Content Taxonomy, 3=creative ID, 4=mediafile URL; multiple values allowed.
 	Poddedupe []int32 `protobuf:"varint,33,rep,packed,name=poddedupe,proto3" json:"poddedupe,omitempty"`
-	// 按时长分段底价。
-	Durfloors     []*DurFloors `protobuf:"bytes,34,rep,name=durfloors,proto3" json:"durfloors,omitempty"`
-	Ext           string       `protobuf:"bytes,99,opt,name=ext,proto3" json:"ext,omitempty"`
+	// Duration-based floor tiers.
+	// Duration-based floor tiers, such as different CPM floors for 15s/30s creatives.
+	Durfloors []*DurFloors `protobuf:"bytes,34,rep,name=durfloors,proto3" json:"durfloors,omitempty"`
+	// Extension JSON object string.
+	Ext           string `protobuf:"bytes,99,opt,name=ext,proto3" json:"ext,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -2966,36 +3141,36 @@ func (x *Video) GetMimes() []string {
 }
 
 func (x *Video) GetMinduration() int32 {
-	if x != nil {
-		return x.Minduration
+	if x != nil && x.Minduration != nil {
+		return *x.Minduration
 	}
 	return 0
 }
 
 func (x *Video) GetMaxduration() int32 {
-	if x != nil {
-		return x.Maxduration
+	if x != nil && x.Maxduration != nil {
+		return *x.Maxduration
 	}
 	return 0
 }
 
 func (x *Video) GetStartdelay() int32 {
-	if x != nil {
-		return x.Startdelay
+	if x != nil && x.Startdelay != nil {
+		return *x.Startdelay
 	}
 	return 0
 }
 
 func (x *Video) GetMaxseq() int32 {
-	if x != nil {
-		return x.Maxseq
+	if x != nil && x.Maxseq != nil {
+		return *x.Maxseq
 	}
 	return 0
 }
 
 func (x *Video) GetPoddur() int32 {
-	if x != nil {
-		return x.Poddur
+	if x != nil && x.Poddur != nil {
+		return *x.Poddur
 	}
 	return 0
 }
@@ -3008,15 +3183,15 @@ func (x *Video) GetProtocols() []int32 {
 }
 
 func (x *Video) GetW() int32 {
-	if x != nil {
-		return x.W
+	if x != nil && x.W != nil {
+		return *x.W
 	}
 	return 0
 }
 
 func (x *Video) GetH() int32 {
-	if x != nil {
-		return x.H
+	if x != nil && x.H != nil {
+		return *x.H
 	}
 	return 0
 }
@@ -3029,8 +3204,8 @@ func (x *Video) GetPodid() string {
 }
 
 func (x *Video) GetPodseq() int32 {
-	if x != nil {
-		return x.Podseq
+	if x != nil && x.Podseq != nil {
+		return *x.Podseq
 	}
 	return 0
 }
@@ -3043,50 +3218,50 @@ func (x *Video) GetRqddurs() []int32 {
 }
 
 func (x *Video) GetPlcmt() int32 {
-	if x != nil {
-		return x.Plcmt
+	if x != nil && x.Plcmt != nil {
+		return *x.Plcmt
 	}
 	return 0
 }
 
 func (x *Video) GetLinearity() int32 {
-	if x != nil {
-		return x.Linearity
+	if x != nil && x.Linearity != nil {
+		return *x.Linearity
 	}
 	return 0
 }
 
 func (x *Video) GetSkip() int32 {
-	if x != nil {
-		return x.Skip
+	if x != nil && x.Skip != nil {
+		return *x.Skip
 	}
 	return 0
 }
 
 func (x *Video) GetSkipmin() int32 {
-	if x != nil {
-		return x.Skipmin
+	if x != nil && x.Skipmin != nil {
+		return *x.Skipmin
 	}
 	return 0
 }
 
 func (x *Video) GetSkipafter() int32 {
-	if x != nil {
-		return x.Skipafter
+	if x != nil && x.Skipafter != nil {
+		return *x.Skipafter
 	}
 	return 0
 }
 
 func (x *Video) GetSlotinpod() int32 {
-	if x != nil {
-		return x.Slotinpod
+	if x != nil && x.Slotinpod != nil {
+		return *x.Slotinpod
 	}
 	return 0
 }
 
 func (x *Video) GetMincpmpersec() float64 {
-	if x != nil {
-		return x.Mincpmpersec
+	if x != nil && x.Mincpmpersec != nil {
+		return *x.Mincpmpersec
 	}
 	return 0
 }
@@ -3099,29 +3274,29 @@ func (x *Video) GetBattr() []int32 {
 }
 
 func (x *Video) GetMaxextended() int32 {
-	if x != nil {
-		return x.Maxextended
+	if x != nil && x.Maxextended != nil {
+		return *x.Maxextended
 	}
 	return 0
 }
 
 func (x *Video) GetMinbitrate() int32 {
-	if x != nil {
-		return x.Minbitrate
+	if x != nil && x.Minbitrate != nil {
+		return *x.Minbitrate
 	}
 	return 0
 }
 
 func (x *Video) GetMaxbitrate() int32 {
-	if x != nil {
-		return x.Maxbitrate
+	if x != nil && x.Maxbitrate != nil {
+		return *x.Maxbitrate
 	}
 	return 0
 }
 
 func (x *Video) GetBoxingallowed() int32 {
-	if x != nil {
-		return x.Boxingallowed
+	if x != nil && x.Boxingallowed != nil {
+		return *x.Boxingallowed
 	}
 	return 0
 }
@@ -3134,8 +3309,8 @@ func (x *Video) GetPlaybackmethod() []int32 {
 }
 
 func (x *Video) GetPlaybackend() int32 {
-	if x != nil {
-		return x.Playbackend
+	if x != nil && x.Playbackend != nil {
+		return *x.Playbackend
 	}
 	return 0
 }
@@ -3148,8 +3323,8 @@ func (x *Video) GetDelivery() []int32 {
 }
 
 func (x *Video) GetPos() int32 {
-	if x != nil {
-		return x.Pos
+	if x != nil && x.Pos != nil {
+		return *x.Pos
 	}
 	return 0
 }
@@ -3176,8 +3351,8 @@ func (x *Video) GetCompaniontype() []int32 {
 }
 
 func (x *Video) GetPlacement() int32 {
-	if x != nil {
-		return x.Placement
+	if x != nil && x.Placement != nil {
+		return *x.Placement
 	}
 	return 0
 }
@@ -3204,49 +3379,54 @@ func (x *Video) GetExt() string {
 }
 
 // ---------------------------------------------------------------------------
-// Audio — 音频广告位
-// 场景：必填 mimes；播客/电台流；可与 companionad 一起做可视化伴生。
+// Audio: an audio placement.
+// mimes is required for podcast/radio inventory; companionad may provide visual companions.
 // ---------------------------------------------------------------------------
 type Audio struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	// 支持的音频 MIME。必填。
+	// Supported audio MIME types. Required.
 	Mimes       []string `protobuf:"bytes,1,rep,name=mimes,proto3" json:"mimes,omitempty"`
-	Minduration int32    `protobuf:"varint,2,opt,name=minduration,proto3" json:"minduration,omitempty"` // 最短秒数
-	Maxduration int32    `protobuf:"varint,3,opt,name=maxduration,proto3" json:"maxduration,omitempty"` // 最长秒数
-	Poddur      int32    `protobuf:"varint,4,opt,name=poddur,proto3" json:"poddur,omitempty"`           // pod 总时长
-	// 音频协议。取值 Protocol（含 DAAST 9/10、VAST 等，见枚举）。
+	Minduration *int32   `protobuf:"varint,2,opt,name=minduration,proto3,oneof" json:"minduration,omitempty"` // Minimum duration in seconds.
+	Maxduration *int32   `protobuf:"varint,3,opt,name=maxduration,proto3,oneof" json:"maxduration,omitempty"` // Maximum duration in seconds.
+	Poddur      *int32   `protobuf:"varint,4,opt,name=poddur,proto3,oneof" json:"poddur,omitempty"`           // Total pod duration.
+	// Audio protocols (Protocol), including DAAST 9/10 and VAST; see enum.
 	Protocols []int32 `protobuf:"varint,5,rep,packed,name=protocols,proto3" json:"protocols,omitempty"`
-	// 起播延迟。同 Video：0=前贴，-1=中贴，-2=后贴，>0=中贴延迟秒数。
-	Startdelay int32   `protobuf:"varint,6,opt,name=startdelay,proto3" json:"startdelay,omitempty"`
-	Rqddurs    []int32 `protobuf:"varint,7,rep,packed,name=rqddurs,proto3" json:"rqddurs,omitempty"` // 要求的精确时长
-	Podid      string  `protobuf:"bytes,8,opt,name=podid,proto3" json:"podid,omitempty"`             // 音频 pod ID
-	// pod 序号。取值 PodSequence：0=任意，1=第一；特殊 -1=最后 pod。
-	Podseq int32 `protobuf:"varint,9,opt,name=podseq,proto3" json:"podseq,omitempty"`
-	// pod 槽位。取值 SlotInPod；特殊 -1=最后槽。
-	Slotinpod    int32   `protobuf:"varint,10,opt,name=slotinpod,proto3" json:"slotinpod,omitempty"`
-	Mincpmpersec float64 `protobuf:"fixed64,11,opt,name=mincpmpersec,proto3" json:"mincpmpersec,omitempty"`
-	// 屏蔽创意属性。取值 CreativeAttribute。
-	Battr       []int32 `protobuf:"varint,12,rep,packed,name=battr,proto3" json:"battr,omitempty"`
-	Maxextended int32   `protobuf:"varint,13,opt,name=maxextended,proto3" json:"maxextended,omitempty"`
-	Minbitrate  int32   `protobuf:"varint,14,opt,name=minbitrate,proto3" json:"minbitrate,omitempty"`
-	Maxbitrate  int32   `protobuf:"varint,15,opt,name=maxbitrate,proto3" json:"maxbitrate,omitempty"`
-	// 传输方式。取值 DeliveryMethod：1=流式，2=渐进，3=下载。
+	// Start delay, as in Video: 0=pre-roll, -1=mid-roll, -2=post-roll, >0=mid-roll delay in seconds.
+	Startdelay *int32  `protobuf:"varint,6,opt,name=startdelay,proto3,oneof" json:"startdelay,omitempty"`
+	Rqddurs    []int32 `protobuf:"varint,7,rep,packed,name=rqddurs,proto3" json:"rqddurs,omitempty"` // Required exact durations.
+	Podid      string  `protobuf:"bytes,8,opt,name=podid,proto3" json:"podid,omitempty"`             // Audio pod ID.
+	// Pod sequence (PodSequence): 0=any, 1=first; special value -1=last pod.
+	Podseq *int32 `protobuf:"varint,9,opt,name=podseq,proto3,oneof" json:"podseq,omitempty"`
+	// Pod slot (SlotInPod); special value -1=last slot.
+	Slotinpod *int32 `protobuf:"varint,10,opt,name=slotinpod,proto3,oneof" json:"slotinpod,omitempty"`
+	// Minimum CPM per second for duration-based floor pricing.
+	Mincpmpersec *float64 `protobuf:"fixed64,11,opt,name=mincpmpersec,proto3,oneof" json:"mincpmpersec,omitempty"`
+	// Blocked creative attributes; see CreativeAttribute.
+	Battr []int32 `protobuf:"varint,12,rep,packed,name=battr,proto3" json:"battr,omitempty"`
+	// Maximum seconds beyond maxduration; -1 means unlimited.
+	Maxextended *int32 `protobuf:"varint,13,opt,name=maxextended,proto3,oneof" json:"maxextended,omitempty"`
+	// Minimum bitrate in Kbps.
+	Minbitrate *int32 `protobuf:"varint,14,opt,name=minbitrate,proto3,oneof" json:"minbitrate,omitempty"`
+	// Maximum bitrate in Kbps.
+	Maxbitrate *int32 `protobuf:"varint,15,opt,name=maxbitrate,proto3,oneof" json:"maxbitrate,omitempty"`
+	// Delivery method (DeliveryMethod): 1=streaming, 2=progressive, 3=download.
 	Delivery    []int32   `protobuf:"varint,16,rep,packed,name=delivery,proto3" json:"delivery,omitempty"`
-	Companionad []*Banner `protobuf:"bytes,17,rep,name=companionad,proto3" json:"companionad,omitempty"` // 可视化伴生
-	// 支持的 API。取值 ApiFramework。
+	Companionad []*Banner `protobuf:"bytes,17,rep,name=companionad,proto3" json:"companionad,omitempty"` // Visual companions.
+	// Supported APIs; see ApiFramework.
 	Api []int32 `protobuf:"varint,18,rep,packed,name=api,proto3" json:"api,omitempty"`
-	// 伴生类型。取值 CompanionType：1=Static，2=HTML，3=iframe。
+	// Companion types (CompanionType): 1=static, 2=HTML, 3=iframe.
 	Companiontype []int32 `protobuf:"varint,19,rep,packed,name=companiontype,proto3" json:"companiontype,omitempty"`
-	Maxseq        int32   `protobuf:"varint,20,opt,name=maxseq,proto3" json:"maxseq,omitempty"` // pod 内最大广告数
-	// 音频流类型。取值 FeedType：1=音乐服务，2=FM/AM，3=播客。
-	Feed int32 `protobuf:"varint,21,opt,name=feed,proto3" json:"feed,omitempty"`
-	// 是否已与内容缝合。取值 FlagBool：0=否，1=是。
-	Stitched int32 `protobuf:"varint,22,opt,name=stitched,proto3" json:"stitched,omitempty"`
-	// 音量归一。取值 VolumeNormalizationMode：0=无，1=平均，2=峰值，3=响度，4=自定义。
-	Nvol int32 `protobuf:"varint,23,opt,name=nvol,proto3" json:"nvol,omitempty"`
-	// 按时长分段底价。
-	Durfloors     []*DurFloors `protobuf:"bytes,24,rep,name=durfloors,proto3" json:"durfloors,omitempty"`
-	Ext           string       `protobuf:"bytes,99,opt,name=ext,proto3" json:"ext,omitempty"`
+	Maxseq        *int32  `protobuf:"varint,20,opt,name=maxseq,proto3,oneof" json:"maxseq,omitempty"` // Maximum ads in the pod.
+	// Audio feed type (FeedType): 1=music service, 2=FM/AM, 3=podcast.
+	Feed *int32 `protobuf:"varint,21,opt,name=feed,proto3,oneof" json:"feed,omitempty"`
+	// Whether stitched into content (FlagBool): 0=no, 1=yes.
+	Stitched *int32 `protobuf:"varint,22,opt,name=stitched,proto3,oneof" json:"stitched,omitempty"`
+	// Volume normalization (VolumeNormalizationMode): 0=none, 1=average, 2=peak, 3=loudness, 4=custom.
+	Nvol *int32 `protobuf:"varint,23,opt,name=nvol,proto3,oneof" json:"nvol,omitempty"`
+	// Duration-based floor tiers.
+	Durfloors []*DurFloors `protobuf:"bytes,24,rep,name=durfloors,proto3" json:"durfloors,omitempty"`
+	// Extension JSON object string.
+	Ext           string `protobuf:"bytes,99,opt,name=ext,proto3" json:"ext,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -3289,22 +3469,22 @@ func (x *Audio) GetMimes() []string {
 }
 
 func (x *Audio) GetMinduration() int32 {
-	if x != nil {
-		return x.Minduration
+	if x != nil && x.Minduration != nil {
+		return *x.Minduration
 	}
 	return 0
 }
 
 func (x *Audio) GetMaxduration() int32 {
-	if x != nil {
-		return x.Maxduration
+	if x != nil && x.Maxduration != nil {
+		return *x.Maxduration
 	}
 	return 0
 }
 
 func (x *Audio) GetPoddur() int32 {
-	if x != nil {
-		return x.Poddur
+	if x != nil && x.Poddur != nil {
+		return *x.Poddur
 	}
 	return 0
 }
@@ -3317,8 +3497,8 @@ func (x *Audio) GetProtocols() []int32 {
 }
 
 func (x *Audio) GetStartdelay() int32 {
-	if x != nil {
-		return x.Startdelay
+	if x != nil && x.Startdelay != nil {
+		return *x.Startdelay
 	}
 	return 0
 }
@@ -3338,22 +3518,22 @@ func (x *Audio) GetPodid() string {
 }
 
 func (x *Audio) GetPodseq() int32 {
-	if x != nil {
-		return x.Podseq
+	if x != nil && x.Podseq != nil {
+		return *x.Podseq
 	}
 	return 0
 }
 
 func (x *Audio) GetSlotinpod() int32 {
-	if x != nil {
-		return x.Slotinpod
+	if x != nil && x.Slotinpod != nil {
+		return *x.Slotinpod
 	}
 	return 0
 }
 
 func (x *Audio) GetMincpmpersec() float64 {
-	if x != nil {
-		return x.Mincpmpersec
+	if x != nil && x.Mincpmpersec != nil {
+		return *x.Mincpmpersec
 	}
 	return 0
 }
@@ -3366,22 +3546,22 @@ func (x *Audio) GetBattr() []int32 {
 }
 
 func (x *Audio) GetMaxextended() int32 {
-	if x != nil {
-		return x.Maxextended
+	if x != nil && x.Maxextended != nil {
+		return *x.Maxextended
 	}
 	return 0
 }
 
 func (x *Audio) GetMinbitrate() int32 {
-	if x != nil {
-		return x.Minbitrate
+	if x != nil && x.Minbitrate != nil {
+		return *x.Minbitrate
 	}
 	return 0
 }
 
 func (x *Audio) GetMaxbitrate() int32 {
-	if x != nil {
-		return x.Maxbitrate
+	if x != nil && x.Maxbitrate != nil {
+		return *x.Maxbitrate
 	}
 	return 0
 }
@@ -3415,29 +3595,29 @@ func (x *Audio) GetCompaniontype() []int32 {
 }
 
 func (x *Audio) GetMaxseq() int32 {
-	if x != nil {
-		return x.Maxseq
+	if x != nil && x.Maxseq != nil {
+		return *x.Maxseq
 	}
 	return 0
 }
 
 func (x *Audio) GetFeed() int32 {
-	if x != nil {
-		return x.Feed
+	if x != nil && x.Feed != nil {
+		return *x.Feed
 	}
 	return 0
 }
 
 func (x *Audio) GetStitched() int32 {
-	if x != nil {
-		return x.Stitched
+	if x != nil && x.Stitched != nil {
+		return *x.Stitched
 	}
 	return 0
 }
 
 func (x *Audio) GetNvol() int32 {
-	if x != nil {
-		return x.Nvol
+	if x != nil && x.Nvol != nil {
+		return *x.Nvol
 	}
 	return 0
 }
@@ -3457,20 +3637,21 @@ func (x *Audio) GetExt() string {
 }
 
 // ---------------------------------------------------------------------------
-// Native — 原生广告
-// 场景：信息流；request 为 Native Markup Request JSON 字符串（见 native.schema.json）。
+// Native: native advertising.
+// Feed inventory; request contains a Native Markup Request JSON string (see native.schema.json).
 // ---------------------------------------------------------------------------
 type Native struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	// Native 请求体（JSON 字符串）。必填。内含 assets[] 等；需按 Native 1.2 校验。
+	// Required Native request JSON string, including assets[]; validate against Native 1.2.
 	Request string `protobuf:"bytes,1,opt,name=request,proto3" json:"request,omitempty"`
-	// Native 规范版本，如 "1.2"。场景：告诉 DSP 解析哪一版 markup。
+	// Native specification version, such as "1.2", indicating which markup version the DSP should parse.
 	Ver string `protobuf:"bytes,2,opt,name=ver,proto3" json:"ver,omitempty"`
-	// 支持的 API。取值 ApiFramework（见枚举）。
+	// Supported APIs; see ApiFramework.
 	Api []int32 `protobuf:"varint,3,rep,packed,name=api,proto3" json:"api,omitempty"`
-	// 屏蔽的创意属性。取值 CreativeAttribute（见枚举）。
-	Battr         []int32 `protobuf:"varint,4,rep,packed,name=battr,proto3" json:"battr,omitempty"`
-	Ext           string  `protobuf:"bytes,99,opt,name=ext,proto3" json:"ext,omitempty"`
+	// Blocked creative attributes; see CreativeAttribute enum.
+	Battr []int32 `protobuf:"varint,4,rep,packed,name=battr,proto3" json:"battr,omitempty"`
+	// Extension JSON object string.
+	Ext           string `protobuf:"bytes,99,opt,name=ext,proto3" json:"ext,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -3541,16 +3722,17 @@ func (x *Native) GetExt() string {
 }
 
 // ---------------------------------------------------------------------------
-// Pmp / Deal — 私有市场
-// 场景：非公开竞价；private_auction=1 时通常仅 deals 内席位可参与。
+// Pmp / Deal: private marketplace.
+// Private auctions; when private_auction=1, participation is typically limited to seats in deals.
 // ---------------------------------------------------------------------------
 type Pmp struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	// 是否仅私有拍卖。取值 FlagBool：0=可对公开市场，1=仅私有。场景：PDB 封闭交易。
-	PrivateAuction int32 `protobuf:"varint,1,opt,name=private_auction,json=privateAuction,proto3" json:"private_auction,omitempty"`
-	// 可用成交条件列表。场景：一条 Imp 挂多个 Deal 供 DSP 选择。
-	Deals         []*Deal `protobuf:"bytes,2,rep,name=deals,proto3" json:"deals,omitempty"`
-	Ext           string  `protobuf:"bytes,99,opt,name=ext,proto3" json:"ext,omitempty"`
+	// Private-auction flag (FlagBool): 0=open market permitted, 1=private only; used for closed PDB trading.
+	PrivateAuction *int32 `protobuf:"varint,1,opt,name=private_auction,proto3,oneof" json:"private_auction,omitempty"`
+	// Available deal terms; one Imp may offer multiple Deals for DSP selection.
+	Deals []*Deal `protobuf:"bytes,2,rep,name=deals,proto3" json:"deals,omitempty"`
+	// Extension JSON object string.
+	Ext           string `protobuf:"bytes,99,opt,name=ext,proto3" json:"ext,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -3586,8 +3768,8 @@ func (*Pmp) Descriptor() ([]byte, []int) {
 }
 
 func (x *Pmp) GetPrivateAuction() int32 {
-	if x != nil {
-		return x.PrivateAuction
+	if x != nil && x.PrivateAuction != nil {
+		return *x.PrivateAuction
 	}
 	return 0
 }
@@ -3606,27 +3788,30 @@ func (x *Pmp) GetExt() string {
 	return ""
 }
 
+// Deal: private trading terms.
+// PMP/PDB: id is required; at=3 indicates a fixed-price Deal.
 type Deal struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	// Deal ID。必填。Bid.dealid 赢价时回填。
+	// Required Deal ID, echoed in Bid.dealid for a deal bid.
 	Id string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	// 该 Deal 底价（CPM）。
-	Bidfloor float64 `protobuf:"fixed64,2,opt,name=bidfloor,proto3" json:"bidfloor,omitempty"`
-	// 底价币种。
+	// Deal floor in CPM.
+	Bidfloor *float64 `protobuf:"fixed64,2,opt,name=bidfloor,proto3,oneof" json:"bidfloor,omitempty"`
+	// Floor currency.
 	Bidfloorcur string `protobuf:"bytes,3,opt,name=bidfloorcur,proto3" json:"bidfloorcur,omitempty"`
-	// 该 Deal 拍卖类型。取值 AuctionType：1=一价，2=二价+，3=固定价；>=500 自定义。场景：覆盖 BidRequest.at。
-	At int32 `protobuf:"varint,4,opt,name=at,proto3" json:"at,omitempty"`
-	// 允许的买家 seat 白名单。
+	// Deal auction type (AuctionType): 1=first price, 2=second price plus, 3=fixed price, >=500=custom; overrides BidRequest.at.
+	At *int32 `protobuf:"varint,4,opt,name=at,proto3,oneof" json:"at,omitempty"`
+	// Allowed buyer seat IDs.
 	Wseat []string `protobuf:"bytes,5,rep,name=wseat,proto3" json:"wseat,omitempty"`
-	// 允许的广告主域名白名单。
+	// Allowed advertiser domains.
 	Wadomain []string `protobuf:"bytes,6,rep,name=wadomain,proto3" json:"wadomain,omitempty"`
-	// 是否保量。取值 FlagBool：0=否，1=保量 Deal。场景：程序化合约保量。
-	Guar int32 `protobuf:"varint,7,opt,name=guar,proto3" json:"guar,omitempty"`
-	// 每秒最低 CPM（视频按时长）。
-	Mincpmpersec float64 `protobuf:"fixed64,8,opt,name=mincpmpersec,proto3" json:"mincpmpersec,omitempty"`
-	// 按时长分段底价（视频/音频 deal）。
-	Durfloors     []*DurFloors `protobuf:"bytes,9,rep,name=durfloors,proto3" json:"durfloors,omitempty"`
-	Ext           string       `protobuf:"bytes,99,opt,name=ext,proto3" json:"ext,omitempty"`
+	// Guaranteed flag (FlagBool): 0=no, 1=guaranteed Deal; used for programmatic guaranteed delivery.
+	Guar *int32 `protobuf:"varint,7,opt,name=guar,proto3,oneof" json:"guar,omitempty"`
+	// Minimum CPM per second for duration-priced video.
+	Mincpmpersec *float64 `protobuf:"fixed64,8,opt,name=mincpmpersec,proto3,oneof" json:"mincpmpersec,omitempty"`
+	// Duration-based floor tiers for video/audio deals.
+	Durfloors []*DurFloors `protobuf:"bytes,9,rep,name=durfloors,proto3" json:"durfloors,omitempty"`
+	// Extension JSON object string.
+	Ext           string `protobuf:"bytes,99,opt,name=ext,proto3" json:"ext,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -3669,8 +3854,8 @@ func (x *Deal) GetId() string {
 }
 
 func (x *Deal) GetBidfloor() float64 {
-	if x != nil {
-		return x.Bidfloor
+	if x != nil && x.Bidfloor != nil {
+		return *x.Bidfloor
 	}
 	return 0
 }
@@ -3683,8 +3868,8 @@ func (x *Deal) GetBidfloorcur() string {
 }
 
 func (x *Deal) GetAt() int32 {
-	if x != nil {
-		return x.At
+	if x != nil && x.At != nil {
+		return *x.At
 	}
 	return 0
 }
@@ -3704,15 +3889,15 @@ func (x *Deal) GetWadomain() []string {
 }
 
 func (x *Deal) GetGuar() int32 {
-	if x != nil {
-		return x.Guar
+	if x != nil && x.Guar != nil {
+		return *x.Guar
 	}
 	return 0
 }
 
 func (x *Deal) GetMincpmpersec() float64 {
-	if x != nil {
-		return x.Mincpmpersec
+	if x != nil && x.Mincpmpersec != nil {
+		return *x.Mincpmpersec
 	}
 	return 0
 }
@@ -3731,16 +3916,17 @@ func (x *Deal) GetExt() string {
 	return ""
 }
 
-// Qty — 展示数量换算
-// 场景：DOOH 一次曝光对应多人/多次；用 multiplier 折算计费展示。
+// Qty: impression quantity conversion.
+// DOOH impressions may represent multiple viewers/exposures; multiplier converts to billable impressions.
 type Qty struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	// 数量乘数（相对 1 次标准展示）。
-	Multiplier float64 `protobuf:"fixed64,1,opt,name=multiplier,proto3" json:"multiplier,omitempty"`
-	// 乘数来源。取值 QtySourceType：0=度量厂商方法，1=发布商/厂商特定方法。
-	Sourcetype int32 `protobuf:"varint,2,opt,name=sourcetype,proto3" json:"sourcetype,omitempty"`
-	// 提供乘数的厂商。
-	Vendor        string `protobuf:"bytes,3,opt,name=vendor,proto3" json:"vendor,omitempty"`
+	// Quantity multiplier relative to one standard impression.
+	Multiplier *float64 `protobuf:"fixed64,1,opt,name=multiplier,proto3,oneof" json:"multiplier,omitempty"`
+	// Multiplier source (QtySourceType): 0=measurement provider method, 1=publisher/vendor-specific method.
+	Sourcetype *int32 `protobuf:"varint,2,opt,name=sourcetype,proto3,oneof" json:"sourcetype,omitempty"`
+	// Vendor supplying the multiplier.
+	Vendor string `protobuf:"bytes,3,opt,name=vendor,proto3" json:"vendor,omitempty"`
+	// Extension JSON object string.
 	Ext           string `protobuf:"bytes,99,opt,name=ext,proto3" json:"ext,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -3777,15 +3963,15 @@ func (*Qty) Descriptor() ([]byte, []int) {
 }
 
 func (x *Qty) GetMultiplier() float64 {
-	if x != nil {
-		return x.Multiplier
+	if x != nil && x.Multiplier != nil {
+		return *x.Multiplier
 	}
 	return 0
 }
 
 func (x *Qty) GetSourcetype() int32 {
-	if x != nil {
-		return x.Sourcetype
+	if x != nil && x.Sourcetype != nil {
+		return *x.Sourcetype
 	}
 	return 0
 }
@@ -3804,14 +3990,16 @@ func (x *Qty) GetExt() string {
 	return ""
 }
 
-// DurFloors — 按时长区间的底价（Video/Audio/Deal.durfloors）
+// DurFloors: duration-based floor intervals for Video/Audio/Deal.durfloors.
+// Different creative-duration tiers use different CPM floors, bounded by mindur/maxdur.
 type DurFloors struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Mindur        int32                  `protobuf:"varint,1,opt,name=mindur,proto3" json:"mindur,omitempty"`          // 区间最短秒数（含）
-	Maxdur        int32                  `protobuf:"varint,2,opt,name=maxdur,proto3" json:"maxdur,omitempty"`          // 区间最长秒数（含）；可省略表示无上界
-	Bidfloor      float64                `protobuf:"fixed64,3,opt,name=bidfloor,proto3" json:"bidfloor,omitempty"`     // 该时长区间 CPM 底价
-	Bidfloorcur   string                 `protobuf:"bytes,4,opt,name=bidfloorcur,proto3" json:"bidfloorcur,omitempty"` // 底价币种 ISO-4217
-	Ext           string                 `protobuf:"bytes,99,opt,name=ext,proto3" json:"ext,omitempty"`
+	state       protoimpl.MessageState `protogen:"open.v1"`
+	Mindur      *int32                 `protobuf:"varint,1,opt,name=mindur,proto3,oneof" json:"mindur,omitempty"`      // Minimum interval duration in seconds, inclusive.
+	Maxdur      *int32                 `protobuf:"varint,2,opt,name=maxdur,proto3,oneof" json:"maxdur,omitempty"`      // Maximum interval duration in seconds, inclusive; omit for no upper bound.
+	Bidfloor    *float64               `protobuf:"fixed64,3,opt,name=bidfloor,proto3,oneof" json:"bidfloor,omitempty"` // CPM floor for this duration interval.
+	Bidfloorcur string                 `protobuf:"bytes,4,opt,name=bidfloorcur,proto3" json:"bidfloorcur,omitempty"`   // Floor currency (ISO-4217).
+	// Extension JSON object string.
+	Ext           string `protobuf:"bytes,99,opt,name=ext,proto3" json:"ext,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -3847,22 +4035,22 @@ func (*DurFloors) Descriptor() ([]byte, []int) {
 }
 
 func (x *DurFloors) GetMindur() int32 {
-	if x != nil {
-		return x.Mindur
+	if x != nil && x.Mindur != nil {
+		return *x.Mindur
 	}
 	return 0
 }
 
 func (x *DurFloors) GetMaxdur() int32 {
-	if x != nil {
-		return x.Maxdur
+	if x != nil && x.Maxdur != nil {
+		return *x.Maxdur
 	}
 	return 0
 }
 
 func (x *DurFloors) GetBidfloor() float64 {
-	if x != nil {
-		return x.Bidfloor
+	if x != nil && x.Bidfloor != nil {
+		return *x.Bidfloor
 	}
 	return 0
 }
@@ -3881,12 +4069,16 @@ func (x *DurFloors) GetExt() string {
 	return ""
 }
 
-// Refresh / RefSettings — Imp.refresh 自动刷新
+// ---------------------------------------------------------------------------
+// Refresh: automatic refresh for Imp.refresh.
+// In-page ad rotation; count is the number of refreshes since the last full page load.
+// ---------------------------------------------------------------------------
 type Refresh struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Refsettings   []*RefSettings         `protobuf:"bytes,1,rep,name=refsettings,proto3" json:"refsettings,omitempty"` // 刷新触发与间隔
-	Count         int32                  `protobuf:"varint,2,opt,name=count,proto3" json:"count,omitempty"`            // 自上次整页加载以来已刷新次数
-	Ext           string                 `protobuf:"bytes,99,opt,name=ext,proto3" json:"ext,omitempty"`
+	state       protoimpl.MessageState `protogen:"open.v1"`
+	Refsettings []*RefSettings         `protobuf:"bytes,1,rep,name=refsettings,proto3" json:"refsettings,omitempty"` // Refresh triggers and intervals.
+	Count       *int32                 `protobuf:"varint,2,opt,name=count,proto3,oneof" json:"count,omitempty"`      // Refresh count since the last full page load.
+	// Extension JSON object string.
+	Ext           string `protobuf:"bytes,99,opt,name=ext,proto3" json:"ext,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -3929,8 +4121,8 @@ func (x *Refresh) GetRefsettings() []*RefSettings {
 }
 
 func (x *Refresh) GetCount() int32 {
-	if x != nil {
-		return x.Count
+	if x != nil && x.Count != nil {
+		return *x.Count
 	}
 	return 0
 }
@@ -3942,11 +4134,16 @@ func (x *Refresh) GetExt() string {
 	return ""
 }
 
+// RefSettings: one automatic-refresh rule.
+// Declares trigger type and minimum interval to prevent excessive refreshes.
 type RefSettings struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Reftype       int32                  `protobuf:"varint,1,opt,name=reftype,proto3" json:"reftype,omitempty"` // 自动刷新触发类型（AdCOM Auto Refresh Triggers）
-	Minint        int32                  `protobuf:"varint,2,opt,name=minint,proto3" json:"minint,omitempty"`   // 最小刷新间隔秒数
-	Ext           string                 `protobuf:"bytes,99,opt,name=ext,proto3" json:"ext,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Refresh trigger (AutoRefreshTrigger): 0=unknown, 1=user action, 2=event, 3=timed interval.
+	Reftype *int32 `protobuf:"varint,1,opt,name=reftype,proto3,oneof" json:"reftype,omitempty"`
+	// Minimum refresh interval in seconds, limiting refresh frequency.
+	Minint *int32 `protobuf:"varint,2,opt,name=minint,proto3,oneof" json:"minint,omitempty"`
+	// Extension JSON object string.
+	Ext           string `protobuf:"bytes,99,opt,name=ext,proto3" json:"ext,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -3982,15 +4179,15 @@ func (*RefSettings) Descriptor() ([]byte, []int) {
 }
 
 func (x *RefSettings) GetReftype() int32 {
-	if x != nil {
-		return x.Reftype
+	if x != nil && x.Reftype != nil {
+		return *x.Reftype
 	}
 	return 0
 }
 
 func (x *RefSettings) GetMinint() int32 {
-	if x != nil {
-		return x.Minint
+	if x != nil && x.Minint != nil {
+		return *x.Minint
 	}
 	return 0
 }
@@ -4002,29 +4199,30 @@ func (x *RefSettings) GetExt() string {
 	return ""
 }
 
-// Site：网页库存。场景：品牌站点、资讯站、移动 Web。
+// Site: web inventory, such as brand sites, news sites or mobile web.
 type Site struct {
 	state                  protoimpl.MessageState `protogen:"open.v1"`
-	Id                     string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`                                          // Exchange 侧站点 ID
-	Name                   string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`                                      // 站点名（可展示名）
-	Domain                 string                 `protobuf:"bytes,3,opt,name=domain,proto3" json:"domain,omitempty"`                                  // 主域，如 example.com；品牌安全与屏蔽
-	Cattax                 int32                  `protobuf:"varint,4,opt,name=cattax,proto3" json:"cattax,omitempty"`                                 // 类目 taxonomy。取值 CategoryTaxonomy（见枚举）
-	Cat                    []string               `protobuf:"bytes,5,rep,name=cat,proto3" json:"cat,omitempty"`                                        // 站点类目
-	Sectioncat             []string               `protobuf:"bytes,6,rep,name=sectioncat,proto3" json:"sectioncat,omitempty"`                          // 栏目类目
-	Pagecat                []string               `protobuf:"bytes,7,rep,name=pagecat,proto3" json:"pagecat,omitempty"`                                // 当前页类目
-	Page                   string                 `protobuf:"bytes,8,opt,name=page,proto3" json:"page,omitempty"`                                      // 完整页面 URL；上下文定向
+	Id                     string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`                                          // Exchange-assigned site ID.
+	Name                   string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`                                      // Site display name.
+	Domain                 string                 `protobuf:"bytes,3,opt,name=domain,proto3" json:"domain,omitempty"`                                  // Primary domain, such as example.com, for brand safety and blocking.
+	Cattax                 *int32                 `protobuf:"varint,4,opt,name=cattax,proto3,oneof" json:"cattax,omitempty"`                           // Category taxonomy; see CategoryTaxonomy enum.
+	Cat                    []string               `protobuf:"bytes,5,rep,name=cat,proto3" json:"cat,omitempty"`                                        // Site categories.
+	Sectioncat             []string               `protobuf:"bytes,6,rep,name=sectioncat,proto3" json:"sectioncat,omitempty"`                          // Section categories.
+	Pagecat                []string               `protobuf:"bytes,7,rep,name=pagecat,proto3" json:"pagecat,omitempty"`                                // Current-page categories.
+	Page                   string                 `protobuf:"bytes,8,opt,name=page,proto3" json:"page,omitempty"`                                      // Full page URL for contextual targeting.
 	Ref                    string                 `protobuf:"bytes,9,opt,name=ref,proto3" json:"ref,omitempty"`                                        // Referrer URL
-	Search                 string                 `protobuf:"bytes,10,opt,name=search,proto3" json:"search,omitempty"`                                 // 搜索词（若来自搜索结果页）
-	Mobile                 int32                  `protobuf:"varint,11,opt,name=mobile,proto3" json:"mobile,omitempty"`                                // 是否移动优化站。取值 FlagBool：0=否，1=是
-	Privacypolicy          int32                  `protobuf:"varint,12,opt,name=privacypolicy,proto3" json:"privacypolicy,omitempty"`                  // 是否有隐私政策。取值 FlagBool：0=否，1=是
-	Publisher              *Publisher             `protobuf:"bytes,13,opt,name=publisher,proto3" json:"publisher,omitempty"`                           // 发布商
-	Content                *Content               `protobuf:"bytes,14,opt,name=content,proto3" json:"content,omitempty"`                               // 页内内容元数据
-	Keywords               string                 `protobuf:"bytes,15,opt,name=keywords,proto3" json:"keywords,omitempty"`                             // 逗号分隔关键词（兼容旧字段）
-	Kwarray                []string               `protobuf:"bytes,16,rep,name=kwarray,proto3" json:"kwarray,omitempty"`                               // 关键词数组（推荐）
-	Inventorypartnerdomain string                 `protobuf:"bytes,17,opt,name=inventorypartnerdomain,proto3" json:"inventorypartnerdomain,omitempty"` // ads.txt/库存合作域
-	Ext                    string                 `protobuf:"bytes,99,opt,name=ext,proto3" json:"ext,omitempty"`
-	unknownFields          protoimpl.UnknownFields
-	sizeCache              protoimpl.SizeCache
+	Search                 string                 `protobuf:"bytes,10,opt,name=search,proto3" json:"search,omitempty"`                                 // Search terms, when arriving from search results.
+	Mobile                 *int32                 `protobuf:"varint,11,opt,name=mobile,proto3,oneof" json:"mobile,omitempty"`                          // Mobile-optimized site flag (FlagBool): 0=no, 1=yes.
+	Privacypolicy          *int32                 `protobuf:"varint,12,opt,name=privacypolicy,proto3,oneof" json:"privacypolicy,omitempty"`            // Privacy-policy flag (FlagBool): 0=no, 1=yes.
+	Publisher              *Publisher             `protobuf:"bytes,13,opt,name=publisher,proto3" json:"publisher,omitempty"`                           // Publisher.
+	Content                *Content               `protobuf:"bytes,14,opt,name=content,proto3" json:"content,omitempty"`                               // Page content metadata.
+	Keywords               string                 `protobuf:"bytes,15,opt,name=keywords,proto3" json:"keywords,omitempty"`                             // Comma-separated keywords (legacy field).
+	Kwarray                []string               `protobuf:"bytes,16,rep,name=kwarray,proto3" json:"kwarray,omitempty"`                               // Keyword array (recommended).
+	Inventorypartnerdomain string                 `protobuf:"bytes,17,opt,name=inventorypartnerdomain,proto3" json:"inventorypartnerdomain,omitempty"` // ads.txt/inventory partner domain.
+	// Extension JSON object string.
+	Ext           string `protobuf:"bytes,99,opt,name=ext,proto3" json:"ext,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *Site) Reset() {
@@ -4079,8 +4277,8 @@ func (x *Site) GetDomain() string {
 }
 
 func (x *Site) GetCattax() int32 {
-	if x != nil {
-		return x.Cattax
+	if x != nil && x.Cattax != nil {
+		return *x.Cattax
 	}
 	return 0
 }
@@ -4128,15 +4326,15 @@ func (x *Site) GetSearch() string {
 }
 
 func (x *Site) GetMobile() int32 {
-	if x != nil {
-		return x.Mobile
+	if x != nil && x.Mobile != nil {
+		return *x.Mobile
 	}
 	return 0
 }
 
 func (x *Site) GetPrivacypolicy() int32 {
-	if x != nil {
-		return x.Privacypolicy
+	if x != nil && x.Privacypolicy != nil {
+		return *x.Privacypolicy
 	}
 	return 0
 }
@@ -4183,29 +4381,38 @@ func (x *Site) GetExt() string {
 	return ""
 }
 
-// App：应用库存。场景：iOS/Android 游戏与工具 App。
+// App: app inventory, such as iOS/Android games and utility apps.
 type App struct {
-	state                  protoimpl.MessageState `protogen:"open.v1"`
-	Id                     string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`             // Exchange 侧 App ID
-	Name                   string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`         // 应用名
-	Bundle                 string                 `protobuf:"bytes,3,opt,name=bundle,proto3" json:"bundle,omitempty"`     // 包名/Bundle ID；应用定向与屏蔽核心字段
-	Domain                 string                 `protobuf:"bytes,4,opt,name=domain,proto3" json:"domain,omitempty"`     // 应用关联域
-	Storeurl               string                 `protobuf:"bytes,5,opt,name=storeurl,proto3" json:"storeurl,omitempty"` // 应用商店详情 URL
-	Cattax                 int32                  `protobuf:"varint,6,opt,name=cattax,proto3" json:"cattax,omitempty"`    // 类目 taxonomy。取值 CategoryTaxonomy
-	Cat                    []string               `protobuf:"bytes,7,rep,name=cat,proto3" json:"cat,omitempty"`
-	Sectioncat             []string               `protobuf:"bytes,8,rep,name=sectioncat,proto3" json:"sectioncat,omitempty"`
-	Pagecat                []string               `protobuf:"bytes,9,rep,name=pagecat,proto3" json:"pagecat,omitempty"`
-	Ver                    string                 `protobuf:"bytes,10,opt,name=ver,proto3" json:"ver,omitempty"`                      // 应用版本
-	Privacypolicy          int32                  `protobuf:"varint,11,opt,name=privacypolicy,proto3" json:"privacypolicy,omitempty"` // 是否有隐私政策。取值 FlagBool
-	Paid                   int32                  `protobuf:"varint,12,opt,name=paid,proto3" json:"paid,omitempty"`                   // 是否付费应用。取值 FlagBool：0=免费，1=付费
-	Publisher              *Publisher             `protobuf:"bytes,13,opt,name=publisher,proto3" json:"publisher,omitempty"`
-	Content                *Content               `protobuf:"bytes,14,opt,name=content,proto3" json:"content,omitempty"`
-	Keywords               string                 `protobuf:"bytes,15,opt,name=keywords,proto3" json:"keywords,omitempty"`
-	Kwarray                []string               `protobuf:"bytes,16,rep,name=kwarray,proto3" json:"kwarray,omitempty"`
-	Inventorypartnerdomain string                 `protobuf:"bytes,17,opt,name=inventorypartnerdomain,proto3" json:"inventorypartnerdomain,omitempty"`
-	Ext                    string                 `protobuf:"bytes,99,opt,name=ext,proto3" json:"ext,omitempty"`
-	unknownFields          protoimpl.UnknownFields
-	sizeCache              protoimpl.SizeCache
+	state    protoimpl.MessageState `protogen:"open.v1"`
+	Id       string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`                // Exchange-assigned app ID.
+	Name     string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`            // App name.
+	Bundle   string                 `protobuf:"bytes,3,opt,name=bundle,proto3" json:"bundle,omitempty"`        // Package name/bundle ID, central to app targeting and blocking.
+	Domain   string                 `protobuf:"bytes,4,opt,name=domain,proto3" json:"domain,omitempty"`        // Associated app domain.
+	Storeurl string                 `protobuf:"bytes,5,opt,name=storeurl,proto3" json:"storeurl,omitempty"`    // App-store detail URL.
+	Cattax   *int32                 `protobuf:"varint,6,opt,name=cattax,proto3,oneof" json:"cattax,omitempty"` // Category taxonomy; see CategoryTaxonomy.
+	// App categories for industry targeting; taxonomy is specified by cattax.
+	Cat []string `protobuf:"bytes,7,rep,name=cat,proto3" json:"cat,omitempty"`
+	// Section categories.
+	Sectioncat []string `protobuf:"bytes,8,rep,name=sectioncat,proto3" json:"sectioncat,omitempty"`
+	// Current view/page categories.
+	Pagecat       []string `protobuf:"bytes,9,rep,name=pagecat,proto3" json:"pagecat,omitempty"`
+	Ver           string   `protobuf:"bytes,10,opt,name=ver,proto3" json:"ver,omitempty"`                            // App version.
+	Privacypolicy *int32   `protobuf:"varint,11,opt,name=privacypolicy,proto3,oneof" json:"privacypolicy,omitempty"` // Privacy-policy flag; see FlagBool.
+	Paid          *int32   `protobuf:"varint,12,opt,name=paid,proto3,oneof" json:"paid,omitempty"`                   // Paid-app flag (FlagBool): 0=free, 1=paid.
+	// Publisher entity responsible for distributing the app.
+	Publisher *Publisher `protobuf:"bytes,13,opt,name=publisher,proto3" json:"publisher,omitempty"`
+	// In-app content metadata, such as embedded player or article context.
+	Content *Content `protobuf:"bytes,14,opt,name=content,proto3" json:"content,omitempty"`
+	// Comma-separated keywords (legacy field).
+	Keywords string `protobuf:"bytes,15,opt,name=keywords,proto3" json:"keywords,omitempty"`
+	// Keyword array (recommended).
+	Kwarray []string `protobuf:"bytes,16,rep,name=kwarray,proto3" json:"kwarray,omitempty"`
+	// Inventory partner domain for app-ads.txt.
+	Inventorypartnerdomain string `protobuf:"bytes,17,opt,name=inventorypartnerdomain,proto3" json:"inventorypartnerdomain,omitempty"`
+	// Extension JSON object string.
+	Ext           string `protobuf:"bytes,99,opt,name=ext,proto3" json:"ext,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *App) Reset() {
@@ -4274,8 +4481,8 @@ func (x *App) GetStoreurl() string {
 }
 
 func (x *App) GetCattax() int32 {
-	if x != nil {
-		return x.Cattax
+	if x != nil && x.Cattax != nil {
+		return *x.Cattax
 	}
 	return 0
 }
@@ -4309,15 +4516,15 @@ func (x *App) GetVer() string {
 }
 
 func (x *App) GetPrivacypolicy() int32 {
-	if x != nil {
-		return x.Privacypolicy
+	if x != nil && x.Privacypolicy != nil {
+		return *x.Privacypolicy
 	}
 	return 0
 }
 
 func (x *App) GetPaid() int32 {
-	if x != nil {
-		return x.Paid
+	if x != nil && x.Paid != nil {
+		return *x.Paid
 	}
 	return 0
 }
@@ -4364,22 +4571,28 @@ func (x *App) GetExt() string {
 	return ""
 }
 
-// Dooh：数字户外。场景：电梯屏、看板、商场联屏。
+// Dooh: digital out-of-home inventory, such as elevator screens, billboards and mall screen networks.
 type Dooh struct {
-	state     protoimpl.MessageState `protogen:"open.v1"`
-	Id        string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"` // 屏点/单元 ID
-	Name      string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
-	Venue     int32                  `protobuf:"varint,3,opt,name=venue,proto3" json:"venue,omitempty"` // 旧版数值场所类型；优先用 venuetype + venuetypetax
-	Fixed     int32                  `protobuf:"varint,4,opt,name=fixed,proto3" json:"fixed,omitempty"` // 是否固定屏。取值 FlagBool：0=可移动，1=固定
-	Publisher *Publisher             `protobuf:"bytes,5,opt,name=publisher,proto3" json:"publisher,omitempty"`
-	Domain    string                 `protobuf:"bytes,6,opt,name=domain,proto3" json:"domain,omitempty"`
-	Keywords  string                 `protobuf:"bytes,7,opt,name=keywords,proto3" json:"keywords,omitempty"`
-	Kwarray   []string               `protobuf:"bytes,8,rep,name=kwarray,proto3" json:"kwarray,omitempty"`
-	Content   *Content               `protobuf:"bytes,9,opt,name=content,proto3" json:"content,omitempty"` // 当前播放的内容上下文
-	// 场所类型 ID 列表（OpenOOH 等）；taxonomy 由 venuetypetax 指定。
+	state protoimpl.MessageState `protogen:"open.v1"`
+	Id    string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"` // Screen/venue unit ID.
+	// Screen/venue unit name.
+	Name  string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	Venue *int32 `protobuf:"varint,3,opt,name=venue,proto3,oneof" json:"venue,omitempty"` // Legacy numeric venue type; prefer venuetype plus venuetypetax.
+	Fixed *int32 `protobuf:"varint,4,opt,name=fixed,proto3,oneof" json:"fixed,omitempty"` // Fixed-screen flag (FlagBool): 0=mobile, 1=fixed.
+	// Publisher or screen-network operator.
+	Publisher *Publisher `protobuf:"bytes,5,opt,name=publisher,proto3" json:"publisher,omitempty"`
+	// Associated business domain.
+	Domain string `protobuf:"bytes,6,opt,name=domain,proto3" json:"domain,omitempty"`
+	// Comma-separated keywords (legacy field).
+	Keywords string `protobuf:"bytes,7,opt,name=keywords,proto3" json:"keywords,omitempty"`
+	// Keyword array (recommended).
+	Kwarray []string `protobuf:"bytes,8,rep,name=kwarray,proto3" json:"kwarray,omitempty"`
+	Content *Content `protobuf:"bytes,9,opt,name=content,proto3" json:"content,omitempty"` // Context of the content currently playing.
+	// Venue type IDs, such as OpenOOH; venuetypetax specifies the taxonomy.
 	Venuetype []string `protobuf:"bytes,10,rep,name=venuetype,proto3" json:"venuetype,omitempty"`
-	// 场所 taxonomy。AdCOM DOOH Venue Taxonomies；默认 1。
-	Venuetypetax  int32  `protobuf:"varint,11,opt,name=venuetypetax,proto3" json:"venuetypetax,omitempty"`
+	// Venue taxonomy from AdCOM DOOH Venue Taxonomies; default 1.
+	Venuetypetax *int32 `protobuf:"varint,11,opt,name=venuetypetax,proto3,oneof" json:"venuetypetax,omitempty"`
+	// Extension JSON object string.
 	Ext           string `protobuf:"bytes,99,opt,name=ext,proto3" json:"ext,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -4430,15 +4643,15 @@ func (x *Dooh) GetName() string {
 }
 
 func (x *Dooh) GetVenue() int32 {
-	if x != nil {
-		return x.Venue
+	if x != nil && x.Venue != nil {
+		return *x.Venue
 	}
 	return 0
 }
 
 func (x *Dooh) GetFixed() int32 {
-	if x != nil {
-		return x.Fixed
+	if x != nil && x.Fixed != nil {
+		return *x.Fixed
 	}
 	return 0
 }
@@ -4486,8 +4699,8 @@ func (x *Dooh) GetVenuetype() []string {
 }
 
 func (x *Dooh) GetVenuetypetax() int32 {
-	if x != nil {
-		return x.Venuetypetax
+	if x != nil && x.Venuetypetax != nil {
+		return *x.Venuetypetax
 	}
 	return 0
 }
@@ -4499,14 +4712,18 @@ func (x *Dooh) GetExt() string {
 	return ""
 }
 
+// Publisher: inventory publisher.
+// Contracting entity and a dimension for brand safety and reporting.
 type Publisher struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"` // 发布商 ID；报表与合约主体
-	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
-	Cattax        int32                  `protobuf:"varint,3,opt,name=cattax,proto3" json:"cattax,omitempty"` // 类目 taxonomy。取值 CategoryTaxonomy
-	Cat           []string               `protobuf:"bytes,4,rep,name=cat,proto3" json:"cat,omitempty"`        // 发布商类目
-	Domain        string                 `protobuf:"bytes,5,opt,name=domain,proto3" json:"domain,omitempty"`  // 发布商主域
-	Ext           string                 `protobuf:"bytes,99,opt,name=ext,proto3" json:"ext,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	Id    string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"` // Publisher ID for reporting and contracts.
+	// Publisher name.
+	Name   string   `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	Cattax *int32   `protobuf:"varint,3,opt,name=cattax,proto3,oneof" json:"cattax,omitempty"` // Category taxonomy; see CategoryTaxonomy.
+	Cat    []string `protobuf:"bytes,4,rep,name=cat,proto3" json:"cat,omitempty"`              // Publisher categories.
+	Domain string   `protobuf:"bytes,5,opt,name=domain,proto3" json:"domain,omitempty"`        // Publisher primary domain.
+	// Extension JSON object string.
+	Ext           string `protobuf:"bytes,99,opt,name=ext,proto3" json:"ext,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -4556,8 +4773,8 @@ func (x *Publisher) GetName() string {
 }
 
 func (x *Publisher) GetCattax() int32 {
-	if x != nil {
-		return x.Cattax
+	if x != nil && x.Cattax != nil {
+		return *x.Cattax
 	}
 	return 0
 }
@@ -4583,14 +4800,20 @@ func (x *Publisher) GetExt() string {
 	return ""
 }
 
+// Producer: content producer or production company.
+// Producer of a series/program, supporting contextual targeting.
 type Producer struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"` // 内容制片方/出品方
-	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
-	Cattax        int32                  `protobuf:"varint,3,opt,name=cattax,proto3" json:"cattax,omitempty"` // 类目 taxonomy。取值 CategoryTaxonomy
-	Cat           []string               `protobuf:"bytes,4,rep,name=cat,proto3" json:"cat,omitempty"`
-	Domain        string                 `protobuf:"bytes,5,opt,name=domain,proto3" json:"domain,omitempty"`
-	Ext           string                 `protobuf:"bytes,99,opt,name=ext,proto3" json:"ext,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	Id    string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"` // Content producer/production company.
+	// Producer name.
+	Name   string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	Cattax *int32 `protobuf:"varint,3,opt,name=cattax,proto3,oneof" json:"cattax,omitempty"` // Category taxonomy; see CategoryTaxonomy.
+	// Producer categories; see cattax for the taxonomy.
+	Cat []string `protobuf:"bytes,4,rep,name=cat,proto3" json:"cat,omitempty"`
+	// Producer primary domain.
+	Domain string `protobuf:"bytes,5,opt,name=domain,proto3" json:"domain,omitempty"`
+	// Extension JSON object string.
+	Ext           string `protobuf:"bytes,99,opt,name=ext,proto3" json:"ext,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -4640,8 +4863,8 @@ func (x *Producer) GetName() string {
 }
 
 func (x *Producer) GetCattax() int32 {
-	if x != nil {
-		return x.Cattax
+	if x != nil && x.Cattax != nil {
+		return *x.Cattax
 	}
 	return 0
 }
@@ -4667,51 +4890,59 @@ func (x *Producer) GetExt() string {
 	return ""
 }
 
-// Content — 与广告一起出现的媒体内容
-// 场景：视频前后贴依赖剧集/频道信息做上下文定向与品牌安全。
+// Content: media content accompanying the ad.
+// Video pre-/post-roll uses series/channel metadata for contextual targeting and brand safety.
 type Content struct {
-	state          protoimpl.MessageState `protogen:"open.v1"`
-	Id             string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	Episode        int32                  `protobuf:"varint,2,opt,name=episode,proto3" json:"episode,omitempty"` // 集数
-	Title          string                 `protobuf:"bytes,3,opt,name=title,proto3" json:"title,omitempty"`      // 标题
-	Series         string                 `protobuf:"bytes,4,opt,name=series,proto3" json:"series,omitempty"`    // 系列名
-	Season         string                 `protobuf:"bytes,5,opt,name=season,proto3" json:"season,omitempty"`    // 季
-	Artist         string                 `protobuf:"bytes,6,opt,name=artist,proto3" json:"artist,omitempty"`    // 艺术家（音频/音乐）
-	Genre          string                 `protobuf:"bytes,7,opt,name=genre,proto3" json:"genre,omitempty"`      // 自由文本类型（旧字段）；有 taxonomy 时优先 genres+gtax
-	Album          string                 `protobuf:"bytes,8,opt,name=album,proto3" json:"album,omitempty"`
-	Isrc           string                 `protobuf:"bytes,9,opt,name=isrc,proto3" json:"isrc,omitempty"` // 录音制品国际标准码
-	Producer       *Producer              `protobuf:"bytes,10,opt,name=producer,proto3" json:"producer,omitempty"`
-	Url            string                 `protobuf:"bytes,11,opt,name=url,proto3" json:"url,omitempty"`        // 内容 URL
-	Cattax         int32                  `protobuf:"varint,12,opt,name=cattax,proto3" json:"cattax,omitempty"` // 类目 taxonomy。取值 CategoryTaxonomy
-	Cat            []string               `protobuf:"bytes,13,rep,name=cat,proto3" json:"cat,omitempty"`
-	Prodq          int32                  `protobuf:"varint,14,opt,name=prodq,proto3" json:"prodq,omitempty"`                   // 制作质量。取值 ProductionQuality：0=未知，1=专业，2=准专业，3=UGC
-	Context        int32                  `protobuf:"varint,15,opt,name=context,proto3" json:"context,omitempty"`               // 内容上下文。取值 ContentContext：1=视频，2=游戏，3=音乐，4=应用，5=文本，6=其他，7=未知
-	Contentrating  string                 `protobuf:"bytes,16,opt,name=contentrating,proto3" json:"contentrating,omitempty"`    // 内容分级，如 MPAA
-	Userrating     string                 `protobuf:"bytes,17,opt,name=userrating,proto3" json:"userrating,omitempty"`          // 用户评分
-	Qagmediarating int32                  `protobuf:"varint,18,opt,name=qagmediarating,proto3" json:"qagmediarating,omitempty"` // 媒体评级。取值 MediaRating：1=全年龄，2=12+，3=成人
-	Keywords       string                 `protobuf:"bytes,19,opt,name=keywords,proto3" json:"keywords,omitempty"`
-	Kwarray        []string               `protobuf:"bytes,20,rep,name=kwarray,proto3" json:"kwarray,omitempty"`
-	// 播出方式（OpenRTB 2.6-202606）：0=非排期（VOD/用户发起），1=排期/线性；≠ realtime。
-	Livestream         int32    `protobuf:"varint,21,opt,name=livestream,proto3" json:"livestream,omitempty"`
-	Sourcerelationship int32    `protobuf:"varint,22,opt,name=sourcerelationship,proto3" json:"sourcerelationship,omitempty"` // 与发布商关系。取值 SourceRelationship：0=间接，1=直接
-	Len                int32    `protobuf:"varint,23,opt,name=len,proto3" json:"len,omitempty"`                               // 内容时长秒数
-	Language           string   `protobuf:"bytes,24,opt,name=language,proto3" json:"language,omitempty"`                      // ISO-639-1
-	Langb              string   `protobuf:"bytes,25,opt,name=langb,proto3" json:"langb,omitempty"`                            // BCP-47
-	Embeddable         int32    `protobuf:"varint,26,opt,name=embeddable,proto3" json:"embeddable,omitempty"`                 // 是否可嵌入。取值 FlagBool：0=否，1=是
-	Data               []*Data  `protobuf:"bytes,27,rep,name=data,proto3" json:"data,omitempty"`                              // 内容侧分段数据
-	Network            *Network `protobuf:"bytes,28,opt,name=network,proto3" json:"network,omitempty"`                        // 播出网络
-	Channel            *Channel `protobuf:"bytes,29,opt,name=channel,proto3" json:"channel,omitempty"`                        // 频道
-	// 类型 taxonomy（OpenRTB 2.6-202501+）；缺省按 IAB 指南可视为 Content Taxonomy 3.1。
-	Gtax int32 `protobuf:"varint,30,opt,name=gtax,proto3" json:"gtax,omitempty"`
-	// 类型 ID 列表，taxonomy 由 gtax 定义（OpenRTB 2.6-202501+）。
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Content ID identifying a series/article for contextual targeting.
+	Id      string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Episode *int32 `protobuf:"varint,2,opt,name=episode,proto3,oneof" json:"episode,omitempty"` // Episode number.
+	Title   string `protobuf:"bytes,3,opt,name=title,proto3" json:"title,omitempty"`            // Title.
+	Series  string `protobuf:"bytes,4,opt,name=series,proto3" json:"series,omitempty"`          // Series name.
+	Season  string `protobuf:"bytes,5,opt,name=season,proto3" json:"season,omitempty"`          // Season.
+	Artist  string `protobuf:"bytes,6,opt,name=artist,proto3" json:"artist,omitempty"`          // Artist for audio/music.
+	Genre   string `protobuf:"bytes,7,opt,name=genre,proto3" json:"genre,omitempty"`            // Legacy free-text genre; prefer genres plus gtax when a taxonomy is available.
+	// Album name for audio/music.
+	Album string `protobuf:"bytes,8,opt,name=album,proto3" json:"album,omitempty"`
+	Isrc  string `protobuf:"bytes,9,opt,name=isrc,proto3" json:"isrc,omitempty"` // International Standard Recording Code.
+	// Content producer.
+	Producer *Producer `protobuf:"bytes,10,opt,name=producer,proto3" json:"producer,omitempty"`
+	Url      string    `protobuf:"bytes,11,opt,name=url,proto3" json:"url,omitempty"`              // Content URL.
+	Cattax   *int32    `protobuf:"varint,12,opt,name=cattax,proto3,oneof" json:"cattax,omitempty"` // Category taxonomy; see CategoryTaxonomy.
+	// Content categories; see cattax for the taxonomy.
+	Cat            []string `protobuf:"bytes,13,rep,name=cat,proto3" json:"cat,omitempty"`
+	Prodq          *int32   `protobuf:"varint,14,opt,name=prodq,proto3,oneof" json:"prodq,omitempty"`                   // Production quality (ProductionQuality): 0=unknown, 1=professional, 2=prosumer, 3=UGC.
+	Context        *int32   `protobuf:"varint,15,opt,name=context,proto3,oneof" json:"context,omitempty"`               // Content context (ContentContext): 1=video, 2=game, 3=music, 4=app, 5=text, 6=other, 7=unknown.
+	Contentrating  string   `protobuf:"bytes,16,opt,name=contentrating,proto3" json:"contentrating,omitempty"`          // Content rating, such as MPAA.
+	Userrating     string   `protobuf:"bytes,17,opt,name=userrating,proto3" json:"userrating,omitempty"`                // User rating.
+	Qagmediarating *int32   `protobuf:"varint,18,opt,name=qagmediarating,proto3,oneof" json:"qagmediarating,omitempty"` // Media rating (MediaRating): 1=all audiences, 2=12+, 3=mature.
+	// Comma-separated keywords (legacy field).
+	Keywords string `protobuf:"bytes,19,opt,name=keywords,proto3" json:"keywords,omitempty"`
+	// Keyword array (recommended).
+	Kwarray []string `protobuf:"bytes,20,rep,name=kwarray,proto3" json:"kwarray,omitempty"`
+	// Broadcast scheduling (OpenRTB 2.6-202606): 0=unscheduled (VOD/user-initiated), 1=scheduled/linear; distinct from realtime.
+	Livestream         *int32   `protobuf:"varint,21,opt,name=livestream,proto3,oneof" json:"livestream,omitempty"`
+	Sourcerelationship *int32   `protobuf:"varint,22,opt,name=sourcerelationship,proto3,oneof" json:"sourcerelationship,omitempty"` // Publisher relationship (SourceRelationship): 0=indirect, 1=direct.
+	Len                *int32   `protobuf:"varint,23,opt,name=len,proto3,oneof" json:"len,omitempty"`                               // Content duration in seconds.
+	Language           string   `protobuf:"bytes,24,opt,name=language,proto3" json:"language,omitempty"`                            // ISO-639-1
+	Langb              string   `protobuf:"bytes,25,opt,name=langb,proto3" json:"langb,omitempty"`                                  // BCP-47
+	Embeddable         *int32   `protobuf:"varint,26,opt,name=embeddable,proto3,oneof" json:"embeddable,omitempty"`                 // Embeddable flag (FlagBool): 0=no, 1=yes.
+	Data               []*Data  `protobuf:"bytes,27,rep,name=data,proto3" json:"data,omitempty"`                                    // Content-side segment data.
+	Network            *Network `protobuf:"bytes,28,opt,name=network,proto3" json:"network,omitempty"`                              // Broadcast network.
+	Channel            *Channel `protobuf:"bytes,29,opt,name=channel,proto3" json:"channel,omitempty"`                              // Channel.
+	// Genre taxonomy (OpenRTB 2.6-202501+); IAB guidance may treat the default as Content Taxonomy 3.1.
+	// Genre taxonomy (OpenRTB 2.6-202501+) interpreting genres[]; default may follow IAB Content Taxonomy conventions.
+	Gtax *int32 `protobuf:"varint,30,opt,name=gtax,proto3,oneof" json:"gtax,omitempty"`
+	// Genre IDs using the taxonomy specified by gtax (OpenRTB 2.6-202501+).
 	Genres []string `protobuf:"bytes,31,rep,name=genres,proto3" json:"genres,omitempty"`
-	// 是否实时发生（OpenRTB 2.6-202606）：0=非实时（如回放），1=实时（如直播赛事）。
-	Realtime int32 `protobuf:"varint,32,opt,name=realtime,proto3" json:"realtime,omitempty"`
-	// 是否首播（OpenRTB 2.6-202606）：0=非首次，1=首次对观众播出。
-	Firstbroadcast int32  `protobuf:"varint,33,opt,name=firstbroadcast,proto3" json:"firstbroadcast,omitempty"`
-	Ext            string `protobuf:"bytes,99,opt,name=ext,proto3" json:"ext,omitempty"`
-	unknownFields  protoimpl.UnknownFields
-	sizeCache      protoimpl.SizeCache
+	// Real-time flag (OpenRTB 2.6-202606): 0=not real-time, such as replay; 1=real-time, such as a live event.
+	Realtime *int32 `protobuf:"varint,32,opt,name=realtime,proto3,oneof" json:"realtime,omitempty"`
+	// Premiere flag (OpenRTB 2.6-202606): 0=not first showing, 1=first broadcast to the audience.
+	Firstbroadcast *int32 `protobuf:"varint,33,opt,name=firstbroadcast,proto3,oneof" json:"firstbroadcast,omitempty"`
+	// Extension JSON object string.
+	Ext           string `protobuf:"bytes,99,opt,name=ext,proto3" json:"ext,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *Content) Reset() {
@@ -4752,8 +4983,8 @@ func (x *Content) GetId() string {
 }
 
 func (x *Content) GetEpisode() int32 {
-	if x != nil {
-		return x.Episode
+	if x != nil && x.Episode != nil {
+		return *x.Episode
 	}
 	return 0
 }
@@ -4822,8 +5053,8 @@ func (x *Content) GetUrl() string {
 }
 
 func (x *Content) GetCattax() int32 {
-	if x != nil {
-		return x.Cattax
+	if x != nil && x.Cattax != nil {
+		return *x.Cattax
 	}
 	return 0
 }
@@ -4836,15 +5067,15 @@ func (x *Content) GetCat() []string {
 }
 
 func (x *Content) GetProdq() int32 {
-	if x != nil {
-		return x.Prodq
+	if x != nil && x.Prodq != nil {
+		return *x.Prodq
 	}
 	return 0
 }
 
 func (x *Content) GetContext() int32 {
-	if x != nil {
-		return x.Context
+	if x != nil && x.Context != nil {
+		return *x.Context
 	}
 	return 0
 }
@@ -4864,8 +5095,8 @@ func (x *Content) GetUserrating() string {
 }
 
 func (x *Content) GetQagmediarating() int32 {
-	if x != nil {
-		return x.Qagmediarating
+	if x != nil && x.Qagmediarating != nil {
+		return *x.Qagmediarating
 	}
 	return 0
 }
@@ -4885,22 +5116,22 @@ func (x *Content) GetKwarray() []string {
 }
 
 func (x *Content) GetLivestream() int32 {
-	if x != nil {
-		return x.Livestream
+	if x != nil && x.Livestream != nil {
+		return *x.Livestream
 	}
 	return 0
 }
 
 func (x *Content) GetSourcerelationship() int32 {
-	if x != nil {
-		return x.Sourcerelationship
+	if x != nil && x.Sourcerelationship != nil {
+		return *x.Sourcerelationship
 	}
 	return 0
 }
 
 func (x *Content) GetLen() int32 {
-	if x != nil {
-		return x.Len
+	if x != nil && x.Len != nil {
+		return *x.Len
 	}
 	return 0
 }
@@ -4920,8 +5151,8 @@ func (x *Content) GetLangb() string {
 }
 
 func (x *Content) GetEmbeddable() int32 {
-	if x != nil {
-		return x.Embeddable
+	if x != nil && x.Embeddable != nil {
+		return *x.Embeddable
 	}
 	return 0
 }
@@ -4948,8 +5179,8 @@ func (x *Content) GetChannel() *Channel {
 }
 
 func (x *Content) GetGtax() int32 {
-	if x != nil {
-		return x.Gtax
+	if x != nil && x.Gtax != nil {
+		return *x.Gtax
 	}
 	return 0
 }
@@ -4962,15 +5193,15 @@ func (x *Content) GetGenres() []string {
 }
 
 func (x *Content) GetRealtime() int32 {
-	if x != nil {
-		return x.Realtime
+	if x != nil && x.Realtime != nil {
+		return *x.Realtime
 	}
 	return 0
 }
 
 func (x *Content) GetFirstbroadcast() int32 {
-	if x != nil {
-		return x.Firstbroadcast
+	if x != nil && x.Firstbroadcast != nil {
+		return *x.Firstbroadcast
 	}
 	return 0
 }
@@ -4982,12 +5213,18 @@ func (x *Content) GetExt() string {
 	return ""
 }
 
+// Network: broadcast network.
+// Network owning a CTV/OTT channel, such as a streaming platform brand.
 type Network struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
-	Domain        string                 `protobuf:"bytes,3,opt,name=domain,proto3" json:"domain,omitempty"`
-	Ext           string                 `protobuf:"bytes,99,opt,name=ext,proto3" json:"ext,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Network ID.
+	Id string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	// Network name.
+	Name string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	// Network primary domain.
+	Domain string `protobuf:"bytes,3,opt,name=domain,proto3" json:"domain,omitempty"`
+	// Extension JSON object string.
+	Ext           string `protobuf:"bytes,99,opt,name=ext,proto3" json:"ext,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -5050,12 +5287,18 @@ func (x *Network) GetExt() string {
 	return ""
 }
 
+// Channel: broadcast channel.
+// Name and domain of a specific linear/streaming channel.
 type Channel struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
-	Domain        string                 `protobuf:"bytes,3,opt,name=domain,proto3" json:"domain,omitempty"`
-	Ext           string                 `protobuf:"bytes,99,opt,name=ext,proto3" json:"ext,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Channel ID.
+	Id string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	// Channel name.
+	Name string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	// Channel primary domain.
+	Domain string `protobuf:"bytes,3,opt,name=domain,proto3" json:"domain,omitempty"`
+	// Extension JSON object string.
+	Ext           string `protobuf:"bytes,99,opt,name=ext,proto3" json:"ext,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -5119,41 +5362,42 @@ func (x *Channel) GetExt() string {
 }
 
 // ---------------------------------------------------------------------------
-// Device — 设备与网络环境
-// 场景：几乎所有流量都应带；用于定向、创意适配、反作弊与合规（dnt/lmt）。
+// Device: device and network environment.
+// Recommended for nearly all traffic; supports targeting, creative compatibility, fraud detection and dnt/lmt compliance.
 // ---------------------------------------------------------------------------
 type Device struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	Geo   *Geo                   `protobuf:"bytes,1,opt,name=geo,proto3" json:"geo,omitempty"`   // 设备地理位置（可与 User.geo 不同）
-	Dnt   int32                  `protobuf:"varint,2,opt,name=dnt,proto3" json:"dnt,omitempty"`  // Do Not Track。取值 FlagBool：0=否，1=开启 DNT
-	Lmt   int32                  `protobuf:"varint,3,opt,name=lmt,proto3" json:"lmt,omitempty"`  // 限制广告跟踪（LAT）。取值 FlagBool：0=否，1=限制
-	Ua    string                 `protobuf:"bytes,4,opt,name=ua,proto3" json:"ua,omitempty"`     // User-Agent 原始串；解析失败时的兜底
-	Sua   *UserAgent             `protobuf:"bytes,5,opt,name=sua,proto3" json:"sua,omitempty"`   // 结构化 UA（SUA）；优先于 ua 做精准定向
-	Ip    string                 `protobuf:"bytes,6,opt,name=ip,proto3" json:"ip,omitempty"`     // IPv4；地理与风控
-	Ipv6  string                 `protobuf:"bytes,7,opt,name=ipv6,proto3" json:"ipv6,omitempty"` // IPv6
-	// 设备类型。取值 DeviceType：1=通用移动，2=PC，3=CTV，4=手机，5=平板，6=联网设备，7=机顶盒，8=OOH
-	Devicetype int32   `protobuf:"varint,8,opt,name=devicetype,proto3" json:"devicetype,omitempty"`
-	Make       string  `protobuf:"bytes,9,opt,name=make,proto3" json:"make,omitempty"`           // 厂商，如 Apple
-	Model      string  `protobuf:"bytes,10,opt,name=model,proto3" json:"model,omitempty"`        // 型号
-	Os         string  `protobuf:"bytes,11,opt,name=os,proto3" json:"os,omitempty"`              // 操作系统
-	Osv        string  `protobuf:"bytes,12,opt,name=osv,proto3" json:"osv,omitempty"`            // OS 版本
-	Hwv        string  `protobuf:"bytes,13,opt,name=hwv,proto3" json:"hwv,omitempty"`            // 硬件版本
-	H          int32   `protobuf:"varint,14,opt,name=h,proto3" json:"h,omitempty"`               // 屏幕高 px
-	W          int32   `protobuf:"varint,15,opt,name=w,proto3" json:"w,omitempty"`               // 屏幕宽 px
-	Ppi        int32   `protobuf:"varint,16,opt,name=ppi,proto3" json:"ppi,omitempty"`           // 像素密度
-	Pxratio    float64 `protobuf:"fixed64,17,opt,name=pxratio,proto3" json:"pxratio,omitempty"`  // 物理像素比（Retina 等）
-	Js         int32   `protobuf:"varint,18,opt,name=js,proto3" json:"js,omitempty"`             // 是否支持 JS。取值 FlagBool：0=否，1=是
-	Geofetch   int32   `protobuf:"varint,19,opt,name=geofetch,proto3" json:"geofetch,omitempty"` // 是否允许创意再取地理。取值 FlagBool：0=否，1=是
-	Language   string  `protobuf:"bytes,20,opt,name=language,proto3" json:"language,omitempty"`  // 设备语言 ISO-639-1
-	Langb      string  `protobuf:"bytes,21,opt,name=langb,proto3" json:"langb,omitempty"`        // BCP-47
-	Carrier    string  `protobuf:"bytes,22,opt,name=carrier,proto3" json:"carrier,omitempty"`    // 运营商
-	Mccmnc     string  `protobuf:"bytes,23,opt,name=mccmnc,proto3" json:"mccmnc,omitempty"`      // MCC-MNC
-	// 连接类型。取值 ConnectionType：0=未知，1=以太网，2=WiFi，3=蜂窝未知，4=2G，5=3G，6=4G，7=5G
-	Connectiontype int32  `protobuf:"varint,24,opt,name=connectiontype,proto3" json:"connectiontype,omitempty"`
-	Ifa            string `protobuf:"bytes,25,opt,name=ifa,proto3" json:"ifa,omitempty"` // 广告 ID（IDFA/GAID 等）；用户级定向与归因
-	Ext            string `protobuf:"bytes,99,opt,name=ext,proto3" json:"ext,omitempty"`
-	unknownFields  protoimpl.UnknownFields
-	sizeCache      protoimpl.SizeCache
+	Geo   *Geo                   `protobuf:"bytes,1,opt,name=geo,proto3" json:"geo,omitempty"`        // Device location, which may differ from User.geo.
+	Dnt   *int32                 `protobuf:"varint,2,opt,name=dnt,proto3,oneof" json:"dnt,omitempty"` // Do Not Track (FlagBool): 0=no, 1=DNT enabled.
+	Lmt   *int32                 `protobuf:"varint,3,opt,name=lmt,proto3,oneof" json:"lmt,omitempty"` // Limit Ad Tracking (FlagBool): 0=no, 1=limited.
+	Ua    string                 `protobuf:"bytes,4,opt,name=ua,proto3" json:"ua,omitempty"`          // Raw User-Agent string, used as a parsing fallback.
+	Sua   *UserAgent             `protobuf:"bytes,5,opt,name=sua,proto3" json:"sua,omitempty"`        // Structured UA (SUA), preferred over ua for precise targeting.
+	Ip    string                 `protobuf:"bytes,6,opt,name=ip,proto3" json:"ip,omitempty"`          // IPv4 address for geolocation and risk assessment.
+	Ipv6  string                 `protobuf:"bytes,7,opt,name=ipv6,proto3" json:"ipv6,omitempty"`      // IPv6
+	// Device type (DeviceType): 1=general mobile, 2=PC, 3=CTV, 4=phone, 5=tablet, 6=connected device, 7=set-top box, 8=OOH.
+	Devicetype *int32   `protobuf:"varint,8,opt,name=devicetype,proto3,oneof" json:"devicetype,omitempty"`
+	Make       string   `protobuf:"bytes,9,opt,name=make,proto3" json:"make,omitempty"`                 // Manufacturer, such as Apple.
+	Model      string   `protobuf:"bytes,10,opt,name=model,proto3" json:"model,omitempty"`              // Model.
+	Os         string   `protobuf:"bytes,11,opt,name=os,proto3" json:"os,omitempty"`                    // Operating system.
+	Osv        string   `protobuf:"bytes,12,opt,name=osv,proto3" json:"osv,omitempty"`                  // OS version.
+	Hwv        string   `protobuf:"bytes,13,opt,name=hwv,proto3" json:"hwv,omitempty"`                  // Hardware version.
+	H          *int32   `protobuf:"varint,14,opt,name=h,proto3,oneof" json:"h,omitempty"`               // Screen height in pixels.
+	W          *int32   `protobuf:"varint,15,opt,name=w,proto3,oneof" json:"w,omitempty"`               // Screen width in pixels.
+	Ppi        *int32   `protobuf:"varint,16,opt,name=ppi,proto3,oneof" json:"ppi,omitempty"`           // Pixel density.
+	Pxratio    *float64 `protobuf:"fixed64,17,opt,name=pxratio,proto3,oneof" json:"pxratio,omitempty"`  // Physical pixel ratio, such as Retina scaling.
+	Js         *int32   `protobuf:"varint,18,opt,name=js,proto3,oneof" json:"js,omitempty"`             // JavaScript support (FlagBool): 0=no, 1=yes.
+	Geofetch   *int32   `protobuf:"varint,19,opt,name=geofetch,proto3,oneof" json:"geofetch,omitempty"` // Whether the creative may obtain location (FlagBool): 0=no, 1=yes.
+	Language   string   `protobuf:"bytes,20,opt,name=language,proto3" json:"language,omitempty"`        // Device language (ISO-639-1).
+	Langb      string   `protobuf:"bytes,21,opt,name=langb,proto3" json:"langb,omitempty"`              // BCP-47
+	Carrier    string   `protobuf:"bytes,22,opt,name=carrier,proto3" json:"carrier,omitempty"`          // Carrier.
+	Mccmnc     string   `protobuf:"bytes,23,opt,name=mccmnc,proto3" json:"mccmnc,omitempty"`            // MCC-MNC
+	// Connection type (ConnectionType): 0=unknown, 1=Ethernet, 2=WiFi, 3=unknown cellular, 4=2G, 5=3G, 6=4G, 7=5G.
+	Connectiontype *int32 `protobuf:"varint,24,opt,name=connectiontype,proto3,oneof" json:"connectiontype,omitempty"`
+	Ifa            string `protobuf:"bytes,25,opt,name=ifa,proto3" json:"ifa,omitempty"` // Advertising ID, such as IDFA/GAID, for user targeting and attribution.
+	// Extension JSON object string.
+	Ext           string `protobuf:"bytes,99,opt,name=ext,proto3" json:"ext,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *Device) Reset() {
@@ -5194,15 +5438,15 @@ func (x *Device) GetGeo() *Geo {
 }
 
 func (x *Device) GetDnt() int32 {
-	if x != nil {
-		return x.Dnt
+	if x != nil && x.Dnt != nil {
+		return *x.Dnt
 	}
 	return 0
 }
 
 func (x *Device) GetLmt() int32 {
-	if x != nil {
-		return x.Lmt
+	if x != nil && x.Lmt != nil {
+		return *x.Lmt
 	}
 	return 0
 }
@@ -5236,8 +5480,8 @@ func (x *Device) GetIpv6() string {
 }
 
 func (x *Device) GetDevicetype() int32 {
-	if x != nil {
-		return x.Devicetype
+	if x != nil && x.Devicetype != nil {
+		return *x.Devicetype
 	}
 	return 0
 }
@@ -5278,43 +5522,43 @@ func (x *Device) GetHwv() string {
 }
 
 func (x *Device) GetH() int32 {
-	if x != nil {
-		return x.H
+	if x != nil && x.H != nil {
+		return *x.H
 	}
 	return 0
 }
 
 func (x *Device) GetW() int32 {
-	if x != nil {
-		return x.W
+	if x != nil && x.W != nil {
+		return *x.W
 	}
 	return 0
 }
 
 func (x *Device) GetPpi() int32 {
-	if x != nil {
-		return x.Ppi
+	if x != nil && x.Ppi != nil {
+		return *x.Ppi
 	}
 	return 0
 }
 
 func (x *Device) GetPxratio() float64 {
-	if x != nil {
-		return x.Pxratio
+	if x != nil && x.Pxratio != nil {
+		return *x.Pxratio
 	}
 	return 0
 }
 
 func (x *Device) GetJs() int32 {
-	if x != nil {
-		return x.Js
+	if x != nil && x.Js != nil {
+		return *x.Js
 	}
 	return 0
 }
 
 func (x *Device) GetGeofetch() int32 {
-	if x != nil {
-		return x.Geofetch
+	if x != nil && x.Geofetch != nil {
+		return *x.Geofetch
 	}
 	return 0
 }
@@ -5348,8 +5592,8 @@ func (x *Device) GetMccmnc() string {
 }
 
 func (x *Device) GetConnectiontype() int32 {
-	if x != nil {
-		return x.Connectiontype
+	if x != nil && x.Connectiontype != nil {
+		return *x.Connectiontype
 	}
 	return 0
 }
@@ -5368,18 +5612,19 @@ func (x *Device) GetExt() string {
 	return ""
 }
 
-// UserAgent — 结构化 User-Agent（SUA）
-// 场景：UA-CH / 解析后的浏览器与平台信息，比原始 ua 更稳定。
+// UserAgent: structured User-Agent (SUA).
+// UA-CH or parsed browser/platform metadata, more stable than the raw ua string.
 type UserAgent struct {
 	state        protoimpl.MessageState `protogen:"open.v1"`
-	Browsers     []*BrandVersion        `protobuf:"bytes,1,rep,name=browsers,proto3" json:"browsers,omitempty"`         // 浏览器品牌版本列表
-	Platform     *BrandVersion          `protobuf:"bytes,2,opt,name=platform,proto3" json:"platform,omitempty"`         // 平台（OS）品牌版本
-	Mobile       int32                  `protobuf:"varint,3,opt,name=mobile,proto3" json:"mobile,omitempty"`            // 是否移动。取值 FlagBool：0=否，1=是
-	Architecture string                 `protobuf:"bytes,4,opt,name=architecture,proto3" json:"architecture,omitempty"` // CPU 架构
-	Bitness      string                 `protobuf:"bytes,5,opt,name=bitness,proto3" json:"bitness,omitempty"`           // 位数，如 "64"
-	Model        string                 `protobuf:"bytes,6,opt,name=model,proto3" json:"model,omitempty"`               // 设备型号（SUA）
-	// SUA 来源。取值 UserAgentSource：0=未知，1=低熵 CH，2=高熵 CH，3=UA 字符串解析
-	Source        int32  `protobuf:"varint,7,opt,name=source,proto3" json:"source,omitempty"`
+	Browsers     []*BrandVersion        `protobuf:"bytes,1,rep,name=browsers,proto3" json:"browsers,omitempty"`         // Browser brands and versions.
+	Platform     *BrandVersion          `protobuf:"bytes,2,opt,name=platform,proto3" json:"platform,omitempty"`         // Platform/OS brand and version.
+	Mobile       *int32                 `protobuf:"varint,3,opt,name=mobile,proto3,oneof" json:"mobile,omitempty"`      // Mobile flag (FlagBool): 0=no, 1=yes.
+	Architecture string                 `protobuf:"bytes,4,opt,name=architecture,proto3" json:"architecture,omitempty"` // CPU architecture.
+	Bitness      string                 `protobuf:"bytes,5,opt,name=bitness,proto3" json:"bitness,omitempty"`           // Bitness, such as "64".
+	Model        string                 `protobuf:"bytes,6,opt,name=model,proto3" json:"model,omitempty"`               // Device model from SUA.
+	// SUA source (UserAgentSource): 0=unknown, 1=low-entropy CH, 2=high-entropy CH, 3=parsed UA string.
+	Source *int32 `protobuf:"varint,7,opt,name=source,proto3,oneof" json:"source,omitempty"`
+	// Extension JSON object string.
 	Ext           string `protobuf:"bytes,99,opt,name=ext,proto3" json:"ext,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -5430,8 +5675,8 @@ func (x *UserAgent) GetPlatform() *BrandVersion {
 }
 
 func (x *UserAgent) GetMobile() int32 {
-	if x != nil {
-		return x.Mobile
+	if x != nil && x.Mobile != nil {
+		return *x.Mobile
 	}
 	return 0
 }
@@ -5458,8 +5703,8 @@ func (x *UserAgent) GetModel() string {
 }
 
 func (x *UserAgent) GetSource() int32 {
-	if x != nil {
-		return x.Source
+	if x != nil && x.Source != nil {
+		return *x.Source
 	}
 	return 0
 }
@@ -5471,11 +5716,14 @@ func (x *UserAgent) GetExt() string {
 	return ""
 }
 
+// BrandVersion: brand and version components in SUA.
+// brand+version structure for browsers[] and platform.
 type BrandVersion struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Brand         string                 `protobuf:"bytes,1,opt,name=brand,proto3" json:"brand,omitempty"`     // 品牌名，如 "Chrome"
-	Version       []string               `protobuf:"bytes,2,rep,name=version,proto3" json:"version,omitempty"` // 版本分量，如 ["192","0","0","0"]
-	Ext           string                 `protobuf:"bytes,99,opt,name=ext,proto3" json:"ext,omitempty"`
+	state   protoimpl.MessageState `protogen:"open.v1"`
+	Brand   string                 `protobuf:"bytes,1,opt,name=brand,proto3" json:"brand,omitempty"`     // Brand name, such as "Chrome".
+	Version []string               `protobuf:"bytes,2,rep,name=version,proto3" json:"version,omitempty"` // Version components, such as ["192","0","0","0"].
+	// Extension JSON object string.
+	Ext           string `protobuf:"bytes,99,opt,name=ext,proto3" json:"ext,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -5531,24 +5779,26 @@ func (x *BrandVersion) GetExt() string {
 	return ""
 }
 
-// Geo — 地理
-// 场景：国家/城市定向、本地推、合规区域判断；type 说明坐标来源可信度。
+// Geo: geographic information.
+// Country/city targeting, local advertising and regional compliance; type indicates location provenance.
 type Geo struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Lat           float64                `protobuf:"fixed64,1,opt,name=lat,proto3" json:"lat,omitempty"`            // 纬度
-	Lon           float64                `protobuf:"fixed64,2,opt,name=lon,proto3" json:"lon,omitempty"`            // 经度
-	Type          int32                  `protobuf:"varint,3,opt,name=type,proto3" json:"type,omitempty"`           // 坐标来源。取值 LocationType：1=GPS，2=IP，3=用户提供
-	Accuracy      int32                  `protobuf:"varint,4,opt,name=accuracy,proto3" json:"accuracy,omitempty"`   // 精度（米）
-	Lastfix       int32                  `protobuf:"varint,5,opt,name=lastfix,proto3" json:"lastfix,omitempty"`     // 坐标年龄（秒）
-	Ipservice     int32                  `protobuf:"varint,6,opt,name=ipservice,proto3" json:"ipservice,omitempty"` // IP 地理库。取值 IpLocationService：1=ip2location，2=Neustar，3=MaxMind，4=NetAcuity
-	Country       string                 `protobuf:"bytes,7,opt,name=country,proto3" json:"country,omitempty"`      // ISO-3166-1 Alpha-3 等约定国家码
-	Region        string                 `protobuf:"bytes,8,opt,name=region,proto3" json:"region,omitempty"`        // 省/州
-	Metro         string                 `protobuf:"bytes,9,opt,name=metro,proto3" json:"metro,omitempty"`          // 都市圈码
-	City          string                 `protobuf:"bytes,10,opt,name=city,proto3" json:"city,omitempty"`
-	Zip           string                 `protobuf:"bytes,11,opt,name=zip,proto3" json:"zip,omitempty"`                     // 邮编
-	Utcoffset     int32                  `protobuf:"varint,12,opt,name=utcoffset,proto3" json:"utcoffset,omitempty"`        // 相对 UTC 的分钟偏移
-	Regionfips104 string                 `protobuf:"bytes,13,opt,name=regionfips104,proto3" json:"regionfips104,omitempty"` // FIPS 10-4 地区码（若适用）
-	Ext           string                 `protobuf:"bytes,99,opt,name=ext,proto3" json:"ext,omitempty"`
+	state     protoimpl.MessageState `protogen:"open.v1"`
+	Lat       *float64               `protobuf:"fixed64,1,opt,name=lat,proto3,oneof" json:"lat,omitempty"`            // Latitude.
+	Lon       *float64               `protobuf:"fixed64,2,opt,name=lon,proto3,oneof" json:"lon,omitempty"`            // Longitude.
+	Type      *int32                 `protobuf:"varint,3,opt,name=type,proto3,oneof" json:"type,omitempty"`           // Location source (LocationType): 1=GPS, 2=IP, 3=user-provided.
+	Accuracy  *int32                 `protobuf:"varint,4,opt,name=accuracy,proto3,oneof" json:"accuracy,omitempty"`   // Accuracy in meters.
+	Lastfix   *int32                 `protobuf:"varint,5,opt,name=lastfix,proto3,oneof" json:"lastfix,omitempty"`     // Location age in seconds.
+	Ipservice *int32                 `protobuf:"varint,6,opt,name=ipservice,proto3,oneof" json:"ipservice,omitempty"` // IP geolocation service (IpLocationService): 1=ip2location, 2=Neustar, 3=MaxMind, 4=NetAcuity.
+	Country   string                 `protobuf:"bytes,7,opt,name=country,proto3" json:"country,omitempty"`            // Country code using ISO-3166-1 Alpha-3 or an agreed convention.
+	Region    string                 `protobuf:"bytes,8,opt,name=region,proto3" json:"region,omitempty"`              // Province/state.
+	Metro     string                 `protobuf:"bytes,9,opt,name=metro,proto3" json:"metro,omitempty"`                // Metro code.
+	// City name for city-level targeting.
+	City          string `protobuf:"bytes,10,opt,name=city,proto3" json:"city,omitempty"`
+	Zip           string `protobuf:"bytes,11,opt,name=zip,proto3" json:"zip,omitempty"`                     // Postal code.
+	Utcoffset     *int32 `protobuf:"varint,12,opt,name=utcoffset,proto3,oneof" json:"utcoffset,omitempty"`  // UTC offset in minutes.
+	Regionfips104 string `protobuf:"bytes,13,opt,name=regionfips104,proto3" json:"regionfips104,omitempty"` // FIPS 10-4 region code, where applicable.
+	// Extension JSON object string.
+	Ext           string `protobuf:"bytes,99,opt,name=ext,proto3" json:"ext,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -5584,43 +5834,43 @@ func (*Geo) Descriptor() ([]byte, []int) {
 }
 
 func (x *Geo) GetLat() float64 {
-	if x != nil {
-		return x.Lat
+	if x != nil && x.Lat != nil {
+		return *x.Lat
 	}
 	return 0
 }
 
 func (x *Geo) GetLon() float64 {
-	if x != nil {
-		return x.Lon
+	if x != nil && x.Lon != nil {
+		return *x.Lon
 	}
 	return 0
 }
 
 func (x *Geo) GetType() int32 {
-	if x != nil {
-		return x.Type
+	if x != nil && x.Type != nil {
+		return *x.Type
 	}
 	return 0
 }
 
 func (x *Geo) GetAccuracy() int32 {
-	if x != nil {
-		return x.Accuracy
+	if x != nil && x.Accuracy != nil {
+		return *x.Accuracy
 	}
 	return 0
 }
 
 func (x *Geo) GetLastfix() int32 {
-	if x != nil {
-		return x.Lastfix
+	if x != nil && x.Lastfix != nil {
+		return *x.Lastfix
 	}
 	return 0
 }
 
 func (x *Geo) GetIpservice() int32 {
-	if x != nil {
-		return x.Ipservice
+	if x != nil && x.Ipservice != nil {
+		return *x.Ipservice
 	}
 	return 0
 }
@@ -5661,8 +5911,8 @@ func (x *Geo) GetZip() string {
 }
 
 func (x *Geo) GetUtcoffset() int32 {
-	if x != nil {
-		return x.Utcoffset
+	if x != nil && x.Utcoffset != nil {
+		return *x.Utcoffset
 	}
 	return 0
 }
@@ -5682,21 +5932,22 @@ func (x *Geo) GetExt() string {
 }
 
 // ---------------------------------------------------------------------------
-// User — 受众
-// 场景：跨请求频控、人群包、同意与统一 ID（eids）。
+// User: audience information.
+// Cross-request frequency capping, audience segments, consent and unified IDs (eids).
 // ---------------------------------------------------------------------------
 type User struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`                 // Exchange 侧用户 ID
-	Buyeruid      string                 `protobuf:"bytes,2,opt,name=buyeruid,proto3" json:"buyeruid,omitempty"`     // 该买家 cookie/映射 ID；DSP 频控关键
-	Keywords      string                 `protobuf:"bytes,3,opt,name=keywords,proto3" json:"keywords,omitempty"`     // 旧版逗号关键词
-	Kwarray       []string               `protobuf:"bytes,4,rep,name=kwarray,proto3" json:"kwarray,omitempty"`       // 兴趣/上下文关键词
-	Customdata    string                 `protobuf:"bytes,5,opt,name=customdata,proto3" json:"customdata,omitempty"` // Exchange 回传的买家自定义串
-	Geo           *Geo                   `protobuf:"bytes,6,opt,name=geo,proto3" json:"geo,omitempty"`               // 用户常住/注册地（可与 Device.geo 不同）
-	Data          []*Data                `protobuf:"bytes,7,rep,name=data,proto3" json:"data,omitempty"`             // 人群/第一方数据分段
-	Consent       string                 `protobuf:"bytes,8,opt,name=consent,proto3" json:"consent,omitempty"`       // GDPR TCF 同意串等
-	Eids          []*EID                 `protobuf:"bytes,9,rep,name=eids,proto3" json:"eids,omitempty"`             // 扩展/统一身份（UID2、Living Docs 等）
-	Ext           string                 `protobuf:"bytes,99,opt,name=ext,proto3" json:"ext,omitempty"`
+	state      protoimpl.MessageState `protogen:"open.v1"`
+	Id         string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`                 // Exchange-assigned user ID.
+	Buyeruid   string                 `protobuf:"bytes,2,opt,name=buyeruid,proto3" json:"buyeruid,omitempty"`     // Buyer cookie/mapped ID, important for DSP frequency capping.
+	Keywords   string                 `protobuf:"bytes,3,opt,name=keywords,proto3" json:"keywords,omitempty"`     // Legacy comma-separated keywords.
+	Kwarray    []string               `protobuf:"bytes,4,rep,name=kwarray,proto3" json:"kwarray,omitempty"`       // Interest/context keywords.
+	Customdata string                 `protobuf:"bytes,5,opt,name=customdata,proto3" json:"customdata,omitempty"` // Buyer-defined opaque data returned by the exchange.
+	Geo        *Geo                   `protobuf:"bytes,6,opt,name=geo,proto3" json:"geo,omitempty"`               // User home/registration location, which may differ from Device.geo.
+	Data       []*Data                `protobuf:"bytes,7,rep,name=data,proto3" json:"data,omitempty"`             // Audience/first-party data segments.
+	Consent    string                 `protobuf:"bytes,8,opt,name=consent,proto3" json:"consent,omitempty"`       // Consent string, such as GDPR TCF.
+	Eids       []*EID                 `protobuf:"bytes,9,rep,name=eids,proto3" json:"eids,omitempty"`             // Extended/unified identities, such as UID2 or Living Docs.
+	// Extension JSON object string.
+	Ext           string `protobuf:"bytes,99,opt,name=ext,proto3" json:"ext,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -5801,14 +6052,16 @@ func (x *User) GetExt() string {
 	return ""
 }
 
-// Data — 数据提供方及其分段
+// Data: data provider and its segments.
 type Data struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`       // 数据源名称
-	Cids          []string               `protobuf:"bytes,3,rep,name=cids,proto3" json:"cids,omitempty"`       // 相关活动/客户 ID
-	Segment       []*Segment             `protobuf:"bytes,4,rep,name=segment,proto3" json:"segment,omitempty"` // 具体分群
-	Ext           string                 `protobuf:"bytes,99,opt,name=ext,proto3" json:"ext,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Data provider ID.
+	Id      string     `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Name    string     `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`       // Data source name.
+	Cids    []string   `protobuf:"bytes,3,rep,name=cids,proto3" json:"cids,omitempty"`       // Related campaign/customer ID.
+	Segment []*Segment `protobuf:"bytes,4,rep,name=segment,proto3" json:"segment,omitempty"` // Individual segments.
+	// Extension JSON object string.
+	Ext           string `protobuf:"bytes,99,opt,name=ext,proto3" json:"ext,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -5878,12 +6131,16 @@ func (x *Data) GetExt() string {
 	return ""
 }
 
+// Segment: a data segment.
+// Audience or interest segment; the provider defines id/name/value.
 type Segment struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"` // 分群 ID
-	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
-	Value         string                 `protobuf:"bytes,3,opt,name=value,proto3" json:"value,omitempty"` // 分群取值
-	Ext           string                 `protobuf:"bytes,99,opt,name=ext,proto3" json:"ext,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	Id    string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"` // Segment ID.
+	// Segment name.
+	Name  string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	Value string `protobuf:"bytes,3,opt,name=value,proto3" json:"value,omitempty"` // Segment value.
+	// Extension JSON object string.
+	Ext           string `protobuf:"bytes,99,opt,name=ext,proto3" json:"ext,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -5947,15 +6204,17 @@ func (x *Segment) GetExt() string {
 }
 
 // EID — Extended Identifier
-// 场景：cookie 退化后的跨域身份；source 标识 ID 体系。
+// Cross-domain identity as cookies become less available; source identifies the ID system.
 type EID struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Source        string                 `protobuf:"bytes,1,opt,name=source,proto3" json:"source,omitempty"`     // ID 来源域或体系，如 uidapi.com
-	Uids          []*UID                 `protobuf:"bytes,2,rep,name=uids,proto3" json:"uids,omitempty"`         // 具体 ID 值列表
-	Inserter      string                 `protobuf:"bytes,3,opt,name=inserter,proto3" json:"inserter,omitempty"` // 写入方
-	Matcher       string                 `protobuf:"bytes,4,opt,name=matcher,proto3" json:"matcher,omitempty"`   // 匹配方
-	Mm            int32                  `protobuf:"varint,5,opt,name=mm,proto3" json:"mm,omitempty"`            // 匹配方法
-	Ext           string                 `protobuf:"bytes,99,opt,name=ext,proto3" json:"ext,omitempty"`
+	state    protoimpl.MessageState `protogen:"open.v1"`
+	Source   string                 `protobuf:"bytes,1,opt,name=source,proto3" json:"source,omitempty"`     // ID source domain/system, such as uidapi.com.
+	Uids     []*UID                 `protobuf:"bytes,2,rep,name=uids,proto3" json:"uids,omitempty"`         // Individual ID values.
+	Inserter string                 `protobuf:"bytes,3,opt,name=inserter,proto3" json:"inserter,omitempty"` // Inserter.
+	Matcher  string                 `protobuf:"bytes,4,opt,name=matcher,proto3" json:"matcher,omitempty"`   // Matcher.
+	// Match method (IdMatchMethod): 0=unknown, 1=unmatched direct cookie/IFA, 2=browser cookie sync, 3=authenticated, 4=first-party observation, 5=inferred; >=500 vendor-specific.
+	Mm *int32 `protobuf:"varint,5,opt,name=mm,proto3,oneof" json:"mm,omitempty"`
+	// Extension JSON object string.
+	Ext           string `protobuf:"bytes,99,opt,name=ext,proto3" json:"ext,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -6019,8 +6278,8 @@ func (x *EID) GetMatcher() string {
 }
 
 func (x *EID) GetMm() int32 {
-	if x != nil {
-		return x.Mm
+	if x != nil && x.Mm != nil {
+		return *x.Mm
 	}
 	return 0
 }
@@ -6032,11 +6291,14 @@ func (x *EID) GetExt() string {
 	return ""
 }
 
+// UID: an individual extended ID value.
+// Used in EID.uids[]; atype identifies the ID scope.
 type UID struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`        // 用户标识值
-	Atype         int32                  `protobuf:"varint,2,opt,name=atype,proto3" json:"atype,omitempty"` // agent 类型。取值 AgentType：1=浏览器/设备，2=App 内，3=跨设备人物；>=500 厂商
-	Ext           string                 `protobuf:"bytes,99,opt,name=ext,proto3" json:"ext,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	Id    string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`              // User identifier value.
+	Atype *int32                 `protobuf:"varint,2,opt,name=atype,proto3,oneof" json:"atype,omitempty"` // Agent type (AgentType): 1=browser/device, 2=in-app, 3=cross-device person; >=500 vendor-specific.
+	// Extension JSON object string.
+	Ext           string `protobuf:"bytes,99,opt,name=ext,proto3" json:"ext,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -6079,8 +6341,8 @@ func (x *UID) GetId() string {
 }
 
 func (x *UID) GetAtype() int32 {
-	if x != nil {
-		return x.Atype
+	if x != nil && x.Atype != nil {
+		return *x.Atype
 	}
 	return 0
 }
@@ -6093,16 +6355,17 @@ func (x *UID) GetExt() string {
 }
 
 // ---------------------------------------------------------------------------
-// Source / SupplyChain — 流量来源与转售链
-// 场景：header bidding、SSP 转售；schain 用于 ads.txt/sellers.json 透明化。
+// Source / SupplyChain: traffic origin and reseller chain.
+// Header bidding and SSP resale; schain supports ads.txt/sellers.json transparency.
 // ---------------------------------------------------------------------------
 type Source struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Fd            int32                  `protobuf:"varint,1,opt,name=fd,proto3" json:"fd,omitempty"`        // 最终决策是否在上游。取值 FlagBool：0=本 Exchange 决策，1=上游最终决策
-	Tid           string                 `protobuf:"bytes,2,opt,name=tid,proto3" json:"tid,omitempty"`       // 事务 ID；链路追踪
-	Pchain        string                 `protobuf:"bytes,3,opt,name=pchain,proto3" json:"pchain,omitempty"` // 支付 ID 链（旧字段，优先 schain）
-	Schain        *SupplyChain           `protobuf:"bytes,4,opt,name=schain,proto3" json:"schain,omitempty"` // SupplyChain 对象
-	Ext           string                 `protobuf:"bytes,99,opt,name=ext,proto3" json:"ext,omitempty"`
+	state  protoimpl.MessageState `protogen:"open.v1"`
+	Fd     *int32                 `protobuf:"varint,1,opt,name=fd,proto3,oneof" json:"fd,omitempty"`  // Upstream final decision flag (FlagBool): 0=this exchange decides, 1=upstream decides.
+	Tid    string                 `protobuf:"bytes,2,opt,name=tid,proto3" json:"tid,omitempty"`       // Transaction ID for tracing.
+	Pchain string                 `protobuf:"bytes,3,opt,name=pchain,proto3" json:"pchain,omitempty"` // Legacy payment ID chain; prefer schain.
+	Schain *SupplyChain           `protobuf:"bytes,4,opt,name=schain,proto3" json:"schain,omitempty"` // SupplyChain object.
+	// Extension JSON object string.
+	Ext           string `protobuf:"bytes,99,opt,name=ext,proto3" json:"ext,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -6138,8 +6401,8 @@ func (*Source) Descriptor() ([]byte, []int) {
 }
 
 func (x *Source) GetFd() int32 {
-	if x != nil {
-		return x.Fd
+	if x != nil && x.Fd != nil {
+		return *x.Fd
 	}
 	return 0
 }
@@ -6172,12 +6435,15 @@ func (x *Source) GetExt() string {
 	return ""
 }
 
+// SupplyChain: supply chain object (schain).
+// Complete resale path; complete=1 means the chain is not truncated.
 type SupplyChain struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Complete      int32                  `protobuf:"varint,1,opt,name=complete,proto3" json:"complete,omitempty"` // 链路是否完整。取值 FlagBool：0=可能截断，1=完整
-	Nodes         []*SupplyChainNode     `protobuf:"bytes,2,rep,name=nodes,proto3" json:"nodes,omitempty"`        // 从源头到当前的转售节点，按序
-	Ver           string                 `protobuf:"bytes,3,opt,name=ver,proto3" json:"ver,omitempty"`            // schain 版本，如 "1.0"
-	Ext           string                 `protobuf:"bytes,99,opt,name=ext,proto3" json:"ext,omitempty"`
+	state    protoimpl.MessageState `protogen:"open.v1"`
+	Complete *int32                 `protobuf:"varint,1,opt,name=complete,proto3,oneof" json:"complete,omitempty"` // Chain completeness (FlagBool): 0=possibly truncated, 1=complete.
+	Nodes    []*SupplyChainNode     `protobuf:"bytes,2,rep,name=nodes,proto3" json:"nodes,omitempty"`              // Ordered resale nodes from origin to the current seller.
+	Ver      string                 `protobuf:"bytes,3,opt,name=ver,proto3" json:"ver,omitempty"`                  // schain version, such as "1.0".
+	// Extension JSON object string.
+	Ext           string `protobuf:"bytes,99,opt,name=ext,proto3" json:"ext,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -6213,8 +6479,8 @@ func (*SupplyChain) Descriptor() ([]byte, []int) {
 }
 
 func (x *SupplyChain) GetComplete() int32 {
-	if x != nil {
-		return x.Complete
+	if x != nil && x.Complete != nil {
+		return *x.Complete
 	}
 	return 0
 }
@@ -6240,15 +6506,18 @@ func (x *SupplyChain) GetExt() string {
 	return ""
 }
 
+// SupplyChainNode: one node in the supply chain.
+// asi+sid identifies the sellers.json entry; hp indicates payment participation.
 type SupplyChainNode struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Asi           string                 `protobuf:"bytes,1,opt,name=asi,proto3" json:"asi,omitempty"`       // 广告系统标识域（Advertising System Identifier）
-	Sid           string                 `protobuf:"bytes,2,opt,name=sid,proto3" json:"sid,omitempty"`       // 该系统上的卖家 ID
-	Rid           string                 `protobuf:"bytes,3,opt,name=rid,proto3" json:"rid,omitempty"`       // 该节点请求 ID
-	Name          string                 `protobuf:"bytes,4,opt,name=name,proto3" json:"name,omitempty"`     // 组织名（可选）
-	Domain        string                 `protobuf:"bytes,5,opt,name=domain,proto3" json:"domain,omitempty"` // 业务域（可选）
-	Hp            int32                  `protobuf:"varint,6,opt,name=hp,proto3" json:"hp,omitempty"`        // 是否参与支付路径。取值 FlagBool：0=否，1=是（helps payment）
-	Ext           string                 `protobuf:"bytes,99,opt,name=ext,proto3" json:"ext,omitempty"`
+	state  protoimpl.MessageState `protogen:"open.v1"`
+	Asi    string                 `protobuf:"bytes,1,opt,name=asi,proto3" json:"asi,omitempty"`       // Advertising System Identifier domain.
+	Sid    string                 `protobuf:"bytes,2,opt,name=sid,proto3" json:"sid,omitempty"`       // Seller ID within this system.
+	Rid    string                 `protobuf:"bytes,3,opt,name=rid,proto3" json:"rid,omitempty"`       // Request ID at this node.
+	Name   string                 `protobuf:"bytes,4,opt,name=name,proto3" json:"name,omitempty"`     // Optional organization name.
+	Domain string                 `protobuf:"bytes,5,opt,name=domain,proto3" json:"domain,omitempty"` // Optional business domain.
+	Hp     *int32                 `protobuf:"varint,6,opt,name=hp,proto3,oneof" json:"hp,omitempty"`  // Payment-path participation (FlagBool): 0=no, 1=yes (helps payment).
+	// Extension JSON object string.
+	Ext           string `protobuf:"bytes,99,opt,name=ext,proto3" json:"ext,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -6319,8 +6588,8 @@ func (x *SupplyChainNode) GetDomain() string {
 }
 
 func (x *SupplyChainNode) GetHp() int32 {
-	if x != nil {
-		return x.Hp
+	if x != nil && x.Hp != nil {
+		return *x.Hp
 	}
 	return 0
 }
@@ -6333,17 +6602,18 @@ func (x *SupplyChainNode) GetExt() string {
 }
 
 // ---------------------------------------------------------------------------
-// Regs — 法规
-// 场景：儿童流量、欧盟同意、美国州隐私、全球 GPP 字符串。
+// Regs: regulatory signals.
+// Child-directed traffic, EU consent, US state privacy and global GPP strings.
 // ---------------------------------------------------------------------------
 type Regs struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Coppa         int32                  `protobuf:"varint,1,opt,name=coppa,proto3" json:"coppa,omitempty"`                         // 是否适用 COPPA。取值 FlagBool：0=否，1=儿童流量适用
-	Gdpr          int32                  `protobuf:"varint,2,opt,name=gdpr,proto3" json:"gdpr,omitempty"`                           // 是否适用 GDPR。取值 FlagBool：0=否，1=适用
-	UsPrivacy     string                 `protobuf:"bytes,3,opt,name=us_privacy,json=usPrivacy,proto3" json:"us_privacy,omitempty"` // CCPA/US Privacy 字符串
-	Gpp           string                 `protobuf:"bytes,4,opt,name=gpp,proto3" json:"gpp,omitempty"`                              // Global Privacy Platform 串
-	GppSid        []int32                `protobuf:"varint,5,rep,packed,name=gpp_sid,json=gppSid,proto3" json:"gpp_sid,omitempty"`  // GPP 区段 ID 列表
-	Ext           string                 `protobuf:"bytes,99,opt,name=ext,proto3" json:"ext,omitempty"`
+	state     protoimpl.MessageState `protogen:"open.v1"`
+	Coppa     *int32                 `protobuf:"varint,1,opt,name=coppa,proto3,oneof" json:"coppa,omitempty"`      // COPPA applicability (FlagBool): 0=no, 1=applies to child-directed traffic.
+	Gdpr      *int32                 `protobuf:"varint,2,opt,name=gdpr,proto3,oneof" json:"gdpr,omitempty"`        // GDPR applicability (FlagBool): 0=no, 1=applies.
+	UsPrivacy string                 `protobuf:"bytes,3,opt,name=us_privacy,proto3" json:"us_privacy,omitempty"`   // CCPA/US Privacy string.
+	Gpp       string                 `protobuf:"bytes,4,opt,name=gpp,proto3" json:"gpp,omitempty"`                 // Global Privacy Platform string.
+	GppSid    []int32                `protobuf:"varint,5,rep,packed,name=gpp_sid,proto3" json:"gpp_sid,omitempty"` // GPP section IDs.
+	// Extension JSON object string.
+	Ext           string `protobuf:"bytes,99,opt,name=ext,proto3" json:"ext,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -6379,15 +6649,15 @@ func (*Regs) Descriptor() ([]byte, []int) {
 }
 
 func (x *Regs) GetCoppa() int32 {
-	if x != nil {
-		return x.Coppa
+	if x != nil && x.Coppa != nil {
+		return *x.Coppa
 	}
 	return 0
 }
 
 func (x *Regs) GetGdpr() int32 {
-	if x != nil {
-		return x.Gdpr
+	if x != nil && x.Gdpr != nil {
+		return *x.Gdpr
 	}
 	return 0
 }
@@ -6422,22 +6692,23 @@ func (x *Regs) GetExt() string {
 
 // ---------------------------------------------------------------------------
 // BidResponse — Bidder → Exchange
-// 场景：200+seatbid=出价；200+nbr=结构化不竞价；也可 HTTP 204 无 body。
+// 200+seatbid means a bid; 200+nbr means structured no-bid; HTTP 204 without a body is also supported.
 // ---------------------------------------------------------------------------
 type BidResponse struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	// 必须等于 BidRequest.id。必填。
+	// Required; must equal BidRequest.id.
 	Id string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	// 席位出价集合。真正出价时至少 1 个 SeatBid。
+	// Seat bids; an actual bid response includes at least one SeatBid.
 	Seatbid []*SeatBid `protobuf:"bytes,2,rep,name=seatbid,proto3" json:"seatbid,omitempty"`
-	// Bidder 生成的响应 ID。场景：Bidder 侧日志与对账。
+	// Bidder-generated response ID for bidder-side logging and reconciliation.
 	Bidid string `protobuf:"bytes,3,opt,name=bidid,proto3" json:"bidid,omitempty"`
-	// 本响应出价币种；默认 USD。须落在请求 cur 允许集合内。
+	// Required response currency (ISO-4217). Builders default to USD; it must be allowed by the request cur list.
 	Cur string `protobuf:"bytes,4,opt,name=cur,proto3" json:"cur,omitempty"`
-	// 回传给 Exchange、之后可能再塞进 User.customdata 的不透明串。
+	// Opaque data returned to the exchange and potentially included later in User.customdata.
 	Customdata string `protobuf:"bytes,5,opt,name=customdata,proto3" json:"customdata,omitempty"`
-	// 不竞价原因。取值 NoBidReason：0=未知错误，1=技术错误，2=非法请求，3=爬虫，4=非人，5=云/代理IP，6=不支持设备，7=屏蔽发布商，8=用户未匹配，9=日读者上限，10=日域名上限；>=500 自定义。
-	Nbr           int32  `protobuf:"varint,6,opt,name=nbr,proto3" json:"nbr,omitempty"`
+	// No-bid reason (NoBidReason): 0=unknown error, 1=technical error, 2=invalid request, 3=crawler, 4=non-human, 5=cloud/proxy IP, 6=unsupported device, 7=blocked publisher, 8=unmatched user, 9=daily reader cap, 10=daily domain cap; >=500 custom.
+	Nbr *int32 `protobuf:"varint,6,opt,name=nbr,proto3,oneof" json:"nbr,omitempty"`
+	// Extension JSON object string.
 	Ext           string `protobuf:"bytes,99,opt,name=ext,proto3" json:"ext,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -6509,8 +6780,8 @@ func (x *BidResponse) GetCustomdata() string {
 }
 
 func (x *BidResponse) GetNbr() int32 {
-	if x != nil {
-		return x.Nbr
+	if x != nil && x.Nbr != nil {
+		return *x.Nbr
 	}
 	return 0
 }
@@ -6522,15 +6793,16 @@ func (x *BidResponse) GetExt() string {
 	return ""
 }
 
-// SeatBid — 某一买家席位下的一组 Bid
+// SeatBid: bids from one buyer seat.
 type SeatBid struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	// 该 seat 的出价列表。至少 1 条才有意义。
+	// Bids for this seat; at least one is needed for a meaningful entry.
 	Bid []*Bid `protobuf:"bytes,1,rep,name=bid,proto3" json:"bid,omitempty"`
-	// 买家席位名。场景：同一 DSP 多 seat 时报价与结算区分。
+	// Buyer seat name, distinguishing pricing and settlement for DSPs with multiple seats.
 	Seat string `protobuf:"bytes,2,opt,name=seat,proto3" json:"seat,omitempty"`
-	// 是否打包整组。取值 FlagBool：0=可部分赢，1=组内须全赢。场景：多 Imp 打包售卖。
-	Group         int32  `protobuf:"varint,3,opt,name=group,proto3" json:"group,omitempty"`
+	// Group flag (FlagBool): 0=partial wins allowed, 1=all bids must win together; used for bundled Imp sales.
+	Group *int32 `protobuf:"varint,3,opt,name=group,proto3,oneof" json:"group,omitempty"`
+	// Extension JSON object string.
 	Ext           string `protobuf:"bytes,99,opt,name=ext,proto3" json:"ext,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -6581,8 +6853,8 @@ func (x *SeatBid) GetSeat() string {
 }
 
 func (x *SeatBid) GetGroup() int32 {
-	if x != nil {
-		return x.Group
+	if x != nil && x.Group != nil {
+		return *x.Group
 	}
 	return 0
 }
@@ -6595,74 +6867,77 @@ func (x *SeatBid) GetExt() string {
 }
 
 // ---------------------------------------------------------------------------
-// Bid — 单条出价
-// 场景：必填 id/impid/price；推荐 adm、adomain、crid；Deal 出价填 dealid；
-// 多形态 Imp 填 mtype。
+// Bid: one bid.
+// id/impid/price are required; adm/adomain/crid are recommended; deal bids provide dealid.
+// Provide mtype for multi-format Imps.
 // ---------------------------------------------------------------------------
 type Bid struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	// Bidder 侧出价 ID。必填。
+	// Required bidder-assigned bid ID.
 	Id string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	// 对应 Imp.id。必填。对不上则 Exchange 丢弃。
+	// Required reference to Imp.id; unmatched bids are discarded by the exchange.
 	Impid string `protobuf:"bytes,2,opt,name=impid,proto3" json:"impid,omitempty"`
-	// CPM 出价，必须 > 0。必填。币种见 BidResponse.cur。
-	Price float64 `protobuf:"fixed64,3,opt,name=price,proto3" json:"price,omitempty"`
-	// 赢价通知 URL（可含 ${AUCTION_PRICE}）。场景：胜出后 Exchange 服务端调用。
+	// Required CPM bid price, strictly greater than zero; currency is BidResponse.cur.
+	Price *float64 `protobuf:"fixed64,3,opt,name=price,proto3,oneof" json:"price,omitempty"`
+	// Win notice URL, optionally containing ${AUCTION_PRICE}; called by the exchange server after a win.
 	Nurl string `protobuf:"bytes,4,opt,name=nurl,proto3" json:"nurl,omitempty"`
-	// 计费通知 URL。场景：实际计费时点回调（可与展示分离）。
+	// Billing notice URL, called at the actual billing event, which may differ from display time.
 	Burl string `protobuf:"bytes,5,opt,name=burl,proto3" json:"burl,omitempty"`
-	// 丢单通知 URL。场景：未胜出时的反馈学习。
+	// Loss notice URL for feedback and learning on unsuccessful bids.
 	Lurl string `protobuf:"bytes,6,opt,name=lurl,proto3" json:"lurl,omitempty"`
-	// 广告 markup（HTML/VAST/Native JSON 等）。强烈推荐内联；也可靠 nurl 拉取。
+	// Ad markup (HTML/VAST/Native JSON, etc.). Inline markup is strongly recommended; nurl retrieval is also possible.
 	Adm string `protobuf:"bytes,7,opt,name=adm,proto3" json:"adm,omitempty"`
-	// 广告 ID（广告主侧）。场景：广告维度报表。
+	// Advertiser-side ad ID for ad-level reporting.
 	Adid string `protobuf:"bytes,8,opt,name=adid,proto3" json:"adid,omitempty"`
-	// 广告主域名列表。强烈推荐。场景：badv 屏蔽检查与品牌披露。
+	// Advertiser domains. Strongly recommended for badv checks and brand disclosure.
 	Adomain []string `protobuf:"bytes,9,rep,name=adomain,proto3" json:"adomain,omitempty"`
-	// 推广应用 bundle。场景：App 安装类广告。
+	// Promoted app bundle, such as for app-install ads.
 	Bundle string `protobuf:"bytes,10,opt,name=bundle,proto3" json:"bundle,omitempty"`
-	// 抽样创意预览图 URL。场景：审核与质检。
+	// Sample creative preview image URL for review and quality assurance.
 	Iurl string `protobuf:"bytes,11,opt,name=iurl,proto3" json:"iurl,omitempty"`
-	// 活动 ID。
+	// Campaign ID.
 	Cid string `protobuf:"bytes,12,opt,name=cid,proto3" json:"cid,omitempty"`
-	// 创意 ID。强烈推荐。场景：创意审核、频控、拒登排查。
+	// Creative ID. Strongly recommended for review, frequency capping and rejection troubleshooting.
 	Crid string `protobuf:"bytes,13,opt,name=crid,proto3" json:"crid,omitempty"`
-	// 策略战术 ID。场景：DSP 内部策略归因。
+	// Tactic ID for internal DSP strategy attribution.
 	Tactic string `protobuf:"bytes,14,opt,name=tactic,proto3" json:"tactic,omitempty"`
-	// 类目 taxonomy。取值 CategoryTaxonomy（见枚举）。
-	Cattax int32 `protobuf:"varint,15,opt,name=cattax,proto3" json:"cattax,omitempty"`
-	// 创意/广告主类目。
+	// Category taxonomy; see CategoryTaxonomy enum.
+	Cattax *int32 `protobuf:"varint,15,opt,name=cattax,proto3,oneof" json:"cattax,omitempty"`
+	// Creative/advertiser categories.
 	Cat []string `protobuf:"bytes,16,rep,name=cat,proto3" json:"cat,omitempty"`
-	// 创意属性。取值 CreativeAttribute（见枚举）；>=500 厂商。
+	// Creative attributes; see CreativeAttribute enum; >=500 vendor-specific.
 	Attr []int32 `protobuf:"varint,17,rep,packed,name=attr,proto3" json:"attr,omitempty"`
-	// 创意使用的 API。取值 ApiFramework（见枚举）。
+	// Creative APIs; see ApiFramework enum.
 	Apis []int32 `protobuf:"varint,18,rep,packed,name=apis,proto3" json:"apis,omitempty"`
-	// 视频协议。取值 Protocol（见枚举）。
-	Protocol int32 `protobuf:"varint,19,opt,name=protocol,proto3" json:"protocol,omitempty"`
-	// 媒体评级。取值 MediaRating：1=全年龄，2=12+，3=成人。
-	Qagmediarating int32 `protobuf:"varint,20,opt,name=qagmediarating,proto3" json:"qagmediarating,omitempty"`
-	// 创意语言 ISO-639-1。
+	// Video protocol; see Protocol enum.
+	Protocol *int32 `protobuf:"varint,19,opt,name=protocol,proto3,oneof" json:"protocol,omitempty"`
+	// Media rating (MediaRating): 1=all audiences, 2=12+, 3=mature.
+	Qagmediarating *int32 `protobuf:"varint,20,opt,name=qagmediarating,proto3,oneof" json:"qagmediarating,omitempty"`
+	// Creative language (ISO-639-1).
 	Language string `protobuf:"bytes,21,opt,name=language,proto3" json:"language,omitempty"`
-	// 创意语言 BCP-47。
+	// Creative language (BCP-47).
 	Langb string `protobuf:"bytes,22,opt,name=langb,proto3" json:"langb,omitempty"`
-	// 成交的 Deal.id。走 PMP 时必填对应 deal。
+	// Selected Deal.id; a corresponding deal is required for PMP bids.
 	Dealid string `protobuf:"bytes,23,opt,name=dealid,proto3" json:"dealid,omitempty"`
-	// 实际创意宽。
-	W int32 `protobuf:"varint,24,opt,name=w,proto3" json:"w,omitempty"`
-	// 实际创意高。
-	H int32 `protobuf:"varint,25,opt,name=h,proto3" json:"h,omitempty"`
-	// 创意宽比（原生/弹性）。
-	Wratio int32 `protobuf:"varint,26,opt,name=wratio,proto3" json:"wratio,omitempty"`
-	// 创意高比。
-	Hratio int32 `protobuf:"varint,27,opt,name=hratio,proto3" json:"hratio,omitempty"`
-	// 该出价建议的过期秒数。
-	Exp int32 `protobuf:"varint,28,opt,name=exp,proto3" json:"exp,omitempty"`
-	// 视频/音频时长秒数。
-	Dur int32 `protobuf:"varint,29,opt,name=dur,proto3" json:"dur,omitempty"`
-	// 素材形态。多形态 Imp 时强烈推荐，避免歧义。
+	// Actual creative width.
+	W *int32 `protobuf:"varint,24,opt,name=w,proto3,oneof" json:"w,omitempty"`
+	// Actual creative height.
+	H *int32 `protobuf:"varint,25,opt,name=h,proto3,oneof" json:"h,omitempty"`
+	// Creative width ratio for native/flexible layouts.
+	Wratio *int32 `protobuf:"varint,26,opt,name=wratio,proto3,oneof" json:"wratio,omitempty"`
+	// Creative height ratio.
+	Hratio *int32 `protobuf:"varint,27,opt,name=hratio,proto3,oneof" json:"hratio,omitempty"`
+	// Suggested bid expiry in seconds.
+	Exp *int32 `protobuf:"varint,28,opt,name=exp,proto3,oneof" json:"exp,omitempty"`
+	// Video/audio duration in seconds.
+	Dur *int32 `protobuf:"varint,29,opt,name=dur,proto3,oneof" json:"dur,omitempty"`
+	// Creative format; strongly recommended for multi-format Imps to avoid ambiguity.
+	// Creative format (MarkupType): 1=Banner, 2=Video, 3=Audio, 4=Native; strongly recommended for multi-format Imps.
+	// JSON Schema forbids zero; protobuf UNSPECIFIED=0 means unset. Set 1-4 before emitting an explicit mtype in JSON.
 	Mtype MarkupType `protobuf:"varint,30,opt,name=mtype,proto3,enum=oakrtb.v2.MarkupType" json:"mtype,omitempty"`
-	// 声明占用的 pod 槽位。取值 SlotInPod；特殊 -1=最后槽。场景：CTV pod 选槽出价。
-	Slotinpod     int32  `protobuf:"varint,31,opt,name=slotinpod,proto3" json:"slotinpod,omitempty"`
+	// Requested pod slot (SlotInPod); special value -1=last slot; used for CTV pod bidding.
+	Slotinpod *int32 `protobuf:"varint,31,opt,name=slotinpod,proto3,oneof" json:"slotinpod,omitempty"`
+	// Extension JSON object string.
 	Ext           string `protobuf:"bytes,99,opt,name=ext,proto3" json:"ext,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -6713,8 +6988,8 @@ func (x *Bid) GetImpid() string {
 }
 
 func (x *Bid) GetPrice() float64 {
-	if x != nil {
-		return x.Price
+	if x != nil && x.Price != nil {
+		return *x.Price
 	}
 	return 0
 }
@@ -6797,8 +7072,8 @@ func (x *Bid) GetTactic() string {
 }
 
 func (x *Bid) GetCattax() int32 {
-	if x != nil {
-		return x.Cattax
+	if x != nil && x.Cattax != nil {
+		return *x.Cattax
 	}
 	return 0
 }
@@ -6825,15 +7100,15 @@ func (x *Bid) GetApis() []int32 {
 }
 
 func (x *Bid) GetProtocol() int32 {
-	if x != nil {
-		return x.Protocol
+	if x != nil && x.Protocol != nil {
+		return *x.Protocol
 	}
 	return 0
 }
 
 func (x *Bid) GetQagmediarating() int32 {
-	if x != nil {
-		return x.Qagmediarating
+	if x != nil && x.Qagmediarating != nil {
+		return *x.Qagmediarating
 	}
 	return 0
 }
@@ -6860,43 +7135,43 @@ func (x *Bid) GetDealid() string {
 }
 
 func (x *Bid) GetW() int32 {
-	if x != nil {
-		return x.W
+	if x != nil && x.W != nil {
+		return *x.W
 	}
 	return 0
 }
 
 func (x *Bid) GetH() int32 {
-	if x != nil {
-		return x.H
+	if x != nil && x.H != nil {
+		return *x.H
 	}
 	return 0
 }
 
 func (x *Bid) GetWratio() int32 {
-	if x != nil {
-		return x.Wratio
+	if x != nil && x.Wratio != nil {
+		return *x.Wratio
 	}
 	return 0
 }
 
 func (x *Bid) GetHratio() int32 {
-	if x != nil {
-		return x.Hratio
+	if x != nil && x.Hratio != nil {
+		return *x.Hratio
 	}
 	return 0
 }
 
 func (x *Bid) GetExp() int32 {
-	if x != nil {
-		return x.Exp
+	if x != nil && x.Exp != nil {
+		return *x.Exp
 	}
 	return 0
 }
 
 func (x *Bid) GetDur() int32 {
-	if x != nil {
-		return x.Dur
+	if x != nil && x.Dur != nil {
+		return *x.Dur
 	}
 	return 0
 }
@@ -6909,8 +7184,8 @@ func (x *Bid) GetMtype() MarkupType {
 }
 
 func (x *Bid) GetSlotinpod() int32 {
-	if x != nil {
-		return x.Slotinpod
+	if x != nil && x.Slotinpod != nil {
+		return *x.Slotinpod
 	}
 	return 0
 }
@@ -6926,7 +7201,7 @@ var File_oakrtb_v2_openrtb_proto protoreflect.FileDescriptor
 
 const file_oakrtb_v2_openrtb_proto_rawDesc = "" +
 	"\n" +
-	"\x17oakrtb/v2/openrtb.proto\x12\toakrtb.v2\"\x82\x05\n" +
+	"\x17oakrtb/v2/openrtb.proto\x12\toakrtb.v2\"\xcb\x05\n" +
 	"\n" +
 	"BidRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12 \n" +
@@ -6935,25 +7210,31 @@ const file_oakrtb_v2_openrtb_proto_rawDesc = "" +
 	"\x03app\x18\x04 \x01(\v2\x0e.oakrtb.v2.AppR\x03app\x12#\n" +
 	"\x04dooh\x18\x05 \x01(\v2\x0f.oakrtb.v2.DoohR\x04dooh\x12)\n" +
 	"\x06device\x18\x06 \x01(\v2\x11.oakrtb.v2.DeviceR\x06device\x12#\n" +
-	"\x04user\x18\a \x01(\v2\x0f.oakrtb.v2.UserR\x04user\x12\x12\n" +
-	"\x04test\x18\b \x01(\x05R\x04test\x12\x0e\n" +
-	"\x02at\x18\t \x01(\x05R\x02at\x12\x12\n" +
+	"\x04user\x18\a \x01(\v2\x0f.oakrtb.v2.UserR\x04user\x12\x17\n" +
+	"\x04test\x18\b \x01(\x05H\x00R\x04test\x88\x01\x01\x12\x13\n" +
+	"\x02at\x18\t \x01(\x05H\x01R\x02at\x88\x01\x01\x12\x17\n" +
 	"\x04tmax\x18\n" +
-	" \x01(\x05R\x04tmax\x12\x14\n" +
+	" \x01(\x05H\x02R\x04tmax\x88\x01\x01\x12\x14\n" +
 	"\x05wseat\x18\v \x03(\tR\x05wseat\x12\x14\n" +
-	"\x05bseat\x18\f \x03(\tR\x05bseat\x12\x18\n" +
-	"\aallimps\x18\r \x01(\x05R\aallimps\x12\x10\n" +
+	"\x05bseat\x18\f \x03(\tR\x05bseat\x12\x1d\n" +
+	"\aallimps\x18\r \x01(\x05H\x03R\aallimps\x88\x01\x01\x12\x10\n" +
 	"\x03cur\x18\x0e \x03(\tR\x03cur\x12\x14\n" +
 	"\x05wlang\x18\x0f \x03(\tR\x05wlang\x12\x16\n" +
 	"\x06wlangb\x18\x10 \x03(\tR\x06wlangb\x12\x12\n" +
 	"\x04acat\x18\x11 \x03(\tR\x04acat\x12\x12\n" +
-	"\x04bcat\x18\x12 \x03(\tR\x04bcat\x12\x16\n" +
-	"\x06cattax\x18\x13 \x01(\x05R\x06cattax\x12\x12\n" +
+	"\x04bcat\x18\x12 \x03(\tR\x04bcat\x12\x1b\n" +
+	"\x06cattax\x18\x13 \x01(\x05H\x04R\x06cattax\x88\x01\x01\x12\x12\n" +
 	"\x04badv\x18\x14 \x03(\tR\x04badv\x12\x12\n" +
 	"\x04bapp\x18\x15 \x03(\tR\x04bapp\x12)\n" +
 	"\x06source\x18\x16 \x01(\v2\x11.oakrtb.v2.SourceR\x06source\x12#\n" +
 	"\x04regs\x18\x17 \x01(\v2\x0f.oakrtb.v2.RegsR\x04regs\x12\x10\n" +
-	"\x03ext\x18c \x01(\tR\x03ext\"\xd4\x05\n" +
+	"\x03ext\x18c \x01(\tR\x03extB\a\n" +
+	"\x05_testB\x05\n" +
+	"\x03_atB\a\n" +
+	"\x05_tmaxB\n" +
+	"\n" +
+	"\b_allimpsB\t\n" +
+	"\a_cattax\"\xd0\x06\n" +
 	"\x03Imp\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12)\n" +
 	"\x06metric\x18\x02 \x03(\v2\x11.oakrtb.v2.MetricR\x06metric\x12)\n" +
@@ -6963,174 +7244,251 @@ const file_oakrtb_v2_openrtb_proto_rawDesc = "" +
 	"\x06native\x18\x06 \x01(\v2\x11.oakrtb.v2.NativeR\x06native\x12 \n" +
 	"\x03pmp\x18\a \x01(\v2\x0e.oakrtb.v2.PmpR\x03pmp\x12&\n" +
 	"\x0edisplaymanager\x18\b \x01(\tR\x0edisplaymanager\x12,\n" +
-	"\x11displaymanagerver\x18\t \x01(\tR\x11displaymanagerver\x12\x14\n" +
+	"\x11displaymanagerver\x18\t \x01(\tR\x11displaymanagerver\x12\x19\n" +
 	"\x05instl\x18\n" +
-	" \x01(\x05R\x05instl\x12\x14\n" +
-	"\x05tagid\x18\v \x01(\tR\x05tagid\x12\x1a\n" +
-	"\bbidfloor\x18\f \x01(\x01R\bbidfloor\x12 \n" +
-	"\vbidfloorcur\x18\r \x01(\tR\vbidfloorcur\x12\"\n" +
-	"\fclickbrowser\x18\x0e \x01(\x05R\fclickbrowser\x12\x16\n" +
-	"\x06secure\x18\x0f \x01(\x05R\x06secure\x12\"\n" +
-	"\fiframebuster\x18\x10 \x03(\tR\fiframebuster\x12\x12\n" +
-	"\x04rwdd\x18\x11 \x01(\x05R\x04rwdd\x12\x12\n" +
-	"\x04ssai\x18\x12 \x01(\x05R\x04ssai\x12\x10\n" +
-	"\x03exp\x18\x13 \x01(\x05R\x03exp\x12 \n" +
-	"\x03qty\x18\x14 \x01(\v2\x0e.oakrtb.v2.QtyR\x03qty\x12\x0e\n" +
-	"\x02dt\x18\x15 \x01(\x01R\x02dt\x12,\n" +
+	" \x01(\x05H\x00R\x05instl\x88\x01\x01\x12\x14\n" +
+	"\x05tagid\x18\v \x01(\tR\x05tagid\x12\x1f\n" +
+	"\bbidfloor\x18\f \x01(\x01H\x01R\bbidfloor\x88\x01\x01\x12 \n" +
+	"\vbidfloorcur\x18\r \x01(\tR\vbidfloorcur\x12'\n" +
+	"\fclickbrowser\x18\x0e \x01(\x05H\x02R\fclickbrowser\x88\x01\x01\x12\x1b\n" +
+	"\x06secure\x18\x0f \x01(\x05H\x03R\x06secure\x88\x01\x01\x12\"\n" +
+	"\fiframebuster\x18\x10 \x03(\tR\fiframebuster\x12\x17\n" +
+	"\x04rwdd\x18\x11 \x01(\x05H\x04R\x04rwdd\x88\x01\x01\x12\x17\n" +
+	"\x04ssai\x18\x12 \x01(\x05H\x05R\x04ssai\x88\x01\x01\x12\x15\n" +
+	"\x03exp\x18\x13 \x01(\x05H\x06R\x03exp\x88\x01\x01\x12 \n" +
+	"\x03qty\x18\x14 \x01(\v2\x0e.oakrtb.v2.QtyR\x03qty\x12\x13\n" +
+	"\x02dt\x18\x15 \x01(\x01H\aR\x02dt\x88\x01\x01\x12,\n" +
 	"\arefresh\x18\x16 \x01(\v2\x12.oakrtb.v2.RefreshR\arefresh\x12\x10\n" +
-	"\x03ext\x18c \x01(\tR\x03ext\"\\\n" +
+	"\x03ext\x18c \x01(\tR\x03extB\b\n" +
+	"\x06_instlB\v\n" +
+	"\t_bidfloorB\x0f\n" +
+	"\r_clickbrowserB\t\n" +
+	"\a_secureB\a\n" +
+	"\x05_rwddB\a\n" +
+	"\x05_ssaiB\x06\n" +
+	"\x04_expB\x05\n" +
+	"\x03_dt\"k\n" +
 	"\x06Metric\x12\x12\n" +
-	"\x04type\x18\x01 \x01(\tR\x04type\x12\x14\n" +
-	"\x05value\x18\x02 \x01(\x01R\x05value\x12\x16\n" +
+	"\x04type\x18\x01 \x01(\tR\x04type\x12\x19\n" +
+	"\x05value\x18\x02 \x01(\x01H\x00R\x05value\x88\x01\x01\x12\x16\n" +
 	"\x06vendor\x18\x03 \x01(\tR\x06vendor\x12\x10\n" +
-	"\x03ext\x18c \x01(\tR\x03ext\"\x9d\x02\n" +
+	"\x03ext\x18c \x01(\tR\x03extB\b\n" +
+	"\x06_value\"\xdf\x02\n" +
 	"\x06Banner\x12)\n" +
-	"\x06format\x18\x01 \x03(\v2\x11.oakrtb.v2.FormatR\x06format\x12\f\n" +
-	"\x01w\x18\x02 \x01(\x05R\x01w\x12\f\n" +
-	"\x01h\x18\x03 \x01(\x05R\x01h\x12\x14\n" +
+	"\x06format\x18\x01 \x03(\v2\x11.oakrtb.v2.FormatR\x06format\x12\x11\n" +
+	"\x01w\x18\x02 \x01(\x05H\x00R\x01w\x88\x01\x01\x12\x11\n" +
+	"\x01h\x18\x03 \x01(\x05H\x01R\x01h\x88\x01\x01\x12\x14\n" +
 	"\x05btype\x18\x04 \x03(\x05R\x05btype\x12\x14\n" +
-	"\x05battr\x18\x05 \x03(\x05R\x05battr\x12\x10\n" +
-	"\x03pos\x18\x06 \x01(\x05R\x03pos\x12\x14\n" +
-	"\x05mimes\x18\a \x03(\tR\x05mimes\x12\x1a\n" +
-	"\btopframe\x18\b \x01(\x05R\btopframe\x12\x16\n" +
+	"\x05battr\x18\x05 \x03(\x05R\x05battr\x12\x15\n" +
+	"\x03pos\x18\x06 \x01(\x05H\x02R\x03pos\x88\x01\x01\x12\x14\n" +
+	"\x05mimes\x18\a \x03(\tR\x05mimes\x12\x1f\n" +
+	"\btopframe\x18\b \x01(\x05H\x03R\btopframe\x88\x01\x01\x12\x16\n" +
 	"\x06expdir\x18\t \x03(\x05R\x06expdir\x12\x10\n" +
 	"\x03api\x18\n" +
 	" \x03(\x05R\x03api\x12\x0e\n" +
-	"\x02id\x18\v \x01(\tR\x02id\x12\x10\n" +
-	"\x03vcm\x18\f \x01(\x05R\x03vcm\x12\x10\n" +
-	"\x03ext\x18c \x01(\tR\x03ext\"z\n" +
-	"\x06Format\x12\f\n" +
-	"\x01w\x18\x01 \x01(\x05R\x01w\x12\f\n" +
-	"\x01h\x18\x02 \x01(\x05R\x01h\x12\x16\n" +
-	"\x06wratio\x18\x03 \x01(\x05R\x06wratio\x12\x16\n" +
-	"\x06hratio\x18\x04 \x01(\x05R\x06hratio\x12\x12\n" +
-	"\x04wmin\x18\x05 \x01(\x05R\x04wmin\x12\x10\n" +
-	"\x03ext\x18c \x01(\tR\x03ext\"\xfa\a\n" +
+	"\x02id\x18\v \x01(\tR\x02id\x12\x15\n" +
+	"\x03vcm\x18\f \x01(\x05H\x04R\x03vcm\x88\x01\x01\x12\x10\n" +
+	"\x03ext\x18c \x01(\tR\x03extB\x04\n" +
+	"\x02_wB\x04\n" +
+	"\x02_hB\x06\n" +
+	"\x04_posB\v\n" +
+	"\t_topframeB\x06\n" +
+	"\x04_vcm\"\xbe\x01\n" +
+	"\x06Format\x12\x11\n" +
+	"\x01w\x18\x01 \x01(\x05H\x00R\x01w\x88\x01\x01\x12\x11\n" +
+	"\x01h\x18\x02 \x01(\x05H\x01R\x01h\x88\x01\x01\x12\x1b\n" +
+	"\x06wratio\x18\x03 \x01(\x05H\x02R\x06wratio\x88\x01\x01\x12\x1b\n" +
+	"\x06hratio\x18\x04 \x01(\x05H\x03R\x06hratio\x88\x01\x01\x12\x17\n" +
+	"\x04wmin\x18\x05 \x01(\x05H\x04R\x04wmin\x88\x01\x01\x12\x10\n" +
+	"\x03ext\x18c \x01(\tR\x03extB\x04\n" +
+	"\x02_wB\x04\n" +
+	"\x02_hB\t\n" +
+	"\a_wratioB\t\n" +
+	"\a_hratioB\a\n" +
+	"\x05_wmin\"\x84\v\n" +
 	"\x05Video\x12\x14\n" +
-	"\x05mimes\x18\x01 \x03(\tR\x05mimes\x12 \n" +
-	"\vminduration\x18\x02 \x01(\x05R\vminduration\x12 \n" +
-	"\vmaxduration\x18\x03 \x01(\x05R\vmaxduration\x12\x1e\n" +
+	"\x05mimes\x18\x01 \x03(\tR\x05mimes\x12%\n" +
+	"\vminduration\x18\x02 \x01(\x05H\x00R\vminduration\x88\x01\x01\x12%\n" +
+	"\vmaxduration\x18\x03 \x01(\x05H\x01R\vmaxduration\x88\x01\x01\x12#\n" +
 	"\n" +
-	"startdelay\x18\x04 \x01(\x05R\n" +
-	"startdelay\x12\x16\n" +
-	"\x06maxseq\x18\x05 \x01(\x05R\x06maxseq\x12\x16\n" +
-	"\x06poddur\x18\x06 \x01(\x05R\x06poddur\x12\x1c\n" +
-	"\tprotocols\x18\a \x03(\x05R\tprotocols\x12\f\n" +
-	"\x01w\x18\b \x01(\x05R\x01w\x12\f\n" +
-	"\x01h\x18\t \x01(\x05R\x01h\x12\x14\n" +
+	"startdelay\x18\x04 \x01(\x05H\x02R\n" +
+	"startdelay\x88\x01\x01\x12\x1b\n" +
+	"\x06maxseq\x18\x05 \x01(\x05H\x03R\x06maxseq\x88\x01\x01\x12\x1b\n" +
+	"\x06poddur\x18\x06 \x01(\x05H\x04R\x06poddur\x88\x01\x01\x12\x1c\n" +
+	"\tprotocols\x18\a \x03(\x05R\tprotocols\x12\x11\n" +
+	"\x01w\x18\b \x01(\x05H\x05R\x01w\x88\x01\x01\x12\x11\n" +
+	"\x01h\x18\t \x01(\x05H\x06R\x01h\x88\x01\x01\x12\x14\n" +
 	"\x05podid\x18\n" +
-	" \x01(\tR\x05podid\x12\x16\n" +
-	"\x06podseq\x18\v \x01(\x05R\x06podseq\x12\x18\n" +
-	"\arqddurs\x18\f \x03(\x05R\arqddurs\x12\x14\n" +
-	"\x05plcmt\x18\r \x01(\x05R\x05plcmt\x12\x1c\n" +
-	"\tlinearity\x18\x0e \x01(\x05R\tlinearity\x12\x12\n" +
-	"\x04skip\x18\x0f \x01(\x05R\x04skip\x12\x18\n" +
-	"\askipmin\x18\x10 \x01(\x05R\askipmin\x12\x1c\n" +
-	"\tskipafter\x18\x11 \x01(\x05R\tskipafter\x12\x1c\n" +
-	"\tslotinpod\x18\x12 \x01(\x05R\tslotinpod\x12\"\n" +
-	"\fmincpmpersec\x18\x13 \x01(\x01R\fmincpmpersec\x12\x14\n" +
-	"\x05battr\x18\x14 \x03(\x05R\x05battr\x12 \n" +
-	"\vmaxextended\x18\x15 \x01(\x05R\vmaxextended\x12\x1e\n" +
+	" \x01(\tR\x05podid\x12\x1b\n" +
+	"\x06podseq\x18\v \x01(\x05H\aR\x06podseq\x88\x01\x01\x12\x18\n" +
+	"\arqddurs\x18\f \x03(\x05R\arqddurs\x12\x19\n" +
+	"\x05plcmt\x18\r \x01(\x05H\bR\x05plcmt\x88\x01\x01\x12!\n" +
+	"\tlinearity\x18\x0e \x01(\x05H\tR\tlinearity\x88\x01\x01\x12\x17\n" +
+	"\x04skip\x18\x0f \x01(\x05H\n" +
+	"R\x04skip\x88\x01\x01\x12\x1d\n" +
+	"\askipmin\x18\x10 \x01(\x05H\vR\askipmin\x88\x01\x01\x12!\n" +
+	"\tskipafter\x18\x11 \x01(\x05H\fR\tskipafter\x88\x01\x01\x12!\n" +
+	"\tslotinpod\x18\x12 \x01(\x05H\rR\tslotinpod\x88\x01\x01\x12'\n" +
+	"\fmincpmpersec\x18\x13 \x01(\x01H\x0eR\fmincpmpersec\x88\x01\x01\x12\x14\n" +
+	"\x05battr\x18\x14 \x03(\x05R\x05battr\x12%\n" +
+	"\vmaxextended\x18\x15 \x01(\x05H\x0fR\vmaxextended\x88\x01\x01\x12#\n" +
 	"\n" +
-	"minbitrate\x18\x16 \x01(\x05R\n" +
-	"minbitrate\x12\x1e\n" +
+	"minbitrate\x18\x16 \x01(\x05H\x10R\n" +
+	"minbitrate\x88\x01\x01\x12#\n" +
 	"\n" +
-	"maxbitrate\x18\x17 \x01(\x05R\n" +
-	"maxbitrate\x12$\n" +
-	"\rboxingallowed\x18\x18 \x01(\x05R\rboxingallowed\x12&\n" +
-	"\x0eplaybackmethod\x18\x19 \x03(\x05R\x0eplaybackmethod\x12 \n" +
-	"\vplaybackend\x18\x1a \x01(\x05R\vplaybackend\x12\x1a\n" +
-	"\bdelivery\x18\x1b \x03(\x05R\bdelivery\x12\x10\n" +
-	"\x03pos\x18\x1c \x01(\x05R\x03pos\x123\n" +
+	"maxbitrate\x18\x17 \x01(\x05H\x11R\n" +
+	"maxbitrate\x88\x01\x01\x12)\n" +
+	"\rboxingallowed\x18\x18 \x01(\x05H\x12R\rboxingallowed\x88\x01\x01\x12&\n" +
+	"\x0eplaybackmethod\x18\x19 \x03(\x05R\x0eplaybackmethod\x12%\n" +
+	"\vplaybackend\x18\x1a \x01(\x05H\x13R\vplaybackend\x88\x01\x01\x12\x1a\n" +
+	"\bdelivery\x18\x1b \x03(\x05R\bdelivery\x12\x15\n" +
+	"\x03pos\x18\x1c \x01(\x05H\x14R\x03pos\x88\x01\x01\x123\n" +
 	"\vcompanionad\x18\x1d \x03(\v2\x11.oakrtb.v2.BannerR\vcompanionad\x12\x10\n" +
 	"\x03api\x18\x1e \x03(\x05R\x03api\x12$\n" +
-	"\rcompaniontype\x18\x1f \x03(\x05R\rcompaniontype\x12\x1c\n" +
-	"\tplacement\x18  \x01(\x05R\tplacement\x12\x1c\n" +
+	"\rcompaniontype\x18\x1f \x03(\x05R\rcompaniontype\x12!\n" +
+	"\tplacement\x18  \x01(\x05H\x15R\tplacement\x88\x01\x01\x12\x1c\n" +
 	"\tpoddedupe\x18! \x03(\x05R\tpoddedupe\x122\n" +
 	"\tdurfloors\x18\" \x03(\v2\x14.oakrtb.v2.DurFloorsR\tdurfloors\x12\x10\n" +
-	"\x03ext\x18c \x01(\tR\x03ext\"\xe4\x05\n" +
+	"\x03ext\x18c \x01(\tR\x03extB\x0e\n" +
+	"\f_mindurationB\x0e\n" +
+	"\f_maxdurationB\r\n" +
+	"\v_startdelayB\t\n" +
+	"\a_maxseqB\t\n" +
+	"\a_poddurB\x04\n" +
+	"\x02_wB\x04\n" +
+	"\x02_hB\t\n" +
+	"\a_podseqB\b\n" +
+	"\x06_plcmtB\f\n" +
+	"\n" +
+	"_linearityB\a\n" +
+	"\x05_skipB\n" +
+	"\n" +
+	"\b_skipminB\f\n" +
+	"\n" +
+	"_skipafterB\f\n" +
+	"\n" +
+	"_slotinpodB\x0f\n" +
+	"\r_mincpmpersecB\x0e\n" +
+	"\f_maxextendedB\r\n" +
+	"\v_minbitrateB\r\n" +
+	"\v_maxbitrateB\x10\n" +
+	"\x0e_boxingallowedB\x0e\n" +
+	"\f_playbackendB\x06\n" +
+	"\x04_posB\f\n" +
+	"\n" +
+	"_placement\"\xe6\a\n" +
 	"\x05Audio\x12\x14\n" +
-	"\x05mimes\x18\x01 \x03(\tR\x05mimes\x12 \n" +
-	"\vminduration\x18\x02 \x01(\x05R\vminduration\x12 \n" +
-	"\vmaxduration\x18\x03 \x01(\x05R\vmaxduration\x12\x16\n" +
-	"\x06poddur\x18\x04 \x01(\x05R\x06poddur\x12\x1c\n" +
-	"\tprotocols\x18\x05 \x03(\x05R\tprotocols\x12\x1e\n" +
+	"\x05mimes\x18\x01 \x03(\tR\x05mimes\x12%\n" +
+	"\vminduration\x18\x02 \x01(\x05H\x00R\vminduration\x88\x01\x01\x12%\n" +
+	"\vmaxduration\x18\x03 \x01(\x05H\x01R\vmaxduration\x88\x01\x01\x12\x1b\n" +
+	"\x06poddur\x18\x04 \x01(\x05H\x02R\x06poddur\x88\x01\x01\x12\x1c\n" +
+	"\tprotocols\x18\x05 \x03(\x05R\tprotocols\x12#\n" +
 	"\n" +
-	"startdelay\x18\x06 \x01(\x05R\n" +
-	"startdelay\x12\x18\n" +
+	"startdelay\x18\x06 \x01(\x05H\x03R\n" +
+	"startdelay\x88\x01\x01\x12\x18\n" +
 	"\arqddurs\x18\a \x03(\x05R\arqddurs\x12\x14\n" +
-	"\x05podid\x18\b \x01(\tR\x05podid\x12\x16\n" +
-	"\x06podseq\x18\t \x01(\x05R\x06podseq\x12\x1c\n" +
+	"\x05podid\x18\b \x01(\tR\x05podid\x12\x1b\n" +
+	"\x06podseq\x18\t \x01(\x05H\x04R\x06podseq\x88\x01\x01\x12!\n" +
 	"\tslotinpod\x18\n" +
-	" \x01(\x05R\tslotinpod\x12\"\n" +
-	"\fmincpmpersec\x18\v \x01(\x01R\fmincpmpersec\x12\x14\n" +
-	"\x05battr\x18\f \x03(\x05R\x05battr\x12 \n" +
-	"\vmaxextended\x18\r \x01(\x05R\vmaxextended\x12\x1e\n" +
+	" \x01(\x05H\x05R\tslotinpod\x88\x01\x01\x12'\n" +
+	"\fmincpmpersec\x18\v \x01(\x01H\x06R\fmincpmpersec\x88\x01\x01\x12\x14\n" +
+	"\x05battr\x18\f \x03(\x05R\x05battr\x12%\n" +
+	"\vmaxextended\x18\r \x01(\x05H\aR\vmaxextended\x88\x01\x01\x12#\n" +
 	"\n" +
-	"minbitrate\x18\x0e \x01(\x05R\n" +
-	"minbitrate\x12\x1e\n" +
+	"minbitrate\x18\x0e \x01(\x05H\bR\n" +
+	"minbitrate\x88\x01\x01\x12#\n" +
 	"\n" +
-	"maxbitrate\x18\x0f \x01(\x05R\n" +
-	"maxbitrate\x12\x1a\n" +
+	"maxbitrate\x18\x0f \x01(\x05H\tR\n" +
+	"maxbitrate\x88\x01\x01\x12\x1a\n" +
 	"\bdelivery\x18\x10 \x03(\x05R\bdelivery\x123\n" +
 	"\vcompanionad\x18\x11 \x03(\v2\x11.oakrtb.v2.BannerR\vcompanionad\x12\x10\n" +
 	"\x03api\x18\x12 \x03(\x05R\x03api\x12$\n" +
-	"\rcompaniontype\x18\x13 \x03(\x05R\rcompaniontype\x12\x16\n" +
-	"\x06maxseq\x18\x14 \x01(\x05R\x06maxseq\x12\x12\n" +
-	"\x04feed\x18\x15 \x01(\x05R\x04feed\x12\x1a\n" +
-	"\bstitched\x18\x16 \x01(\x05R\bstitched\x12\x12\n" +
-	"\x04nvol\x18\x17 \x01(\x05R\x04nvol\x122\n" +
+	"\rcompaniontype\x18\x13 \x03(\x05R\rcompaniontype\x12\x1b\n" +
+	"\x06maxseq\x18\x14 \x01(\x05H\n" +
+	"R\x06maxseq\x88\x01\x01\x12\x17\n" +
+	"\x04feed\x18\x15 \x01(\x05H\vR\x04feed\x88\x01\x01\x12\x1f\n" +
+	"\bstitched\x18\x16 \x01(\x05H\fR\bstitched\x88\x01\x01\x12\x17\n" +
+	"\x04nvol\x18\x17 \x01(\x05H\rR\x04nvol\x88\x01\x01\x122\n" +
 	"\tdurfloors\x18\x18 \x03(\v2\x14.oakrtb.v2.DurFloorsR\tdurfloors\x12\x10\n" +
-	"\x03ext\x18c \x01(\tR\x03ext\"n\n" +
+	"\x03ext\x18c \x01(\tR\x03extB\x0e\n" +
+	"\f_mindurationB\x0e\n" +
+	"\f_maxdurationB\t\n" +
+	"\a_poddurB\r\n" +
+	"\v_startdelayB\t\n" +
+	"\a_podseqB\f\n" +
+	"\n" +
+	"_slotinpodB\x0f\n" +
+	"\r_mincpmpersecB\x0e\n" +
+	"\f_maxextendedB\r\n" +
+	"\v_minbitrateB\r\n" +
+	"\v_maxbitrateB\t\n" +
+	"\a_maxseqB\a\n" +
+	"\x05_feedB\v\n" +
+	"\t_stitchedB\a\n" +
+	"\x05_nvol\"n\n" +
 	"\x06Native\x12\x18\n" +
 	"\arequest\x18\x01 \x01(\tR\arequest\x12\x10\n" +
 	"\x03ver\x18\x02 \x01(\tR\x03ver\x12\x10\n" +
 	"\x03api\x18\x03 \x03(\x05R\x03api\x12\x14\n" +
 	"\x05battr\x18\x04 \x03(\x05R\x05battr\x12\x10\n" +
-	"\x03ext\x18c \x01(\tR\x03ext\"g\n" +
-	"\x03Pmp\x12'\n" +
-	"\x0fprivate_auction\x18\x01 \x01(\x05R\x0eprivateAuction\x12%\n" +
+	"\x03ext\x18c \x01(\tR\x03ext\"\x81\x01\n" +
+	"\x03Pmp\x12-\n" +
+	"\x0fprivate_auction\x18\x01 \x01(\x05H\x00R\x0fprivate_auction\x88\x01\x01\x12%\n" +
 	"\x05deals\x18\x02 \x03(\v2\x0f.oakrtb.v2.DealR\x05deals\x12\x10\n" +
-	"\x03ext\x18c \x01(\tR\x03ext\"\x94\x02\n" +
+	"\x03ext\x18c \x01(\tR\x03extB\x12\n" +
+	"\x10_private_auction\"\xd6\x02\n" +
 	"\x04Deal\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1a\n" +
-	"\bbidfloor\x18\x02 \x01(\x01R\bbidfloor\x12 \n" +
-	"\vbidfloorcur\x18\x03 \x01(\tR\vbidfloorcur\x12\x0e\n" +
-	"\x02at\x18\x04 \x01(\x05R\x02at\x12\x14\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1f\n" +
+	"\bbidfloor\x18\x02 \x01(\x01H\x00R\bbidfloor\x88\x01\x01\x12 \n" +
+	"\vbidfloorcur\x18\x03 \x01(\tR\vbidfloorcur\x12\x13\n" +
+	"\x02at\x18\x04 \x01(\x05H\x01R\x02at\x88\x01\x01\x12\x14\n" +
 	"\x05wseat\x18\x05 \x03(\tR\x05wseat\x12\x1a\n" +
-	"\bwadomain\x18\x06 \x03(\tR\bwadomain\x12\x12\n" +
-	"\x04guar\x18\a \x01(\x05R\x04guar\x12\"\n" +
-	"\fmincpmpersec\x18\b \x01(\x01R\fmincpmpersec\x122\n" +
+	"\bwadomain\x18\x06 \x03(\tR\bwadomain\x12\x17\n" +
+	"\x04guar\x18\a \x01(\x05H\x02R\x04guar\x88\x01\x01\x12'\n" +
+	"\fmincpmpersec\x18\b \x01(\x01H\x03R\fmincpmpersec\x88\x01\x01\x122\n" +
 	"\tdurfloors\x18\t \x03(\v2\x14.oakrtb.v2.DurFloorsR\tdurfloors\x12\x10\n" +
-	"\x03ext\x18c \x01(\tR\x03ext\"o\n" +
-	"\x03Qty\x12\x1e\n" +
+	"\x03ext\x18c \x01(\tR\x03extB\v\n" +
+	"\t_bidfloorB\x05\n" +
+	"\x03_atB\a\n" +
+	"\x05_guarB\x0f\n" +
+	"\r_mincpmpersec\"\x97\x01\n" +
+	"\x03Qty\x12#\n" +
 	"\n" +
-	"multiplier\x18\x01 \x01(\x01R\n" +
-	"multiplier\x12\x1e\n" +
+	"multiplier\x18\x01 \x01(\x01H\x00R\n" +
+	"multiplier\x88\x01\x01\x12#\n" +
 	"\n" +
-	"sourcetype\x18\x02 \x01(\x05R\n" +
-	"sourcetype\x12\x16\n" +
+	"sourcetype\x18\x02 \x01(\x05H\x01R\n" +
+	"sourcetype\x88\x01\x01\x12\x16\n" +
 	"\x06vendor\x18\x03 \x01(\tR\x06vendor\x12\x10\n" +
-	"\x03ext\x18c \x01(\tR\x03ext\"\x8b\x01\n" +
-	"\tDurFloors\x12\x16\n" +
-	"\x06mindur\x18\x01 \x01(\x05R\x06mindur\x12\x16\n" +
-	"\x06maxdur\x18\x02 \x01(\x05R\x06maxdur\x12\x1a\n" +
-	"\bbidfloor\x18\x03 \x01(\x01R\bbidfloor\x12 \n" +
+	"\x03ext\x18c \x01(\tR\x03extB\r\n" +
+	"\v_multiplierB\r\n" +
+	"\v_sourcetype\"\xbd\x01\n" +
+	"\tDurFloors\x12\x1b\n" +
+	"\x06mindur\x18\x01 \x01(\x05H\x00R\x06mindur\x88\x01\x01\x12\x1b\n" +
+	"\x06maxdur\x18\x02 \x01(\x05H\x01R\x06maxdur\x88\x01\x01\x12\x1f\n" +
+	"\bbidfloor\x18\x03 \x01(\x01H\x02R\bbidfloor\x88\x01\x01\x12 \n" +
 	"\vbidfloorcur\x18\x04 \x01(\tR\vbidfloorcur\x12\x10\n" +
-	"\x03ext\x18c \x01(\tR\x03ext\"k\n" +
+	"\x03ext\x18c \x01(\tR\x03extB\t\n" +
+	"\a_mindurB\t\n" +
+	"\a_maxdurB\v\n" +
+	"\t_bidfloor\"z\n" +
 	"\aRefresh\x128\n" +
-	"\vrefsettings\x18\x01 \x03(\v2\x16.oakrtb.v2.RefSettingsR\vrefsettings\x12\x14\n" +
-	"\x05count\x18\x02 \x01(\x05R\x05count\x12\x10\n" +
-	"\x03ext\x18c \x01(\tR\x03ext\"Q\n" +
-	"\vRefSettings\x12\x18\n" +
-	"\areftype\x18\x01 \x01(\x05R\areftype\x12\x16\n" +
-	"\x06minint\x18\x02 \x01(\x05R\x06minint\x12\x10\n" +
-	"\x03ext\x18c \x01(\tR\x03ext\"\x84\x04\n" +
+	"\vrefsettings\x18\x01 \x03(\v2\x16.oakrtb.v2.RefSettingsR\vrefsettings\x12\x19\n" +
+	"\x05count\x18\x02 \x01(\x05H\x00R\x05count\x88\x01\x01\x12\x10\n" +
+	"\x03ext\x18c \x01(\tR\x03extB\b\n" +
+	"\x06_count\"r\n" +
+	"\vRefSettings\x12\x1d\n" +
+	"\areftype\x18\x01 \x01(\x05H\x00R\areftype\x88\x01\x01\x12\x1b\n" +
+	"\x06minint\x18\x02 \x01(\x05H\x01R\x06minint\x88\x01\x01\x12\x10\n" +
+	"\x03ext\x18c \x01(\tR\x03extB\n" +
+	"\n" +
+	"\b_reftypeB\t\n" +
+	"\a_minint\"\xbb\x04\n" +
 	"\x04Site\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x16\n" +
-	"\x06domain\x18\x03 \x01(\tR\x06domain\x12\x16\n" +
-	"\x06cattax\x18\x04 \x01(\x05R\x06cattax\x12\x10\n" +
+	"\x06domain\x18\x03 \x01(\tR\x06domain\x12\x1b\n" +
+	"\x06cattax\x18\x04 \x01(\x05H\x00R\x06cattax\x88\x01\x01\x12\x10\n" +
 	"\x03cat\x18\x05 \x03(\tR\x03cat\x12\x1e\n" +
 	"\n" +
 	"sectioncat\x18\x06 \x03(\tR\n" +
@@ -7139,68 +7497,79 @@ const file_oakrtb_v2_openrtb_proto_rawDesc = "" +
 	"\x04page\x18\b \x01(\tR\x04page\x12\x10\n" +
 	"\x03ref\x18\t \x01(\tR\x03ref\x12\x16\n" +
 	"\x06search\x18\n" +
-	" \x01(\tR\x06search\x12\x16\n" +
-	"\x06mobile\x18\v \x01(\x05R\x06mobile\x12$\n" +
-	"\rprivacypolicy\x18\f \x01(\x05R\rprivacypolicy\x122\n" +
+	" \x01(\tR\x06search\x12\x1b\n" +
+	"\x06mobile\x18\v \x01(\x05H\x01R\x06mobile\x88\x01\x01\x12)\n" +
+	"\rprivacypolicy\x18\f \x01(\x05H\x02R\rprivacypolicy\x88\x01\x01\x122\n" +
 	"\tpublisher\x18\r \x01(\v2\x14.oakrtb.v2.PublisherR\tpublisher\x12,\n" +
 	"\acontent\x18\x0e \x01(\v2\x12.oakrtb.v2.ContentR\acontent\x12\x1a\n" +
 	"\bkeywords\x18\x0f \x01(\tR\bkeywords\x12\x18\n" +
 	"\akwarray\x18\x10 \x03(\tR\akwarray\x126\n" +
 	"\x16inventorypartnerdomain\x18\x11 \x01(\tR\x16inventorypartnerdomain\x12\x10\n" +
-	"\x03ext\x18c \x01(\tR\x03ext\"\x87\x04\n" +
+	"\x03ext\x18c \x01(\tR\x03extB\t\n" +
+	"\a_cattaxB\t\n" +
+	"\a_mobileB\x10\n" +
+	"\x0e_privacypolicy\"\xbc\x04\n" +
 	"\x03App\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x16\n" +
 	"\x06bundle\x18\x03 \x01(\tR\x06bundle\x12\x16\n" +
 	"\x06domain\x18\x04 \x01(\tR\x06domain\x12\x1a\n" +
-	"\bstoreurl\x18\x05 \x01(\tR\bstoreurl\x12\x16\n" +
-	"\x06cattax\x18\x06 \x01(\x05R\x06cattax\x12\x10\n" +
+	"\bstoreurl\x18\x05 \x01(\tR\bstoreurl\x12\x1b\n" +
+	"\x06cattax\x18\x06 \x01(\x05H\x00R\x06cattax\x88\x01\x01\x12\x10\n" +
 	"\x03cat\x18\a \x03(\tR\x03cat\x12\x1e\n" +
 	"\n" +
 	"sectioncat\x18\b \x03(\tR\n" +
 	"sectioncat\x12\x18\n" +
 	"\apagecat\x18\t \x03(\tR\apagecat\x12\x10\n" +
 	"\x03ver\x18\n" +
-	" \x01(\tR\x03ver\x12$\n" +
-	"\rprivacypolicy\x18\v \x01(\x05R\rprivacypolicy\x12\x12\n" +
-	"\x04paid\x18\f \x01(\x05R\x04paid\x122\n" +
+	" \x01(\tR\x03ver\x12)\n" +
+	"\rprivacypolicy\x18\v \x01(\x05H\x01R\rprivacypolicy\x88\x01\x01\x12\x17\n" +
+	"\x04paid\x18\f \x01(\x05H\x02R\x04paid\x88\x01\x01\x122\n" +
 	"\tpublisher\x18\r \x01(\v2\x14.oakrtb.v2.PublisherR\tpublisher\x12,\n" +
 	"\acontent\x18\x0e \x01(\v2\x12.oakrtb.v2.ContentR\acontent\x12\x1a\n" +
 	"\bkeywords\x18\x0f \x01(\tR\bkeywords\x12\x18\n" +
 	"\akwarray\x18\x10 \x03(\tR\akwarray\x126\n" +
 	"\x16inventorypartnerdomain\x18\x11 \x01(\tR\x16inventorypartnerdomain\x12\x10\n" +
-	"\x03ext\x18c \x01(\tR\x03ext\"\xda\x02\n" +
+	"\x03ext\x18c \x01(\tR\x03extB\t\n" +
+	"\a_cattaxB\x10\n" +
+	"\x0e_privacypolicyB\a\n" +
+	"\x05_paid\"\x8e\x03\n" +
 	"\x04Dooh\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
-	"\x04name\x18\x02 \x01(\tR\x04name\x12\x14\n" +
-	"\x05venue\x18\x03 \x01(\x05R\x05venue\x12\x14\n" +
-	"\x05fixed\x18\x04 \x01(\x05R\x05fixed\x122\n" +
+	"\x04name\x18\x02 \x01(\tR\x04name\x12\x19\n" +
+	"\x05venue\x18\x03 \x01(\x05H\x00R\x05venue\x88\x01\x01\x12\x19\n" +
+	"\x05fixed\x18\x04 \x01(\x05H\x01R\x05fixed\x88\x01\x01\x122\n" +
 	"\tpublisher\x18\x05 \x01(\v2\x14.oakrtb.v2.PublisherR\tpublisher\x12\x16\n" +
 	"\x06domain\x18\x06 \x01(\tR\x06domain\x12\x1a\n" +
 	"\bkeywords\x18\a \x01(\tR\bkeywords\x12\x18\n" +
 	"\akwarray\x18\b \x03(\tR\akwarray\x12,\n" +
 	"\acontent\x18\t \x01(\v2\x12.oakrtb.v2.ContentR\acontent\x12\x1c\n" +
 	"\tvenuetype\x18\n" +
-	" \x03(\tR\tvenuetype\x12\"\n" +
-	"\fvenuetypetax\x18\v \x01(\x05R\fvenuetypetax\x12\x10\n" +
-	"\x03ext\x18c \x01(\tR\x03ext\"\x83\x01\n" +
+	" \x03(\tR\tvenuetype\x12'\n" +
+	"\fvenuetypetax\x18\v \x01(\x05H\x02R\fvenuetypetax\x88\x01\x01\x12\x10\n" +
+	"\x03ext\x18c \x01(\tR\x03extB\b\n" +
+	"\x06_venueB\b\n" +
+	"\x06_fixedB\x0f\n" +
+	"\r_venuetypetax\"\x93\x01\n" +
 	"\tPublisher\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
-	"\x04name\x18\x02 \x01(\tR\x04name\x12\x16\n" +
-	"\x06cattax\x18\x03 \x01(\x05R\x06cattax\x12\x10\n" +
+	"\x04name\x18\x02 \x01(\tR\x04name\x12\x1b\n" +
+	"\x06cattax\x18\x03 \x01(\x05H\x00R\x06cattax\x88\x01\x01\x12\x10\n" +
 	"\x03cat\x18\x04 \x03(\tR\x03cat\x12\x16\n" +
 	"\x06domain\x18\x05 \x01(\tR\x06domain\x12\x10\n" +
-	"\x03ext\x18c \x01(\tR\x03ext\"\x82\x01\n" +
+	"\x03ext\x18c \x01(\tR\x03extB\t\n" +
+	"\a_cattax\"\x92\x01\n" +
 	"\bProducer\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
-	"\x04name\x18\x02 \x01(\tR\x04name\x12\x16\n" +
-	"\x06cattax\x18\x03 \x01(\x05R\x06cattax\x12\x10\n" +
+	"\x04name\x18\x02 \x01(\tR\x04name\x12\x1b\n" +
+	"\x06cattax\x18\x03 \x01(\x05H\x00R\x06cattax\x88\x01\x01\x12\x10\n" +
 	"\x03cat\x18\x04 \x03(\tR\x03cat\x12\x16\n" +
 	"\x06domain\x18\x05 \x01(\tR\x06domain\x12\x10\n" +
-	"\x03ext\x18c \x01(\tR\x03ext\"\xc9\a\n" +
+	"\x03ext\x18c \x01(\tR\x03extB\t\n" +
+	"\a_cattax\"\xab\t\n" +
 	"\aContent\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\x12\x18\n" +
-	"\aepisode\x18\x02 \x01(\x05R\aepisode\x12\x14\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1d\n" +
+	"\aepisode\x18\x02 \x01(\x05H\x00R\aepisode\x88\x01\x01\x12\x14\n" +
 	"\x05title\x18\x03 \x01(\tR\x05title\x12\x16\n" +
 	"\x06series\x18\x04 \x01(\tR\x06series\x12\x16\n" +
 	"\x06season\x18\x05 \x01(\tR\x06season\x12\x16\n" +
@@ -7210,36 +7579,51 @@ const file_oakrtb_v2_openrtb_proto_rawDesc = "" +
 	"\x04isrc\x18\t \x01(\tR\x04isrc\x12/\n" +
 	"\bproducer\x18\n" +
 	" \x01(\v2\x13.oakrtb.v2.ProducerR\bproducer\x12\x10\n" +
-	"\x03url\x18\v \x01(\tR\x03url\x12\x16\n" +
-	"\x06cattax\x18\f \x01(\x05R\x06cattax\x12\x10\n" +
-	"\x03cat\x18\r \x03(\tR\x03cat\x12\x14\n" +
-	"\x05prodq\x18\x0e \x01(\x05R\x05prodq\x12\x18\n" +
-	"\acontext\x18\x0f \x01(\x05R\acontext\x12$\n" +
+	"\x03url\x18\v \x01(\tR\x03url\x12\x1b\n" +
+	"\x06cattax\x18\f \x01(\x05H\x01R\x06cattax\x88\x01\x01\x12\x10\n" +
+	"\x03cat\x18\r \x03(\tR\x03cat\x12\x19\n" +
+	"\x05prodq\x18\x0e \x01(\x05H\x02R\x05prodq\x88\x01\x01\x12\x1d\n" +
+	"\acontext\x18\x0f \x01(\x05H\x03R\acontext\x88\x01\x01\x12$\n" +
 	"\rcontentrating\x18\x10 \x01(\tR\rcontentrating\x12\x1e\n" +
 	"\n" +
 	"userrating\x18\x11 \x01(\tR\n" +
-	"userrating\x12&\n" +
-	"\x0eqagmediarating\x18\x12 \x01(\x05R\x0eqagmediarating\x12\x1a\n" +
+	"userrating\x12+\n" +
+	"\x0eqagmediarating\x18\x12 \x01(\x05H\x04R\x0eqagmediarating\x88\x01\x01\x12\x1a\n" +
 	"\bkeywords\x18\x13 \x01(\tR\bkeywords\x12\x18\n" +
-	"\akwarray\x18\x14 \x03(\tR\akwarray\x12\x1e\n" +
+	"\akwarray\x18\x14 \x03(\tR\akwarray\x12#\n" +
 	"\n" +
-	"livestream\x18\x15 \x01(\x05R\n" +
-	"livestream\x12.\n" +
-	"\x12sourcerelationship\x18\x16 \x01(\x05R\x12sourcerelationship\x12\x10\n" +
-	"\x03len\x18\x17 \x01(\x05R\x03len\x12\x1a\n" +
+	"livestream\x18\x15 \x01(\x05H\x05R\n" +
+	"livestream\x88\x01\x01\x123\n" +
+	"\x12sourcerelationship\x18\x16 \x01(\x05H\x06R\x12sourcerelationship\x88\x01\x01\x12\x15\n" +
+	"\x03len\x18\x17 \x01(\x05H\aR\x03len\x88\x01\x01\x12\x1a\n" +
 	"\blanguage\x18\x18 \x01(\tR\blanguage\x12\x14\n" +
-	"\x05langb\x18\x19 \x01(\tR\x05langb\x12\x1e\n" +
+	"\x05langb\x18\x19 \x01(\tR\x05langb\x12#\n" +
 	"\n" +
-	"embeddable\x18\x1a \x01(\x05R\n" +
-	"embeddable\x12#\n" +
+	"embeddable\x18\x1a \x01(\x05H\bR\n" +
+	"embeddable\x88\x01\x01\x12#\n" +
 	"\x04data\x18\x1b \x03(\v2\x0f.oakrtb.v2.DataR\x04data\x12,\n" +
 	"\anetwork\x18\x1c \x01(\v2\x12.oakrtb.v2.NetworkR\anetwork\x12,\n" +
-	"\achannel\x18\x1d \x01(\v2\x12.oakrtb.v2.ChannelR\achannel\x12\x12\n" +
-	"\x04gtax\x18\x1e \x01(\x05R\x04gtax\x12\x16\n" +
-	"\x06genres\x18\x1f \x03(\tR\x06genres\x12\x1a\n" +
-	"\brealtime\x18  \x01(\x05R\brealtime\x12&\n" +
-	"\x0efirstbroadcast\x18! \x01(\x05R\x0efirstbroadcast\x12\x10\n" +
-	"\x03ext\x18c \x01(\tR\x03ext\"W\n" +
+	"\achannel\x18\x1d \x01(\v2\x12.oakrtb.v2.ChannelR\achannel\x12\x17\n" +
+	"\x04gtax\x18\x1e \x01(\x05H\tR\x04gtax\x88\x01\x01\x12\x16\n" +
+	"\x06genres\x18\x1f \x03(\tR\x06genres\x12\x1f\n" +
+	"\brealtime\x18  \x01(\x05H\n" +
+	"R\brealtime\x88\x01\x01\x12+\n" +
+	"\x0efirstbroadcast\x18! \x01(\x05H\vR\x0efirstbroadcast\x88\x01\x01\x12\x10\n" +
+	"\x03ext\x18c \x01(\tR\x03extB\n" +
+	"\n" +
+	"\b_episodeB\t\n" +
+	"\a_cattaxB\b\n" +
+	"\x06_prodqB\n" +
+	"\n" +
+	"\b_contextB\x11\n" +
+	"\x0f_qagmediaratingB\r\n" +
+	"\v_livestreamB\x15\n" +
+	"\x13_sourcerelationshipB\x06\n" +
+	"\x04_lenB\r\n" +
+	"\v_embeddableB\a\n" +
+	"\x05_gtaxB\v\n" +
+	"\t_realtimeB\x11\n" +
+	"\x0f_firstbroadcast\"W\n" +
 	"\aNetwork\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x16\n" +
@@ -7249,66 +7633,89 @@ const file_oakrtb_v2_openrtb_proto_rawDesc = "" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x16\n" +
 	"\x06domain\x18\x03 \x01(\tR\x06domain\x12\x10\n" +
-	"\x03ext\x18c \x01(\tR\x03ext\"\xcc\x04\n" +
+	"\x03ext\x18c \x01(\tR\x03ext\"\xe4\x05\n" +
 	"\x06Device\x12 \n" +
-	"\x03geo\x18\x01 \x01(\v2\x0e.oakrtb.v2.GeoR\x03geo\x12\x10\n" +
-	"\x03dnt\x18\x02 \x01(\x05R\x03dnt\x12\x10\n" +
-	"\x03lmt\x18\x03 \x01(\x05R\x03lmt\x12\x0e\n" +
+	"\x03geo\x18\x01 \x01(\v2\x0e.oakrtb.v2.GeoR\x03geo\x12\x15\n" +
+	"\x03dnt\x18\x02 \x01(\x05H\x00R\x03dnt\x88\x01\x01\x12\x15\n" +
+	"\x03lmt\x18\x03 \x01(\x05H\x01R\x03lmt\x88\x01\x01\x12\x0e\n" +
 	"\x02ua\x18\x04 \x01(\tR\x02ua\x12&\n" +
 	"\x03sua\x18\x05 \x01(\v2\x14.oakrtb.v2.UserAgentR\x03sua\x12\x0e\n" +
 	"\x02ip\x18\x06 \x01(\tR\x02ip\x12\x12\n" +
-	"\x04ipv6\x18\a \x01(\tR\x04ipv6\x12\x1e\n" +
+	"\x04ipv6\x18\a \x01(\tR\x04ipv6\x12#\n" +
 	"\n" +
-	"devicetype\x18\b \x01(\x05R\n" +
-	"devicetype\x12\x12\n" +
+	"devicetype\x18\b \x01(\x05H\x02R\n" +
+	"devicetype\x88\x01\x01\x12\x12\n" +
 	"\x04make\x18\t \x01(\tR\x04make\x12\x14\n" +
 	"\x05model\x18\n" +
 	" \x01(\tR\x05model\x12\x0e\n" +
 	"\x02os\x18\v \x01(\tR\x02os\x12\x10\n" +
 	"\x03osv\x18\f \x01(\tR\x03osv\x12\x10\n" +
-	"\x03hwv\x18\r \x01(\tR\x03hwv\x12\f\n" +
-	"\x01h\x18\x0e \x01(\x05R\x01h\x12\f\n" +
-	"\x01w\x18\x0f \x01(\x05R\x01w\x12\x10\n" +
-	"\x03ppi\x18\x10 \x01(\x05R\x03ppi\x12\x18\n" +
-	"\apxratio\x18\x11 \x01(\x01R\apxratio\x12\x0e\n" +
-	"\x02js\x18\x12 \x01(\x05R\x02js\x12\x1a\n" +
-	"\bgeofetch\x18\x13 \x01(\x05R\bgeofetch\x12\x1a\n" +
+	"\x03hwv\x18\r \x01(\tR\x03hwv\x12\x11\n" +
+	"\x01h\x18\x0e \x01(\x05H\x03R\x01h\x88\x01\x01\x12\x11\n" +
+	"\x01w\x18\x0f \x01(\x05H\x04R\x01w\x88\x01\x01\x12\x15\n" +
+	"\x03ppi\x18\x10 \x01(\x05H\x05R\x03ppi\x88\x01\x01\x12\x1d\n" +
+	"\apxratio\x18\x11 \x01(\x01H\x06R\apxratio\x88\x01\x01\x12\x13\n" +
+	"\x02js\x18\x12 \x01(\x05H\aR\x02js\x88\x01\x01\x12\x1f\n" +
+	"\bgeofetch\x18\x13 \x01(\x05H\bR\bgeofetch\x88\x01\x01\x12\x1a\n" +
 	"\blanguage\x18\x14 \x01(\tR\blanguage\x12\x14\n" +
 	"\x05langb\x18\x15 \x01(\tR\x05langb\x12\x18\n" +
 	"\acarrier\x18\x16 \x01(\tR\acarrier\x12\x16\n" +
-	"\x06mccmnc\x18\x17 \x01(\tR\x06mccmnc\x12&\n" +
-	"\x0econnectiontype\x18\x18 \x01(\x05R\x0econnectiontype\x12\x10\n" +
+	"\x06mccmnc\x18\x17 \x01(\tR\x06mccmnc\x12+\n" +
+	"\x0econnectiontype\x18\x18 \x01(\x05H\tR\x0econnectiontype\x88\x01\x01\x12\x10\n" +
 	"\x03ifa\x18\x19 \x01(\tR\x03ifa\x12\x10\n" +
-	"\x03ext\x18c \x01(\tR\x03ext\"\x8b\x02\n" +
+	"\x03ext\x18c \x01(\tR\x03extB\x06\n" +
+	"\x04_dntB\x06\n" +
+	"\x04_lmtB\r\n" +
+	"\v_devicetypeB\x04\n" +
+	"\x02_hB\x04\n" +
+	"\x02_wB\x06\n" +
+	"\x04_ppiB\n" +
+	"\n" +
+	"\b_pxratioB\x05\n" +
+	"\x03_jsB\v\n" +
+	"\t_geofetchB\x11\n" +
+	"\x0f_connectiontype\"\xab\x02\n" +
 	"\tUserAgent\x123\n" +
 	"\bbrowsers\x18\x01 \x03(\v2\x17.oakrtb.v2.BrandVersionR\bbrowsers\x123\n" +
-	"\bplatform\x18\x02 \x01(\v2\x17.oakrtb.v2.BrandVersionR\bplatform\x12\x16\n" +
-	"\x06mobile\x18\x03 \x01(\x05R\x06mobile\x12\"\n" +
+	"\bplatform\x18\x02 \x01(\v2\x17.oakrtb.v2.BrandVersionR\bplatform\x12\x1b\n" +
+	"\x06mobile\x18\x03 \x01(\x05H\x00R\x06mobile\x88\x01\x01\x12\"\n" +
 	"\farchitecture\x18\x04 \x01(\tR\farchitecture\x12\x18\n" +
 	"\abitness\x18\x05 \x01(\tR\abitness\x12\x14\n" +
-	"\x05model\x18\x06 \x01(\tR\x05model\x12\x16\n" +
-	"\x06source\x18\a \x01(\x05R\x06source\x12\x10\n" +
-	"\x03ext\x18c \x01(\tR\x03ext\"P\n" +
+	"\x05model\x18\x06 \x01(\tR\x05model\x12\x1b\n" +
+	"\x06source\x18\a \x01(\x05H\x01R\x06source\x88\x01\x01\x12\x10\n" +
+	"\x03ext\x18c \x01(\tR\x03extB\t\n" +
+	"\a_mobileB\t\n" +
+	"\a_source\"P\n" +
 	"\fBrandVersion\x12\x14\n" +
 	"\x05brand\x18\x01 \x01(\tR\x05brand\x12\x18\n" +
 	"\aversion\x18\x02 \x03(\tR\aversion\x12\x10\n" +
-	"\x03ext\x18c \x01(\tR\x03ext\"\xd5\x02\n" +
-	"\x03Geo\x12\x10\n" +
-	"\x03lat\x18\x01 \x01(\x01R\x03lat\x12\x10\n" +
-	"\x03lon\x18\x02 \x01(\x01R\x03lon\x12\x12\n" +
-	"\x04type\x18\x03 \x01(\x05R\x04type\x12\x1a\n" +
-	"\baccuracy\x18\x04 \x01(\x05R\baccuracy\x12\x18\n" +
-	"\alastfix\x18\x05 \x01(\x05R\alastfix\x12\x1c\n" +
-	"\tipservice\x18\x06 \x01(\x05R\tipservice\x12\x18\n" +
+	"\x03ext\x18c \x01(\tR\x03ext\"\xc6\x03\n" +
+	"\x03Geo\x12\x15\n" +
+	"\x03lat\x18\x01 \x01(\x01H\x00R\x03lat\x88\x01\x01\x12\x15\n" +
+	"\x03lon\x18\x02 \x01(\x01H\x01R\x03lon\x88\x01\x01\x12\x17\n" +
+	"\x04type\x18\x03 \x01(\x05H\x02R\x04type\x88\x01\x01\x12\x1f\n" +
+	"\baccuracy\x18\x04 \x01(\x05H\x03R\baccuracy\x88\x01\x01\x12\x1d\n" +
+	"\alastfix\x18\x05 \x01(\x05H\x04R\alastfix\x88\x01\x01\x12!\n" +
+	"\tipservice\x18\x06 \x01(\x05H\x05R\tipservice\x88\x01\x01\x12\x18\n" +
 	"\acountry\x18\a \x01(\tR\acountry\x12\x16\n" +
 	"\x06region\x18\b \x01(\tR\x06region\x12\x14\n" +
 	"\x05metro\x18\t \x01(\tR\x05metro\x12\x12\n" +
 	"\x04city\x18\n" +
 	" \x01(\tR\x04city\x12\x10\n" +
-	"\x03zip\x18\v \x01(\tR\x03zip\x12\x1c\n" +
-	"\tutcoffset\x18\f \x01(\x05R\tutcoffset\x12$\n" +
+	"\x03zip\x18\v \x01(\tR\x03zip\x12!\n" +
+	"\tutcoffset\x18\f \x01(\x05H\x06R\tutcoffset\x88\x01\x01\x12$\n" +
 	"\rregionfips104\x18\r \x01(\tR\rregionfips104\x12\x10\n" +
-	"\x03ext\x18c \x01(\tR\x03ext\"\x9f\x02\n" +
+	"\x03ext\x18c \x01(\tR\x03extB\x06\n" +
+	"\x04_latB\x06\n" +
+	"\x04_lonB\a\n" +
+	"\x05_typeB\v\n" +
+	"\t_accuracyB\n" +
+	"\n" +
+	"\b_lastfixB\f\n" +
+	"\n" +
+	"_ipserviceB\f\n" +
+	"\n" +
+	"_utcoffset\"\x9f\x02\n" +
 	"\x04User\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1a\n" +
 	"\bbuyeruid\x18\x02 \x01(\tR\bbuyeruid\x12\x1a\n" +
@@ -7332,45 +7739,53 @@ const file_oakrtb_v2_openrtb_proto_rawDesc = "" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x14\n" +
 	"\x05value\x18\x03 \x01(\tR\x05value\x12\x10\n" +
-	"\x03ext\x18c \x01(\tR\x03ext\"\x99\x01\n" +
+	"\x03ext\x18c \x01(\tR\x03ext\"\xa5\x01\n" +
 	"\x03EID\x12\x16\n" +
 	"\x06source\x18\x01 \x01(\tR\x06source\x12\"\n" +
 	"\x04uids\x18\x02 \x03(\v2\x0e.oakrtb.v2.UIDR\x04uids\x12\x1a\n" +
 	"\binserter\x18\x03 \x01(\tR\binserter\x12\x18\n" +
-	"\amatcher\x18\x04 \x01(\tR\amatcher\x12\x0e\n" +
-	"\x02mm\x18\x05 \x01(\x05R\x02mm\x12\x10\n" +
-	"\x03ext\x18c \x01(\tR\x03ext\"=\n" +
+	"\amatcher\x18\x04 \x01(\tR\amatcher\x12\x13\n" +
+	"\x02mm\x18\x05 \x01(\x05H\x00R\x02mm\x88\x01\x01\x12\x10\n" +
+	"\x03ext\x18c \x01(\tR\x03extB\x05\n" +
+	"\x03_mm\"L\n" +
 	"\x03UID\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\x12\x14\n" +
-	"\x05atype\x18\x02 \x01(\x05R\x05atype\x12\x10\n" +
-	"\x03ext\x18c \x01(\tR\x03ext\"\x84\x01\n" +
-	"\x06Source\x12\x0e\n" +
-	"\x02fd\x18\x01 \x01(\x05R\x02fd\x12\x10\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x19\n" +
+	"\x05atype\x18\x02 \x01(\x05H\x00R\x05atype\x88\x01\x01\x12\x10\n" +
+	"\x03ext\x18c \x01(\tR\x03extB\b\n" +
+	"\x06_atype\"\x90\x01\n" +
+	"\x06Source\x12\x13\n" +
+	"\x02fd\x18\x01 \x01(\x05H\x00R\x02fd\x88\x01\x01\x12\x10\n" +
 	"\x03tid\x18\x02 \x01(\tR\x03tid\x12\x16\n" +
 	"\x06pchain\x18\x03 \x01(\tR\x06pchain\x12.\n" +
 	"\x06schain\x18\x04 \x01(\v2\x16.oakrtb.v2.SupplyChainR\x06schain\x12\x10\n" +
-	"\x03ext\x18c \x01(\tR\x03ext\"\x7f\n" +
-	"\vSupplyChain\x12\x1a\n" +
-	"\bcomplete\x18\x01 \x01(\x05R\bcomplete\x120\n" +
+	"\x03ext\x18c \x01(\tR\x03extB\x05\n" +
+	"\x03_fd\"\x91\x01\n" +
+	"\vSupplyChain\x12\x1f\n" +
+	"\bcomplete\x18\x01 \x01(\x05H\x00R\bcomplete\x88\x01\x01\x120\n" +
 	"\x05nodes\x18\x02 \x03(\v2\x1a.oakrtb.v2.SupplyChainNodeR\x05nodes\x12\x10\n" +
 	"\x03ver\x18\x03 \x01(\tR\x03ver\x12\x10\n" +
-	"\x03ext\x18c \x01(\tR\x03ext\"\x95\x01\n" +
+	"\x03ext\x18c \x01(\tR\x03extB\v\n" +
+	"\t_complete\"\xa1\x01\n" +
 	"\x0fSupplyChainNode\x12\x10\n" +
 	"\x03asi\x18\x01 \x01(\tR\x03asi\x12\x10\n" +
 	"\x03sid\x18\x02 \x01(\tR\x03sid\x12\x10\n" +
 	"\x03rid\x18\x03 \x01(\tR\x03rid\x12\x12\n" +
 	"\x04name\x18\x04 \x01(\tR\x04name\x12\x16\n" +
-	"\x06domain\x18\x05 \x01(\tR\x06domain\x12\x0e\n" +
-	"\x02hp\x18\x06 \x01(\x05R\x02hp\x12\x10\n" +
-	"\x03ext\x18c \x01(\tR\x03ext\"\x8c\x01\n" +
-	"\x04Regs\x12\x14\n" +
-	"\x05coppa\x18\x01 \x01(\x05R\x05coppa\x12\x12\n" +
-	"\x04gdpr\x18\x02 \x01(\x05R\x04gdpr\x12\x1d\n" +
+	"\x06domain\x18\x05 \x01(\tR\x06domain\x12\x13\n" +
+	"\x02hp\x18\x06 \x01(\x05H\x00R\x02hp\x88\x01\x01\x12\x10\n" +
+	"\x03ext\x18c \x01(\tR\x03extB\x05\n" +
+	"\x03_hp\"\xab\x01\n" +
+	"\x04Regs\x12\x19\n" +
+	"\x05coppa\x18\x01 \x01(\x05H\x00R\x05coppa\x88\x01\x01\x12\x17\n" +
+	"\x04gdpr\x18\x02 \x01(\x05H\x01R\x04gdpr\x88\x01\x01\x12\x1e\n" +
 	"\n" +
-	"us_privacy\x18\x03 \x01(\tR\tusPrivacy\x12\x10\n" +
-	"\x03gpp\x18\x04 \x01(\tR\x03gpp\x12\x17\n" +
-	"\agpp_sid\x18\x05 \x03(\x05R\x06gppSid\x12\x10\n" +
-	"\x03ext\x18c \x01(\tR\x03ext\"\xb7\x01\n" +
+	"us_privacy\x18\x03 \x01(\tR\n" +
+	"us_privacy\x12\x10\n" +
+	"\x03gpp\x18\x04 \x01(\tR\x03gpp\x12\x18\n" +
+	"\agpp_sid\x18\x05 \x03(\x05R\agpp_sid\x12\x10\n" +
+	"\x03ext\x18c \x01(\tR\x03extB\b\n" +
+	"\x06_coppaB\a\n" +
+	"\x05_gdpr\"\xc4\x01\n" +
 	"\vBidResponse\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12,\n" +
 	"\aseatbid\x18\x02 \x03(\v2\x12.oakrtb.v2.SeatBidR\aseatbid\x12\x14\n" +
@@ -7378,18 +7793,20 @@ const file_oakrtb_v2_openrtb_proto_rawDesc = "" +
 	"\x03cur\x18\x04 \x01(\tR\x03cur\x12\x1e\n" +
 	"\n" +
 	"customdata\x18\x05 \x01(\tR\n" +
-	"customdata\x12\x10\n" +
-	"\x03nbr\x18\x06 \x01(\x05R\x03nbr\x12\x10\n" +
-	"\x03ext\x18c \x01(\tR\x03ext\"g\n" +
+	"customdata\x12\x15\n" +
+	"\x03nbr\x18\x06 \x01(\x05H\x00R\x03nbr\x88\x01\x01\x12\x10\n" +
+	"\x03ext\x18c \x01(\tR\x03extB\x06\n" +
+	"\x04_nbr\"v\n" +
 	"\aSeatBid\x12 \n" +
 	"\x03bid\x18\x01 \x03(\v2\x0e.oakrtb.v2.BidR\x03bid\x12\x12\n" +
-	"\x04seat\x18\x02 \x01(\tR\x04seat\x12\x14\n" +
-	"\x05group\x18\x03 \x01(\x05R\x05group\x12\x10\n" +
-	"\x03ext\x18c \x01(\tR\x03ext\"\xd4\x05\n" +
+	"\x04seat\x18\x02 \x01(\tR\x04seat\x12\x19\n" +
+	"\x05group\x18\x03 \x01(\x05H\x00R\x05group\x88\x01\x01\x12\x10\n" +
+	"\x03ext\x18c \x01(\tR\x03extB\b\n" +
+	"\x06_group\"\x80\a\n" +
 	"\x03Bid\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x14\n" +
-	"\x05impid\x18\x02 \x01(\tR\x05impid\x12\x14\n" +
-	"\x05price\x18\x03 \x01(\x01R\x05price\x12\x12\n" +
+	"\x05impid\x18\x02 \x01(\tR\x05impid\x12\x19\n" +
+	"\x05price\x18\x03 \x01(\x01H\x00R\x05price\x88\x01\x01\x12\x12\n" +
 	"\x04nurl\x18\x04 \x01(\tR\x04nurl\x12\x12\n" +
 	"\x04burl\x18\x05 \x01(\tR\x04burl\x12\x12\n" +
 	"\x04lurl\x18\x06 \x01(\tR\x04lurl\x12\x10\n" +
@@ -7401,25 +7818,38 @@ const file_oakrtb_v2_openrtb_proto_rawDesc = "" +
 	"\x04iurl\x18\v \x01(\tR\x04iurl\x12\x10\n" +
 	"\x03cid\x18\f \x01(\tR\x03cid\x12\x12\n" +
 	"\x04crid\x18\r \x01(\tR\x04crid\x12\x16\n" +
-	"\x06tactic\x18\x0e \x01(\tR\x06tactic\x12\x16\n" +
-	"\x06cattax\x18\x0f \x01(\x05R\x06cattax\x12\x10\n" +
+	"\x06tactic\x18\x0e \x01(\tR\x06tactic\x12\x1b\n" +
+	"\x06cattax\x18\x0f \x01(\x05H\x01R\x06cattax\x88\x01\x01\x12\x10\n" +
 	"\x03cat\x18\x10 \x03(\tR\x03cat\x12\x12\n" +
 	"\x04attr\x18\x11 \x03(\x05R\x04attr\x12\x12\n" +
-	"\x04apis\x18\x12 \x03(\x05R\x04apis\x12\x1a\n" +
-	"\bprotocol\x18\x13 \x01(\x05R\bprotocol\x12&\n" +
-	"\x0eqagmediarating\x18\x14 \x01(\x05R\x0eqagmediarating\x12\x1a\n" +
+	"\x04apis\x18\x12 \x03(\x05R\x04apis\x12\x1f\n" +
+	"\bprotocol\x18\x13 \x01(\x05H\x02R\bprotocol\x88\x01\x01\x12+\n" +
+	"\x0eqagmediarating\x18\x14 \x01(\x05H\x03R\x0eqagmediarating\x88\x01\x01\x12\x1a\n" +
 	"\blanguage\x18\x15 \x01(\tR\blanguage\x12\x14\n" +
 	"\x05langb\x18\x16 \x01(\tR\x05langb\x12\x16\n" +
-	"\x06dealid\x18\x17 \x01(\tR\x06dealid\x12\f\n" +
-	"\x01w\x18\x18 \x01(\x05R\x01w\x12\f\n" +
-	"\x01h\x18\x19 \x01(\x05R\x01h\x12\x16\n" +
-	"\x06wratio\x18\x1a \x01(\x05R\x06wratio\x12\x16\n" +
-	"\x06hratio\x18\x1b \x01(\x05R\x06hratio\x12\x10\n" +
-	"\x03exp\x18\x1c \x01(\x05R\x03exp\x12\x10\n" +
-	"\x03dur\x18\x1d \x01(\x05R\x03dur\x12+\n" +
-	"\x05mtype\x18\x1e \x01(\x0e2\x15.oakrtb.v2.MarkupTypeR\x05mtype\x12\x1c\n" +
-	"\tslotinpod\x18\x1f \x01(\x05R\tslotinpod\x12\x10\n" +
-	"\x03ext\x18c \x01(\tR\x03ext*\x87\x01\n" +
+	"\x06dealid\x18\x17 \x01(\tR\x06dealid\x12\x11\n" +
+	"\x01w\x18\x18 \x01(\x05H\x04R\x01w\x88\x01\x01\x12\x11\n" +
+	"\x01h\x18\x19 \x01(\x05H\x05R\x01h\x88\x01\x01\x12\x1b\n" +
+	"\x06wratio\x18\x1a \x01(\x05H\x06R\x06wratio\x88\x01\x01\x12\x1b\n" +
+	"\x06hratio\x18\x1b \x01(\x05H\aR\x06hratio\x88\x01\x01\x12\x15\n" +
+	"\x03exp\x18\x1c \x01(\x05H\bR\x03exp\x88\x01\x01\x12\x15\n" +
+	"\x03dur\x18\x1d \x01(\x05H\tR\x03dur\x88\x01\x01\x12+\n" +
+	"\x05mtype\x18\x1e \x01(\x0e2\x15.oakrtb.v2.MarkupTypeR\x05mtype\x12!\n" +
+	"\tslotinpod\x18\x1f \x01(\x05H\n" +
+	"R\tslotinpod\x88\x01\x01\x12\x10\n" +
+	"\x03ext\x18c \x01(\tR\x03extB\b\n" +
+	"\x06_priceB\t\n" +
+	"\a_cattaxB\v\n" +
+	"\t_protocolB\x11\n" +
+	"\x0f_qagmediaratingB\x04\n" +
+	"\x02_wB\x04\n" +
+	"\x02_hB\t\n" +
+	"\a_wratioB\t\n" +
+	"\a_hratioB\x06\n" +
+	"\x04_expB\x06\n" +
+	"\x04_durB\f\n" +
+	"\n" +
+	"_slotinpod*\x87\x01\n" +
 	"\n" +
 	"MarkupType\x12\x1b\n" +
 	"\x17MARKUP_TYPE_UNSPECIFIED\x10\x00\x12\x16\n" +
@@ -7666,8 +8096,26 @@ const file_oakrtb_v2_openrtb_proto_rawDesc = "" +
 	"\x1dUSER_AGENT_SOURCE_UNSPECIFIED\x10\x00\x12&\n" +
 	"\"USER_AGENT_SOURCE_CLIENT_HINTS_LOW\x10\x01\x12'\n" +
 	"#USER_AGENT_SOURCE_CLIENT_HINTS_HIGH\x10\x02\x12'\n" +
-	"#USER_AGENT_SOURCE_USER_AGENT_STRING\x10\x03B[\n" +
-	"\x15com.oakrtb.openrtb.v2B\fOpenRtbProtoP\x01Z2github.com/oakrtb/openrtb/sdk/go/oakrtb/v2;openrtbb\x06proto3"
+	"#USER_AGENT_SOURCE_USER_AGENT_STRING\x10\x03*\x9d\x01\n" +
+	"\x10PodDeduplication\x12\x1a\n" +
+	"\x16POD_DEDUPE_UNSPECIFIED\x10\x00\x12\x16\n" +
+	"\x12POD_DEDUPE_ADOMAIN\x10\x01\x12\x1b\n" +
+	"\x17POD_DEDUPE_IAB_CATEGORY\x10\x02\x12\x1a\n" +
+	"\x16POD_DEDUPE_CREATIVE_ID\x10\x03\x12\x1c\n" +
+	"\x18POD_DEDUPE_MEDIAFILE_URL\x10\x04*\x9b\x01\n" +
+	"\x12AutoRefreshTrigger\x12 \n" +
+	"\x1cAUTO_REFRESH_TRIGGER_UNKNOWN\x10\x00\x12$\n" +
+	" AUTO_REFRESH_TRIGGER_USER_ACTION\x10\x01\x12\x1e\n" +
+	"\x1aAUTO_REFRESH_TRIGGER_EVENT\x10\x02\x12\x1d\n" +
+	"\x19AUTO_REFRESH_TRIGGER_TIME\x10\x03*\xd3\x01\n" +
+	"\rIdMatchMethod\x12\x1b\n" +
+	"\x17ID_MATCH_METHOD_UNKNOWN\x10\x00\x12\x1c\n" +
+	"\x18ID_MATCH_METHOD_NO_MATCH\x10\x01\x12'\n" +
+	"#ID_MATCH_METHOD_BROWSER_COOKIE_SYNC\x10\x02\x12!\n" +
+	"\x1dID_MATCH_METHOD_AUTHENTICATED\x10\x03\x12\x1c\n" +
+	"\x18ID_MATCH_METHOD_OBSERVED\x10\x04\x12\x1d\n" +
+	"\x19ID_MATCH_METHOD_INFERENCE\x10\x05BZ\n" +
+	"\x15com.oakrtb.openrtb.v2B\fOpenRtbProtoP\x01Z1github.com/oakrtb/oakrtb/sdk/go/oakrtb/v2;openrtbb\x06proto3"
 
 var (
 	file_oakrtb_v2_openrtb_proto_rawDescOnce sync.Once
@@ -7681,7 +8129,7 @@ func file_oakrtb_v2_openrtb_proto_rawDescGZIP() []byte {
 	return file_oakrtb_v2_openrtb_proto_rawDescData
 }
 
-var file_oakrtb_v2_openrtb_proto_enumTypes = make([]protoimpl.EnumInfo, 34)
+var file_oakrtb_v2_openrtb_proto_enumTypes = make([]protoimpl.EnumInfo, 37)
 var file_oakrtb_v2_openrtb_proto_msgTypes = make([]protoimpl.MessageInfo, 38)
 var file_oakrtb_v2_openrtb_proto_goTypes = []any{
 	(MarkupType)(0),              // 0: oakrtb.v2.MarkupType
@@ -7718,93 +8166,96 @@ var file_oakrtb_v2_openrtb_proto_goTypes = []any{
 	(PodSequence)(0),             // 31: oakrtb.v2.PodSequence
 	(SourceRelationship)(0),      // 32: oakrtb.v2.SourceRelationship
 	(UserAgentSource)(0),         // 33: oakrtb.v2.UserAgentSource
-	(*BidRequest)(nil),           // 34: oakrtb.v2.BidRequest
-	(*Imp)(nil),                  // 35: oakrtb.v2.Imp
-	(*Metric)(nil),               // 36: oakrtb.v2.Metric
-	(*Banner)(nil),               // 37: oakrtb.v2.Banner
-	(*Format)(nil),               // 38: oakrtb.v2.Format
-	(*Video)(nil),                // 39: oakrtb.v2.Video
-	(*Audio)(nil),                // 40: oakrtb.v2.Audio
-	(*Native)(nil),               // 41: oakrtb.v2.Native
-	(*Pmp)(nil),                  // 42: oakrtb.v2.Pmp
-	(*Deal)(nil),                 // 43: oakrtb.v2.Deal
-	(*Qty)(nil),                  // 44: oakrtb.v2.Qty
-	(*DurFloors)(nil),            // 45: oakrtb.v2.DurFloors
-	(*Refresh)(nil),              // 46: oakrtb.v2.Refresh
-	(*RefSettings)(nil),          // 47: oakrtb.v2.RefSettings
-	(*Site)(nil),                 // 48: oakrtb.v2.Site
-	(*App)(nil),                  // 49: oakrtb.v2.App
-	(*Dooh)(nil),                 // 50: oakrtb.v2.Dooh
-	(*Publisher)(nil),            // 51: oakrtb.v2.Publisher
-	(*Producer)(nil),             // 52: oakrtb.v2.Producer
-	(*Content)(nil),              // 53: oakrtb.v2.Content
-	(*Network)(nil),              // 54: oakrtb.v2.Network
-	(*Channel)(nil),              // 55: oakrtb.v2.Channel
-	(*Device)(nil),               // 56: oakrtb.v2.Device
-	(*UserAgent)(nil),            // 57: oakrtb.v2.UserAgent
-	(*BrandVersion)(nil),         // 58: oakrtb.v2.BrandVersion
-	(*Geo)(nil),                  // 59: oakrtb.v2.Geo
-	(*User)(nil),                 // 60: oakrtb.v2.User
-	(*Data)(nil),                 // 61: oakrtb.v2.Data
-	(*Segment)(nil),              // 62: oakrtb.v2.Segment
-	(*EID)(nil),                  // 63: oakrtb.v2.EID
-	(*UID)(nil),                  // 64: oakrtb.v2.UID
-	(*Source)(nil),               // 65: oakrtb.v2.Source
-	(*SupplyChain)(nil),          // 66: oakrtb.v2.SupplyChain
-	(*SupplyChainNode)(nil),      // 67: oakrtb.v2.SupplyChainNode
-	(*Regs)(nil),                 // 68: oakrtb.v2.Regs
-	(*BidResponse)(nil),          // 69: oakrtb.v2.BidResponse
-	(*SeatBid)(nil),              // 70: oakrtb.v2.SeatBid
-	(*Bid)(nil),                  // 71: oakrtb.v2.Bid
+	(PodDeduplication)(0),        // 34: oakrtb.v2.PodDeduplication
+	(AutoRefreshTrigger)(0),      // 35: oakrtb.v2.AutoRefreshTrigger
+	(IdMatchMethod)(0),           // 36: oakrtb.v2.IdMatchMethod
+	(*BidRequest)(nil),           // 37: oakrtb.v2.BidRequest
+	(*Imp)(nil),                  // 38: oakrtb.v2.Imp
+	(*Metric)(nil),               // 39: oakrtb.v2.Metric
+	(*Banner)(nil),               // 40: oakrtb.v2.Banner
+	(*Format)(nil),               // 41: oakrtb.v2.Format
+	(*Video)(nil),                // 42: oakrtb.v2.Video
+	(*Audio)(nil),                // 43: oakrtb.v2.Audio
+	(*Native)(nil),               // 44: oakrtb.v2.Native
+	(*Pmp)(nil),                  // 45: oakrtb.v2.Pmp
+	(*Deal)(nil),                 // 46: oakrtb.v2.Deal
+	(*Qty)(nil),                  // 47: oakrtb.v2.Qty
+	(*DurFloors)(nil),            // 48: oakrtb.v2.DurFloors
+	(*Refresh)(nil),              // 49: oakrtb.v2.Refresh
+	(*RefSettings)(nil),          // 50: oakrtb.v2.RefSettings
+	(*Site)(nil),                 // 51: oakrtb.v2.Site
+	(*App)(nil),                  // 52: oakrtb.v2.App
+	(*Dooh)(nil),                 // 53: oakrtb.v2.Dooh
+	(*Publisher)(nil),            // 54: oakrtb.v2.Publisher
+	(*Producer)(nil),             // 55: oakrtb.v2.Producer
+	(*Content)(nil),              // 56: oakrtb.v2.Content
+	(*Network)(nil),              // 57: oakrtb.v2.Network
+	(*Channel)(nil),              // 58: oakrtb.v2.Channel
+	(*Device)(nil),               // 59: oakrtb.v2.Device
+	(*UserAgent)(nil),            // 60: oakrtb.v2.UserAgent
+	(*BrandVersion)(nil),         // 61: oakrtb.v2.BrandVersion
+	(*Geo)(nil),                  // 62: oakrtb.v2.Geo
+	(*User)(nil),                 // 63: oakrtb.v2.User
+	(*Data)(nil),                 // 64: oakrtb.v2.Data
+	(*Segment)(nil),              // 65: oakrtb.v2.Segment
+	(*EID)(nil),                  // 66: oakrtb.v2.EID
+	(*UID)(nil),                  // 67: oakrtb.v2.UID
+	(*Source)(nil),               // 68: oakrtb.v2.Source
+	(*SupplyChain)(nil),          // 69: oakrtb.v2.SupplyChain
+	(*SupplyChainNode)(nil),      // 70: oakrtb.v2.SupplyChainNode
+	(*Regs)(nil),                 // 71: oakrtb.v2.Regs
+	(*BidResponse)(nil),          // 72: oakrtb.v2.BidResponse
+	(*SeatBid)(nil),              // 73: oakrtb.v2.SeatBid
+	(*Bid)(nil),                  // 74: oakrtb.v2.Bid
 }
 var file_oakrtb_v2_openrtb_proto_depIdxs = []int32{
-	35, // 0: oakrtb.v2.BidRequest.imp:type_name -> oakrtb.v2.Imp
-	48, // 1: oakrtb.v2.BidRequest.site:type_name -> oakrtb.v2.Site
-	49, // 2: oakrtb.v2.BidRequest.app:type_name -> oakrtb.v2.App
-	50, // 3: oakrtb.v2.BidRequest.dooh:type_name -> oakrtb.v2.Dooh
-	56, // 4: oakrtb.v2.BidRequest.device:type_name -> oakrtb.v2.Device
-	60, // 5: oakrtb.v2.BidRequest.user:type_name -> oakrtb.v2.User
-	65, // 6: oakrtb.v2.BidRequest.source:type_name -> oakrtb.v2.Source
-	68, // 7: oakrtb.v2.BidRequest.regs:type_name -> oakrtb.v2.Regs
-	36, // 8: oakrtb.v2.Imp.metric:type_name -> oakrtb.v2.Metric
-	37, // 9: oakrtb.v2.Imp.banner:type_name -> oakrtb.v2.Banner
-	39, // 10: oakrtb.v2.Imp.video:type_name -> oakrtb.v2.Video
-	40, // 11: oakrtb.v2.Imp.audio:type_name -> oakrtb.v2.Audio
-	41, // 12: oakrtb.v2.Imp.native:type_name -> oakrtb.v2.Native
-	42, // 13: oakrtb.v2.Imp.pmp:type_name -> oakrtb.v2.Pmp
-	44, // 14: oakrtb.v2.Imp.qty:type_name -> oakrtb.v2.Qty
-	46, // 15: oakrtb.v2.Imp.refresh:type_name -> oakrtb.v2.Refresh
-	38, // 16: oakrtb.v2.Banner.format:type_name -> oakrtb.v2.Format
-	37, // 17: oakrtb.v2.Video.companionad:type_name -> oakrtb.v2.Banner
-	45, // 18: oakrtb.v2.Video.durfloors:type_name -> oakrtb.v2.DurFloors
-	37, // 19: oakrtb.v2.Audio.companionad:type_name -> oakrtb.v2.Banner
-	45, // 20: oakrtb.v2.Audio.durfloors:type_name -> oakrtb.v2.DurFloors
-	43, // 21: oakrtb.v2.Pmp.deals:type_name -> oakrtb.v2.Deal
-	45, // 22: oakrtb.v2.Deal.durfloors:type_name -> oakrtb.v2.DurFloors
-	47, // 23: oakrtb.v2.Refresh.refsettings:type_name -> oakrtb.v2.RefSettings
-	51, // 24: oakrtb.v2.Site.publisher:type_name -> oakrtb.v2.Publisher
-	53, // 25: oakrtb.v2.Site.content:type_name -> oakrtb.v2.Content
-	51, // 26: oakrtb.v2.App.publisher:type_name -> oakrtb.v2.Publisher
-	53, // 27: oakrtb.v2.App.content:type_name -> oakrtb.v2.Content
-	51, // 28: oakrtb.v2.Dooh.publisher:type_name -> oakrtb.v2.Publisher
-	53, // 29: oakrtb.v2.Dooh.content:type_name -> oakrtb.v2.Content
-	52, // 30: oakrtb.v2.Content.producer:type_name -> oakrtb.v2.Producer
-	61, // 31: oakrtb.v2.Content.data:type_name -> oakrtb.v2.Data
-	54, // 32: oakrtb.v2.Content.network:type_name -> oakrtb.v2.Network
-	55, // 33: oakrtb.v2.Content.channel:type_name -> oakrtb.v2.Channel
-	59, // 34: oakrtb.v2.Device.geo:type_name -> oakrtb.v2.Geo
-	57, // 35: oakrtb.v2.Device.sua:type_name -> oakrtb.v2.UserAgent
-	58, // 36: oakrtb.v2.UserAgent.browsers:type_name -> oakrtb.v2.BrandVersion
-	58, // 37: oakrtb.v2.UserAgent.platform:type_name -> oakrtb.v2.BrandVersion
-	59, // 38: oakrtb.v2.User.geo:type_name -> oakrtb.v2.Geo
-	61, // 39: oakrtb.v2.User.data:type_name -> oakrtb.v2.Data
-	63, // 40: oakrtb.v2.User.eids:type_name -> oakrtb.v2.EID
-	62, // 41: oakrtb.v2.Data.segment:type_name -> oakrtb.v2.Segment
-	64, // 42: oakrtb.v2.EID.uids:type_name -> oakrtb.v2.UID
-	66, // 43: oakrtb.v2.Source.schain:type_name -> oakrtb.v2.SupplyChain
-	67, // 44: oakrtb.v2.SupplyChain.nodes:type_name -> oakrtb.v2.SupplyChainNode
-	70, // 45: oakrtb.v2.BidResponse.seatbid:type_name -> oakrtb.v2.SeatBid
-	71, // 46: oakrtb.v2.SeatBid.bid:type_name -> oakrtb.v2.Bid
+	38, // 0: oakrtb.v2.BidRequest.imp:type_name -> oakrtb.v2.Imp
+	51, // 1: oakrtb.v2.BidRequest.site:type_name -> oakrtb.v2.Site
+	52, // 2: oakrtb.v2.BidRequest.app:type_name -> oakrtb.v2.App
+	53, // 3: oakrtb.v2.BidRequest.dooh:type_name -> oakrtb.v2.Dooh
+	59, // 4: oakrtb.v2.BidRequest.device:type_name -> oakrtb.v2.Device
+	63, // 5: oakrtb.v2.BidRequest.user:type_name -> oakrtb.v2.User
+	68, // 6: oakrtb.v2.BidRequest.source:type_name -> oakrtb.v2.Source
+	71, // 7: oakrtb.v2.BidRequest.regs:type_name -> oakrtb.v2.Regs
+	39, // 8: oakrtb.v2.Imp.metric:type_name -> oakrtb.v2.Metric
+	40, // 9: oakrtb.v2.Imp.banner:type_name -> oakrtb.v2.Banner
+	42, // 10: oakrtb.v2.Imp.video:type_name -> oakrtb.v2.Video
+	43, // 11: oakrtb.v2.Imp.audio:type_name -> oakrtb.v2.Audio
+	44, // 12: oakrtb.v2.Imp.native:type_name -> oakrtb.v2.Native
+	45, // 13: oakrtb.v2.Imp.pmp:type_name -> oakrtb.v2.Pmp
+	47, // 14: oakrtb.v2.Imp.qty:type_name -> oakrtb.v2.Qty
+	49, // 15: oakrtb.v2.Imp.refresh:type_name -> oakrtb.v2.Refresh
+	41, // 16: oakrtb.v2.Banner.format:type_name -> oakrtb.v2.Format
+	40, // 17: oakrtb.v2.Video.companionad:type_name -> oakrtb.v2.Banner
+	48, // 18: oakrtb.v2.Video.durfloors:type_name -> oakrtb.v2.DurFloors
+	40, // 19: oakrtb.v2.Audio.companionad:type_name -> oakrtb.v2.Banner
+	48, // 20: oakrtb.v2.Audio.durfloors:type_name -> oakrtb.v2.DurFloors
+	46, // 21: oakrtb.v2.Pmp.deals:type_name -> oakrtb.v2.Deal
+	48, // 22: oakrtb.v2.Deal.durfloors:type_name -> oakrtb.v2.DurFloors
+	50, // 23: oakrtb.v2.Refresh.refsettings:type_name -> oakrtb.v2.RefSettings
+	54, // 24: oakrtb.v2.Site.publisher:type_name -> oakrtb.v2.Publisher
+	56, // 25: oakrtb.v2.Site.content:type_name -> oakrtb.v2.Content
+	54, // 26: oakrtb.v2.App.publisher:type_name -> oakrtb.v2.Publisher
+	56, // 27: oakrtb.v2.App.content:type_name -> oakrtb.v2.Content
+	54, // 28: oakrtb.v2.Dooh.publisher:type_name -> oakrtb.v2.Publisher
+	56, // 29: oakrtb.v2.Dooh.content:type_name -> oakrtb.v2.Content
+	55, // 30: oakrtb.v2.Content.producer:type_name -> oakrtb.v2.Producer
+	64, // 31: oakrtb.v2.Content.data:type_name -> oakrtb.v2.Data
+	57, // 32: oakrtb.v2.Content.network:type_name -> oakrtb.v2.Network
+	58, // 33: oakrtb.v2.Content.channel:type_name -> oakrtb.v2.Channel
+	62, // 34: oakrtb.v2.Device.geo:type_name -> oakrtb.v2.Geo
+	60, // 35: oakrtb.v2.Device.sua:type_name -> oakrtb.v2.UserAgent
+	61, // 36: oakrtb.v2.UserAgent.browsers:type_name -> oakrtb.v2.BrandVersion
+	61, // 37: oakrtb.v2.UserAgent.platform:type_name -> oakrtb.v2.BrandVersion
+	62, // 38: oakrtb.v2.User.geo:type_name -> oakrtb.v2.Geo
+	64, // 39: oakrtb.v2.User.data:type_name -> oakrtb.v2.Data
+	66, // 40: oakrtb.v2.User.eids:type_name -> oakrtb.v2.EID
+	65, // 41: oakrtb.v2.Data.segment:type_name -> oakrtb.v2.Segment
+	67, // 42: oakrtb.v2.EID.uids:type_name -> oakrtb.v2.UID
+	69, // 43: oakrtb.v2.Source.schain:type_name -> oakrtb.v2.SupplyChain
+	70, // 44: oakrtb.v2.SupplyChain.nodes:type_name -> oakrtb.v2.SupplyChainNode
+	73, // 45: oakrtb.v2.BidResponse.seatbid:type_name -> oakrtb.v2.SeatBid
+	74, // 46: oakrtb.v2.SeatBid.bid:type_name -> oakrtb.v2.Bid
 	0,  // 47: oakrtb.v2.Bid.mtype:type_name -> oakrtb.v2.MarkupType
 	48, // [48:48] is the sub-list for method output_type
 	48, // [48:48] is the sub-list for method input_type
@@ -7818,12 +8269,43 @@ func file_oakrtb_v2_openrtb_proto_init() {
 	if File_oakrtb_v2_openrtb_proto != nil {
 		return
 	}
+	file_oakrtb_v2_openrtb_proto_msgTypes[0].OneofWrappers = []any{}
+	file_oakrtb_v2_openrtb_proto_msgTypes[1].OneofWrappers = []any{}
+	file_oakrtb_v2_openrtb_proto_msgTypes[2].OneofWrappers = []any{}
+	file_oakrtb_v2_openrtb_proto_msgTypes[3].OneofWrappers = []any{}
+	file_oakrtb_v2_openrtb_proto_msgTypes[4].OneofWrappers = []any{}
+	file_oakrtb_v2_openrtb_proto_msgTypes[5].OneofWrappers = []any{}
+	file_oakrtb_v2_openrtb_proto_msgTypes[6].OneofWrappers = []any{}
+	file_oakrtb_v2_openrtb_proto_msgTypes[8].OneofWrappers = []any{}
+	file_oakrtb_v2_openrtb_proto_msgTypes[9].OneofWrappers = []any{}
+	file_oakrtb_v2_openrtb_proto_msgTypes[10].OneofWrappers = []any{}
+	file_oakrtb_v2_openrtb_proto_msgTypes[11].OneofWrappers = []any{}
+	file_oakrtb_v2_openrtb_proto_msgTypes[12].OneofWrappers = []any{}
+	file_oakrtb_v2_openrtb_proto_msgTypes[13].OneofWrappers = []any{}
+	file_oakrtb_v2_openrtb_proto_msgTypes[14].OneofWrappers = []any{}
+	file_oakrtb_v2_openrtb_proto_msgTypes[15].OneofWrappers = []any{}
+	file_oakrtb_v2_openrtb_proto_msgTypes[16].OneofWrappers = []any{}
+	file_oakrtb_v2_openrtb_proto_msgTypes[17].OneofWrappers = []any{}
+	file_oakrtb_v2_openrtb_proto_msgTypes[18].OneofWrappers = []any{}
+	file_oakrtb_v2_openrtb_proto_msgTypes[19].OneofWrappers = []any{}
+	file_oakrtb_v2_openrtb_proto_msgTypes[22].OneofWrappers = []any{}
+	file_oakrtb_v2_openrtb_proto_msgTypes[23].OneofWrappers = []any{}
+	file_oakrtb_v2_openrtb_proto_msgTypes[25].OneofWrappers = []any{}
+	file_oakrtb_v2_openrtb_proto_msgTypes[29].OneofWrappers = []any{}
+	file_oakrtb_v2_openrtb_proto_msgTypes[30].OneofWrappers = []any{}
+	file_oakrtb_v2_openrtb_proto_msgTypes[31].OneofWrappers = []any{}
+	file_oakrtb_v2_openrtb_proto_msgTypes[32].OneofWrappers = []any{}
+	file_oakrtb_v2_openrtb_proto_msgTypes[33].OneofWrappers = []any{}
+	file_oakrtb_v2_openrtb_proto_msgTypes[34].OneofWrappers = []any{}
+	file_oakrtb_v2_openrtb_proto_msgTypes[35].OneofWrappers = []any{}
+	file_oakrtb_v2_openrtb_proto_msgTypes[36].OneofWrappers = []any{}
+	file_oakrtb_v2_openrtb_proto_msgTypes[37].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_oakrtb_v2_openrtb_proto_rawDesc), len(file_oakrtb_v2_openrtb_proto_rawDesc)),
-			NumEnums:      34,
+			NumEnums:      37,
 			NumMessages:   38,
 			NumExtensions: 0,
 			NumServices:   0,

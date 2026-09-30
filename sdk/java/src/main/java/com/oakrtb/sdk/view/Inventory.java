@@ -1,26 +1,26 @@
 package com.oakrtb.sdk.view;
 
 /**
- * 竞价请求的库存面（site / app / dooh，三者互斥）。
+ * Auction request inventory type (site / app / dooh, mutually exclusive).
  *
- * <p>用于 {@link RequestViews} 与 {@link RequestPipeline} 判断流量来源类型。
+ * <p>Used by {@link RequestView} to identify the traffic source type.
  *
- * <p><b>注意：</b>本枚举与 proto {@code Content.Channel} 无关，仅表示 BidRequest 顶层的库存对象类型。
+ * <p><b>Note:</b> unrelated to proto {@code Content.Channel}; identifies only the top-level BidRequest inventory object type.
  */
 public enum Inventory {
-  /** 未设置 site/app/dooh。 */
+  /** No site/app/dooh is set. */
   NONE,
-  /** Web 站点库存。 */
+  /** Website inventory. */
   SITE,
-  /** 移动应用库存。 */
+  /** Mobile app inventory. */
   APP,
-  /** 数字户外（DOOH）库存。 */
+  /** Digital out-of-home (DOOH) inventory. */
   DOOH;
 
   /**
-   * 返回小写 wire 风格字符串（site/app/dooh/none）。
+   * Returns a lowercase wire-style string (site/app/dooh/none).
    *
-   * @return 库存类型字符串
+   * @return the inventory type string
    */
   @Override
   public String toString() {

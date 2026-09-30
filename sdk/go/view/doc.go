@@ -1,10 +1,13 @@
-// Package view 提供轻量级 BidRequest / BidResponse 视图流水线：
-// LightGate → SharedView → ImpView/BidView，以及 RequestPipeline / ResponsePipeline
-// 编排并在 Snapshot 中产出可查询结果。
+// Package view provides read-only query views of BidRequest / BidResponse.
+// NewRequest / NewResponse perform basic validation and construct RequestView / ResponseView,
+// providing shared fields, impressions, bids, and summary queries. Each entry point validates and constructs the view once.
 //
-// 不执行完整 JSON Schema 校验——请使用 schema 包。
+// Full JSON Schema validation is not performed; use the jsonschema package.
 //
-// 命名说明：view.MarkupMask 表示 Imp 上的 markup 类型位掩码，与 proto 中的
-// Format（Banner 尺寸条目）不同；view.Inventory 表示请求级库存面（site/app/dooh），
-// 与 proto Content.Channel（内容分发渠道）不同。
+// Naming: view.MarkupMask is a bitmask of markup types on an Imp, distinct from the proto
+// Format (Banner size entry); view.Inventory is the request inventory type (site/app/dooh),
+// distinct from proto Content.Channel (content distribution channel).
+//
+// NewRequest/NewResponse borrow their input: the original object and view must remain read-only while in use.
+// Use NewRequestCopy/NewResponseCopy if the input will be modified later; views themselves must still be treated as read-only.
 package view

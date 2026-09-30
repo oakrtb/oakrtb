@@ -1,72 +1,100 @@
-//! 轻量 BidRequest / BidResponse View 流水线（匹配 / 出价 / 响应决策）。
+//! Lightweight BidRequest / BidResponse query views for matching, bidding, and response decisions.
 //!
-//! 基于 OpenRTB JSON（[`serde_json::Value`]），**不**运行完整 JSON Schema——
-//! 权威校验请用 [`crate::schema`]。
+//! Uses strongly typed models generated from the same proto definitions; does **not** perform full JSON Schema validation.
+//! Use [`crate::jsonschema`] for contract validation.
 //!
-//! 核心概念：
-//! - [`MarkupMask`]：Imp 上存在的展示类型位掩码（对应 `Bid.mtype` 1–4），
-//!   **不是** `Banner.format[]`（尺寸列表）。
-//! - [`Inventory`]：BidRequest 级库存面（site/app/dooh 互斥），
-//!   **不是** protobuf `Content.Channel` 或 OpenRTB `Content` 对象。
+//! Core concepts:
+//! - [`MarkupMask`]: bitmask of presentation types on an Imp (corresponding to `Bid.mtype` 1–4),
+//!   distinct from `Banner.format[]` (size list).
+//! - [`Inventory`]: BidRequest-level inventory type (site/app/dooh, mutually exclusive),
+//!   distinct from protobuf `Content.Channel` or the OpenRTB `Content` object.
 
+use std::sync::Arc;
 use std::time::{Duration, Instant};
 
-use serde_json::Value;
+use crate::proto::*;
+use crate::validation;
 
-/// Imp 上存在的展示类型位掩码（banner / video / audio / native）。
+/// Bitmask of presentation types on an Imp (banner / video / audio / native).
 ///
-/// 与 OpenRTB `Bid.mtype` 一一对应：`BANNER=1`、`VIDEO=2`、`AUDIO=3`、`NATIVE=4`。
+/// Corresponds to OpenRTB `Bid.mtype`: `BANNER=1`, `VIDEO=2`, `AUDIO=3`, `NATIVE=4`.
 ///
-/// **注意**：本类型表示 Imp 上挂载的展示对象类型，与 `Banner.format[]`
-///（允许的尺寸列表）是不同概念；后者仅描述 Banner 创意尺寸，不表示展示类型。
+/// **Note**: identifies presentation object types attached to an Imp, distinct from `Banner.format[]`
+/// (the allowed size list), which describes Banner creative dimensions rather than presentation types.
 #[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
 pub struct MarkupMask(u8);
 
 impl MarkupMask {
-    /// 空掩码（无展示类型）。
+    pub fn from_imp(imp: &Imp) -> MarkupMask {
+        let mut mask = MarkupMask::NONE;
+        if imp.banner.is_some() {
+            mask |= MarkupMask::BANNER;
+        }
+        if imp.video.is_some() {
+            mask |= MarkupMask::VIDEO;
+        }
+        if imp.audio.is_some() {
+            mask |= MarkupMask::AUDIO;
+        }
+        if imp.native.is_some() {
+            mask |= MarkupMask::NATIVE;
+        }
+        mask
+    }
+    pub fn from_mtype(mtype: i32) -> MarkupMask {
+        match mtype {
+            1 => MarkupMask::BANNER,
+            2 => MarkupMask::VIDEO,
+            3 => MarkupMask::AUDIO,
+            4 => MarkupMask::NATIVE,
+            _ => MarkupMask::NONE,
+        }
+    }
+
+    /// Empty mask (no presentation types).
     pub const NONE: MarkupMask = MarkupMask(0);
-    /// Banner（`Bid.mtype = 1`）。
+    /// Banner (`Bid.mtype = 1`).
     pub const BANNER: MarkupMask = MarkupMask(1 << 0);
-    /// Video（`Bid.mtype = 2`）。
+    /// Video (`Bid.mtype = 2`).
     pub const VIDEO: MarkupMask = MarkupMask(1 << 1);
-    /// Audio（`Bid.mtype = 3`）。
+    /// Audio (`Bid.mtype = 3`).
     pub const AUDIO: MarkupMask = MarkupMask(1 << 2);
-    /// Native（`Bid.mtype = 4`）。
+    /// Native (`Bid.mtype = 4`).
     pub const NATIVE: MarkupMask = MarkupMask(1 << 3);
 
-    /// 返回底层位值。
+    /// Returns the underlying bits.
     pub fn bits(self) -> u8 {
         self.0
     }
 
-    /// 是否包含 `flag` 所表示的类型。
+    /// Reports whether the type represented by `flag` is present.
     pub fn has(self, flag: MarkupMask) -> bool {
         self.0 & flag.0 != 0
     }
 
-    /// 是否含 Banner 位。
+    /// Reports whether the Banner bit is set.
     pub fn has_banner(self) -> bool {
         self.has(Self::BANNER)
     }
-    /// 是否含 Video 位。
+    /// Reports whether the Video bit is set.
     pub fn has_video(self) -> bool {
         self.has(Self::VIDEO)
     }
-    /// 是否含 Audio 位。
+    /// Reports whether the Audio bit is set.
     pub fn has_audio(self) -> bool {
         self.has(Self::AUDIO)
     }
-    /// 是否含 Native 位。
+    /// Reports whether the Native bit is set.
     pub fn has_native(self) -> bool {
         self.has(Self::NATIVE)
     }
 
-    /// 已置位的类型数量。
+    /// Number of set type bits.
     pub fn count(self) -> u32 {
         self.0.count_ones()
     }
 
-    /// 当且仅当恰好一种类型时返回该掩码，否则 [`Self::NONE`]。
+    /// Returns the mask only when exactly one type is set, otherwise [`Self::NONE`].
     pub fn primary(self) -> MarkupMask {
         if self.count() == 1 {
             self
@@ -75,7 +103,7 @@ impl MarkupMask {
         }
     }
 
-    /// 推断 OpenRTB `Bid.mtype`；多格式或空 → 0。
+    /// Infers OpenRTB `Bid.mtype`; returns 0 for multiple or no formats.
     pub fn mtype(self) -> i32 {
         match self.primary() {
             Self::BANNER => 1,
@@ -100,27 +128,27 @@ impl std::ops::BitOrAssign for MarkupMask {
     }
 }
 
-/// BidRequest 库存面（site / app / dooh，互斥）。
+/// BidRequest inventory type (site / app / dooh, mutually exclusive).
 ///
-/// 由顶层 `site`、`app`、`dooh` 字段推断，表示**库存载体**。
+/// Inferred from top-level `site`, `app`, and `dooh` fields to identify the **inventory medium**.
 ///
-/// **注意**：与 protobuf 模型中的 `Content.Channel`、OpenRTB `Content` 对象
-/// 或 `ContentBuilder` 无关；后者描述内容元数据，不是库存类型。
+/// **Note**: distinct from protobuf `Content.Channel`, the OpenRTB `Content` object,
+/// and `ContentBuilder`, which describe content metadata rather than inventory type.
 #[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
 pub enum Inventory {
-    /// 未指定 site/app/dooh。
+    /// No site/app/dooh is specified.
     #[default]
     None,
-    /// Web 站点库存（`BidRequest.site`）。
+    /// Website inventory (`BidRequest.site`).
     Site,
-    /// 移动/App 库存（`BidRequest.app`）。
+    /// Mobile/app inventory (`BidRequest.app`).
     App,
-    /// 数字户外库存（`BidRequest.dooh`）。
+    /// Digital out-of-home inventory (`BidRequest.dooh`).
     Dooh,
 }
 
 impl Inventory {
-    /// 返回 `"site"` / `"app"` / `"dooh"` / `"none"`。
+    /// Returns `"site"` / `"app"` / `"dooh"` / `"none"`.
     pub fn as_str(self) -> &'static str {
         match self {
             Inventory::Site => "site",
@@ -131,447 +159,187 @@ impl Inventory {
     }
 }
 
-/// 拍卖级共享视图；`req` 为原始 JSON 对象引用。
-#[derive(Clone, Debug)]
-pub struct RequestSharedView<'a> {
-    /// 原始 BidRequest JSON。
-    pub req: &'a Value,
-    /// 拍卖 id。
-    pub id: &'a str,
-    /// 拍卖类型 `at`。
-    pub at: i64,
-    /// 允许的货币列表。
-    pub cur: &'a [Value],
-    /// 最大处理时间（毫秒）。
-    pub tmax: i64,
-    /// 是否测试流量。
-    pub test: i64,
-    /// 库存类型（site/app/dooh）。
-    pub inventory: Inventory,
-    /// 当 `tmax > 0` 时：view 开始时刻 + 85% × tmax。
-    pub deadline: Option<Instant>,
-    /// `site` 对象（若存在）。
-    pub site: Option<&'a Value>,
-    /// `app` 对象（若存在）。
-    pub app: Option<&'a Value>,
-    /// `dooh` 对象（若存在）。
-    pub dooh: Option<&'a Value>,
-    /// `device` 对象（若存在）。
-    pub device: Option<&'a Value>,
-    /// `user` 对象（若存在）。
-    pub user: Option<&'a Value>,
-    /// `regs` 对象（若存在）。
-    pub regs: Option<&'a Value>,
-    /// `source` 对象（若存在）。
-    pub source: Option<&'a Value>,
-    /// 屏蔽类别 `bcat`。
-    pub bcat: &'a [Value],
-    /// 屏蔽广告主域名 `badv`。
-    pub badv: &'a [Value],
-    /// 屏蔽 app bundle `bapp`。
-    pub bapp: &'a [Value],
-}
-
-impl RequestSharedView<'_> {
-    /// 是否已超过 85% tmax 截止时间。
-    pub fn past_deadline(&self) -> bool {
-        self.deadline
-            .map(|d| Instant::now() > d)
-            .unwrap_or(false)
-    }
-}
-
-/// 单条 Imp 视图（含 [`MarkupMask`]）。
+/// View of one Imp, including its [`MarkupMask`].
 #[derive(Clone, Debug)]
 pub struct ImpView<'a> {
-    /// 原始 Imp JSON。
-    pub imp: &'a Value,
-    /// Imp id。
+    /// Original Imp model.
+    pub imp: &'a Imp,
+    /// Imp id.
     pub id: &'a str,
-    /// 该 Imp 上的展示类型掩码。
+    /// Presentation type mask for this Imp.
     pub markup: MarkupMask,
-    /// 广告位 tag id。
+    /// Placement tag ID.
     pub tagid: Option<&'a str>,
-    /// 底价。
+    /// Price floor.
     pub bidfloor: f64,
-    /// 底价货币。
+    /// Floor currency.
     pub bidfloorcur: Option<&'a str>,
-    /// 是否插屏。
-    pub instl: i64,
-    /// 是否要求 HTTPS。
-    pub secure: i64,
-    /// 是否激励。
-    pub rwdd: i64,
-    /// SSAI 标志。
-    pub ssai: i64,
-    /// `banner` 子对象。
-    pub banner: Option<&'a Value>,
-    /// `video` 子对象。
-    pub video: Option<&'a Value>,
-    /// `audio` 子对象。
-    pub audio: Option<&'a Value>,
-    /// `native` 子对象。
-    pub native: Option<&'a Value>,
-    /// `pmp` 子对象。
-    pub pmp: Option<&'a Value>,
+    /// Whether this is interstitial inventory.
+    pub instl: i32,
+    /// Whether HTTPS is required.
+    pub secure: i32,
+    /// Whether this is rewarded inventory.
+    pub rwdd: i32,
+    /// SSAI flag.
+    pub ssai: i32,
+    /// `banner` subobject.
+    pub banner: Option<&'a Banner>,
+    /// `video` subobject.
+    pub video: Option<&'a Video>,
+    /// `audio` subobject.
+    pub audio: Option<&'a Audio>,
+    /// `native` subobject.
+    pub native: Option<&'a Native>,
+    /// `pmp` subobject.
+    pub pmp: Option<&'a Pmp>,
 }
 
-/// 从 Imp JSON 推断 [`MarkupMask`]（检查 banner/video/audio/native 键是否存在且非 null）。
-pub fn markup_mask(imp: &Value) -> MarkupMask {
-    let Some(obj) = imp.as_object() else {
-        return MarkupMask::NONE;
-    };
-    let mut f = MarkupMask::NONE;
-    if obj.get("banner").map(|v| !v.is_null()).unwrap_or(false) {
-        f |= MarkupMask::BANNER;
-    }
-    if obj.get("video").map(|v| !v.is_null()).unwrap_or(false) {
-        f |= MarkupMask::VIDEO;
-    }
-    if obj.get("audio").map(|v| !v.is_null()).unwrap_or(false) {
-        f |= MarkupMask::AUDIO;
-    }
-    if obj.get("native").map(|v| !v.is_null()).unwrap_or(false) {
-        f |= MarkupMask::NATIVE;
-    }
-    f
-}
-
-/// 廉价结构检查（非完整 JSON Schema）；通过后再调用 [`request_shared`] 等。
-pub fn light_gate_request(req: &Value) -> std::result::Result<(), String> {
-    let obj = req
-        .as_object()
-        .ok_or_else(|| "view: BidRequest must be a JSON object".to_string())?;
-    let id = obj
-        .get("id")
-        .and_then(|v| v.as_str())
-        .map(str::trim)
-        .filter(|s| !s.is_empty())
-        .ok_or_else(|| "view: BidRequest.id is required".to_string())?;
-    let _ = id;
-    let at = obj.get("at").and_then(|v| v.as_i64()).unwrap_or(0);
-    if at == 0 {
-        return Err("view: BidRequest.at is required".into());
-    }
-    let cur = obj.get("cur").and_then(|v| v.as_array());
-    if cur.map(|a| a.is_empty()).unwrap_or(true) {
-        return Err("view: BidRequest.cur is required".into());
-    }
-    for (i, c) in cur.unwrap().iter().enumerate() {
-        let s = c.as_str().unwrap_or("").trim();
-        if s.is_empty() {
-            return Err(format!("view: BidRequest.cur[{i}] is blank"));
-        }
-    }
-    let imps = obj
-        .get("imp")
-        .and_then(|v| v.as_array())
-        .ok_or_else(|| "view: BidRequest.imp requires at least one Imp".to_string())?;
-    if imps.is_empty() {
-        return Err("view: BidRequest.imp requires at least one Imp".into());
-    }
-    let n = [
-        obj.get("site").is_some_and(|v| !v.is_null()),
-        obj.get("app").is_some_and(|v| !v.is_null()),
-        obj.get("dooh").is_some_and(|v| !v.is_null()),
-    ]
-    .into_iter()
-    .filter(|&x| x)
-    .count();
-    if n > 1 {
-        return Err("view: site/app/dooh are mutually exclusive".into());
-    }
-    for (i, imp) in imps.iter().enumerate() {
-        let id = imp.get("id").and_then(|v| v.as_str()).unwrap_or("").trim();
-        if id.is_empty() {
-            return Err(format!("view: imp[{i}].id is required"));
-        }
-        if markup_mask(imp) == MarkupMask::NONE {
-            return Err(format!(
-                "view: imp[{i}] needs banner, video, audio, or native"
-            ));
-        }
-    }
-    Ok(())
-}
-
-/// LightGate 之后：构建拍卖级 [`RequestSharedView`]。
-pub fn request_shared(req: &Value) -> RequestSharedView<'_> {
-    let obj = req.as_object().expect("light_gate ensured object");
-    let inventory = if obj.get("site").is_some_and(|v| !v.is_null()) {
-        Inventory::Site
-    } else if obj.get("app").is_some_and(|v| !v.is_null()) {
-        Inventory::App
-    } else if obj.get("dooh").is_some_and(|v| !v.is_null()) {
-        Inventory::Dooh
-    } else {
-        Inventory::None
-    };
-    let tmax = obj.get("tmax").and_then(|v| v.as_i64()).unwrap_or(0);
-    let deadline = if tmax > 0 {
-        Some(Instant::now() + Duration::from_millis((tmax as u64) * 85 / 100))
-    } else {
+fn nonempty(s: &str) -> Option<&str> {
+    if s.is_empty() {
         None
-    };
-    let arr = |k: &str| -> &[Value] {
-        obj.get(k)
-            .and_then(|v| v.as_array())
-            .map(|a| a.as_slice())
-            .unwrap_or_else(empty_slice)
-    };
-    RequestSharedView {
-        req,
-        id: obj.get("id").and_then(|v| v.as_str()).unwrap_or(""),
-        at: obj.get("at").and_then(|v| v.as_i64()).unwrap_or(0),
-        cur: arr("cur"),
-        tmax,
-        test: obj.get("test").and_then(|v| v.as_i64()).unwrap_or(0),
-        inventory,
-        deadline,
-        site: obj.get("site").filter(|v| !v.is_null()),
-        app: obj.get("app").filter(|v| !v.is_null()),
-        dooh: obj.get("dooh").filter(|v| !v.is_null()),
-        device: obj.get("device").filter(|v| !v.is_null()),
-        user: obj.get("user").filter(|v| !v.is_null()),
-        regs: obj.get("regs").filter(|v| !v.is_null()),
-        source: obj.get("source").filter(|v| !v.is_null()),
-        bcat: arr("bcat"),
-        badv: arr("badv"),
-        bapp: arr("bapp"),
+    } else {
+        Some(s)
     }
 }
 
-fn empty_slice<'a>() -> &'a [Value] {
-    &[]
-}
-
-/// [`request_shared`] 之后：构建各 Imp 的 [`ImpView`] 列表。
-pub fn imps(req: &Value) -> std::result::Result<Vec<ImpView<'_>>, String> {
-    let imps = req
-        .get("imp")
-        .and_then(|v| v.as_array())
-        .ok_or_else(|| "view: missing imp".to_string())?;
-    let mut out = Vec::with_capacity(imps.len());
-    for imp in imps {
-        let obj = imp.as_object().ok_or_else(|| "view: imp not object".to_string())?;
-        out.push(ImpView {
+/// Builds an [`ImpView`] list for all Imps.
+fn imps(req: &BidRequest) -> Vec<ImpView<'_>> {
+    req.imp
+        .iter()
+        .map(|imp| ImpView {
             imp,
-            id: obj.get("id").and_then(|v| v.as_str()).unwrap_or(""),
-            markup: markup_mask(imp),
-            tagid: obj.get("tagid").and_then(|v| v.as_str()),
-            bidfloor: obj.get("bidfloor").and_then(|v| v.as_f64()).unwrap_or(0.0),
-            bidfloorcur: obj.get("bidfloorcur").and_then(|v| v.as_str()),
-            instl: obj.get("instl").and_then(|v| v.as_i64()).unwrap_or(0),
-            secure: obj.get("secure").and_then(|v| v.as_i64()).unwrap_or(0),
-            rwdd: obj.get("rwdd").and_then(|v| v.as_i64()).unwrap_or(0),
-            ssai: obj.get("ssai").and_then(|v| v.as_i64()).unwrap_or(0),
-            banner: obj.get("banner").filter(|v| !v.is_null()),
-            video: obj.get("video").filter(|v| !v.is_null()),
-            audio: obj.get("audio").filter(|v| !v.is_null()),
-            native: obj.get("native").filter(|v| !v.is_null()),
-            pmp: obj.get("pmp").filter(|v| !v.is_null()),
-        });
-    }
-    Ok(out)
+            id: &imp.id,
+            markup: MarkupMask::from_imp(imp),
+            tagid: nonempty(&imp.tagid),
+            bidfloor: imp.bidfloor.unwrap_or(0.0),
+            bidfloorcur: nonempty(&imp.bidfloorcur),
+            instl: imp.instl.unwrap_or(0),
+            secure: imp.secure.unwrap_or(0),
+            rwdd: imp.rwdd.unwrap_or(0),
+            ssai: imp.ssai.unwrap_or(0),
+            banner: imp.banner.as_ref(),
+            video: imp.video.as_ref(),
+            audio: imp.audio.as_ref(),
+            native: imp.native.as_ref(),
+            pmp: imp.pmp.as_ref(),
+        })
+        .collect()
 }
 
-/// BidRequest View 流水线：LightGate → shared → imps。
-///
-/// 链式调用：[`RequestPipeline::of`] → 各 step → [`RequestPipeline::snapshot`]。
-pub struct RequestPipeline<'a> {
-    req: &'a Value,
-    shared: Option<RequestSharedView<'a>>,
+/// Query view borrowing an immutable BidRequest.
+#[derive(Clone, Debug)]
+pub struct RequestView<'a> {
+    /// Original request and fixed deadline.
+    request: &'a BidRequest,
+    deadline: Option<Instant>,
+    /// Imp views.
     imps: Vec<ImpView<'a>>,
-    gated: bool,
-    pinned: bool,
-    viewed: bool,
-    err: Option<String>,
 }
 
-impl<'a> RequestPipeline<'a> {
-    /// 绑定 BidRequest JSON 引用。
-    pub fn of(req: &'a Value) -> Self {
-        Self {
-            req,
-            shared: None,
-            imps: Vec::new(),
-            gated: false,
-            pinned: false,
-            viewed: false,
-            err: None,
-        }
-    }
-
-    /// 步骤 1：结构 LightGate。
-    pub fn light_gate(mut self) -> Self {
-        if self.err.is_some() {
-            return self;
-        }
-        if let Err(e) = light_gate_request(self.req) {
-            self.err = Some(e);
-            return self;
-        }
-        self.gated = true;
-        self
-    }
-
-    /// 步骤 2：固定拍卖级共享视图。
-    pub fn shared(mut self) -> Self {
-        if self.err.is_some() {
-            return self;
-        }
-        if self.pinned {
-            return self;
-        }
-        if !self.gated {
-            self.err = Some("pipeline: call lightGate first".into());
-            return self;
-        }
-        self.shared = Some(request_shared(self.req));
-        self.pinned = true;
-        self
-    }
-
-    /// 步骤 3：构建 Imp 视图列表。
-    pub fn imps(mut self) -> Self {
-        if self.err.is_some() {
-            return self;
-        }
-        if !self.pinned {
-            self.err = Some("pipeline: call shared first".into());
-            return self;
-        }
-        match imps(self.req) {
-            Ok(imps) => {
-                self.imps = imps;
-                self.viewed = true;
-            }
-            Err(e) => self.err = Some(e),
-        }
-        self
-    }
-
-    /// 完成流水线；自动补跑尚未执行的步骤。
-    pub fn snapshot(mut self) -> std::result::Result<RequestSnapshot<'a>, String> {
-        if let Some(e) = self.err.take() {
-            return Err(e);
-        }
-        if !self.gated {
-            self = self.light_gate();
-            if let Some(e) = self.err.take() {
-                return Err(e);
-            }
-        }
-        if !self.pinned {
-            self = self.shared();
-            if let Some(e) = self.err.take() {
-                return Err(e);
-            }
-        }
-        if !self.viewed {
-            self = self.imps();
-            if let Some(e) = self.err.take() {
-                return Err(e);
-            }
-        }
-        Ok(RequestSnapshot {
-            shared: self.shared.expect("pinned"),
-            imps: self.imps,
+impl<'a> RequestView<'a> {
+    /// Borrow an immutable typed request after basic validation.
+    pub fn new(req: &'a BidRequest) -> Result<Self, String> {
+        validation::request(req)?;
+        Ok(Self {
+            request: req,
+            deadline: (req.tmax.unwrap_or(0) > 0).then(|| {
+                Instant::now() + Duration::from_millis(req.tmax.unwrap() as u64 * 85 / 100)
+            }),
+            imps: imps(req),
         })
     }
-}
+    pub fn imps(&self) -> &[ImpView<'a>] {
+        &self.imps
+    }
+    pub fn deadline(&self) -> Option<Instant> {
+        self.deadline
+    }
+    pub fn request(&self) -> &'a BidRequest {
+        self.request
+    }
+    pub fn currencies(&self) -> &'a [String] {
+        &self.request.cur
+    }
 
-/// 一次性运行全部步骤，返回可查询的 [`RequestSnapshot`]。
-pub fn run_request(req: &Value) -> std::result::Result<RequestSnapshot<'_>, String> {
-    RequestPipeline::of(req)
-        .light_gate()
-        .shared()
-        .imps()
-        .snapshot()
-}
-
-/// 流水线完成后的可查询 BidRequest 快照。
-#[derive(Clone, Debug)]
-pub struct RequestSnapshot<'a> {
-    /// 拍卖级共享视图。
-    pub shared: RequestSharedView<'a>,
-    /// 各 Imp 视图。
-    pub imps: Vec<ImpView<'a>>,
-}
-
-impl<'a> RequestSnapshot<'a> {
-    /// 拍卖 id。
+    /// Auction ID.
     pub fn auction_id(&self) -> &str {
-        self.shared.id
+        &self.request.id
     }
-    /// 拍卖类型 `at`。
-    pub fn auction_type(&self) -> i64 {
-        self.shared.at
+    /// Auction type `at`.
+    pub fn auction_type(&self) -> i32 {
+        self.request.at.unwrap_or(0)
     }
-    /// 库存类型（[`Inventory`]，非 Content.Channel）。
+    /// Inventory type ([`Inventory`], distinct from Content.Channel).
     pub fn inventory(&self) -> Inventory {
-        self.shared.inventory
+        if self.request.site.is_some() {
+            Inventory::Site
+        } else if self.request.app.is_some() {
+            Inventory::App
+        } else if self.request.dooh.is_some() {
+            Inventory::Dooh
+        } else {
+            Inventory::None
+        }
     }
-    /// 是否已超过 tmax 85% 截止时间。
+    /// Reports whether the deadline at 85% of tmax has passed.
     pub fn past_deadline(&self) -> bool {
-        self.shared.past_deadline()
+        self.deadline.map(|d| Instant::now() > d).unwrap_or(false)
     }
 
-    /// 按 id 查找 Imp。
+    /// Finds an Imp by ID.
     pub fn find_imp(&self, id: &str) -> Option<&ImpView<'a>> {
         self.imps.iter().find(|i| i.id == id)
     }
 
-    /// 返回包含指定 [`MarkupMask`] 类型的 Imp 列表。
+    /// Returns Imps containing the specified [`MarkupMask`] type.
     pub fn imps_with(&self, flag: MarkupMask) -> Vec<&ImpView<'a>> {
         self.imps.iter().filter(|i| i.markup.has(flag)).collect()
     }
 
-    /// 将各 Imp 压平为 [`ImpFact`] 便于下游消费。
+    /// Flattens each Imp into an [`ImpFact`] for downstream consumption.
     pub fn facts(&self) -> Vec<ImpFact<'a>> {
         self.imps.iter().map(ImpFact::from_view).collect()
     }
 }
 
-/// 单 Imp 的扁平事实结构。
+/// Flattened facts for one Imp.
 #[derive(Clone, Debug)]
 pub struct ImpFact<'a> {
-    /// Imp id。
+    /// Imp id.
     pub id: &'a str,
-    /// 展示类型掩码。
+    /// Presentation type mask.
     pub markup: MarkupMask,
-    /// 推断的 `Bid.mtype`（多格式时为 0）。
+    /// Inferred `Bid.mtype` (0 for multiple formats).
     pub mtype: i32,
-    /// tag id。
+    /// tag id.
     pub tagid: Option<&'a str>,
-    /// 底价。
+    /// Price floor.
     pub bidfloor: f64,
-    /// 底价货币。
+    /// Floor currency.
     pub bidfloorcur: Option<&'a str>,
-    /// secure 标志。
-    pub secure: i64,
-    /// 插屏标志。
-    pub instl: i64,
-    /// 激励标志。
-    pub rwdd: i64,
-    /// SSAI 标志。
-    pub ssai: i64,
-    /// Banner 宽（若有）。
-    pub banner_w: Option<i64>,
-    /// Banner 高（若有）。
-    pub banner_h: Option<i64>,
-    /// Native request 字符串（若有）。
+    /// secure flag.
+    pub secure: i32,
+    /// Interstitial flag.
+    pub instl: i32,
+    /// Rewarded flag.
+    pub rwdd: i32,
+    /// SSAI flag.
+    pub ssai: i32,
+    /// Banner width, if present.
+    pub banner_w: Option<i32>,
+    /// Banner height, if present.
+    pub banner_h: Option<i32>,
+    /// Native request string, if present.
     pub native_request: Option<&'a str>,
 }
 
 impl<'a> ImpFact<'a> {
     fn from_view(iv: &ImpView<'a>) -> Self {
-        let banner_w = iv.banner.and_then(|b| b.get("w")).and_then(|v| v.as_i64());
-        let banner_h = iv.banner.and_then(|b| b.get("h")).and_then(|v| v.as_i64());
+        let banner_w = iv.banner.and_then(|b| b.w);
+        let banner_h = iv.banner.and_then(|b| b.h);
         let native_request = iv
             .native
-            .and_then(|n| n.get("request"))
-            .and_then(|v| v.as_str())
+            .map(|n| n.request.as_str())
             .filter(|s| !s.is_empty());
         Self {
             id: iv.id,
@@ -590,440 +358,236 @@ impl<'a> ImpFact<'a> {
         }
     }
 
-    /// 是否含 Banner 类型。
+    /// Reports whether the Banner type is present.
     pub fn has_banner(&self) -> bool {
         self.markup.has_banner()
     }
-    /// 是否含 Video 类型。
+    /// Reports whether the Video type is present.
     pub fn has_video(&self) -> bool {
         self.markup.has_video()
     }
-    /// 是否含 Audio 类型。
+    /// Reports whether the Audio type is present.
     pub fn has_audio(&self) -> bool {
         self.markup.has_audio()
     }
-    /// 是否含 Native 类型。
+    /// Reports whether the Native type is present.
     pub fn has_native(&self) -> bool {
         self.markup.has_native()
     }
 }
 
-// --- BidResponse view / pipeline ----------------------------------------
+// --- BidResponse view ---------------------------------------------------
 
-/// BidResponse 拍卖级共享视图。
-#[derive(Clone, Debug)]
-pub struct ResponseSharedView<'a> {
-    /// 原始 BidResponse JSON。
-    pub res: &'a Value,
-    /// 回显的 BidRequest id。
-    pub id: &'a str,
-    /// DSP bid id（可选）。
-    pub bidid: Option<&'a str>,
-    /// 响应货币。
-    pub cur: &'a str,
-    /// No-Bid 原因码（若有）。
-    pub nbr: i64,
-    /// 自定义数据（可选）。
-    pub customdata: Option<&'a str>,
-    /// 是否无出价（空 seatbid 或缺失）。
-    pub no_bid: bool,
-}
-
-/// 单个 SeatBid 及其嵌套 Bid 列表。
+/// One SeatBid and its nested Bid list.
 #[derive(Clone, Debug)]
 pub struct SeatBidView<'a> {
-    /// 原始 SeatBid JSON。
-    pub seatbid: &'a Value,
-    /// 买方 seat id。
+    /// Original SeatBid model.
+    pub seatbid: &'a SeatBid,
+    /// Buyer seat ID.
     pub seat: Option<&'a str>,
-    /// group 标志。
-    pub group: i64,
-    /// 该 seat 下的 Bid 视图。
-    pub bids: Vec<BidView<'a>>,
+    /// group flag.
+    pub group: i32,
+    /// Bid views for this seat.
+    bids: Arc<[BidView<'a>]>,
+    range: std::ops::Range<usize>,
 }
 
-/// 单条 Bid 视图（含由 mtype 推断的 [`MarkupMask`]）。
+/// View of one Bid, including the [`MarkupMask`] inferred from mtype.
 #[derive(Clone, Debug)]
 pub struct BidView<'a> {
-    /// 原始 Bid JSON。
-    pub bid: &'a Value,
-    /// Bid id。
+    /// Original Bid model.
+    pub bid: &'a Bid,
+    /// Bid id.
     pub id: &'a str,
-    /// 目标 Imp id。
+    /// Target Imp ID.
     pub impid: &'a str,
-    /// 所属 seat（来自父 SeatBid）。
+    /// Owning seat from the parent SeatBid.
     pub seat: Option<&'a str>,
-    /// 出价价格。
+    /// Bid price.
     pub price: f64,
-    /// 由 mtype 推断的展示类型。
+    /// Presentation type inferred from mtype.
     pub markup: MarkupMask,
-    /// OpenRTB mtype 原值。
-    pub mtype: i64,
-    /// 创意 id。
+    /// Raw OpenRTB mtype value.
+    pub mtype: i32,
+    /// Creative ID.
     pub crid: Option<&'a str>,
-    /// 活动 id。
+    /// Campaign ID.
     pub cid: Option<&'a str>,
-    /// Deal id。
+    /// Deal id.
     pub dealid: Option<&'a str>,
-    /// 创意宽。
-    pub w: i64,
-    /// 创意高。
-    pub h: i64,
-    /// 时长（秒）。
-    pub dur: i64,
-    /// adm markup。
+    /// Creative width.
+    pub w: i32,
+    /// Creative height.
+    pub h: i32,
+    /// Duration in seconds.
+    pub dur: i32,
+    /// adm markup.
     pub adm: Option<&'a str>,
-    /// 胜出通知 URL。
+    /// Win notice URL.
     pub nurl: Option<&'a str>,
-    /// 计费通知 URL。
+    /// Billing notice URL.
     pub burl: Option<&'a str>,
-    /// 败标通知 URL。
+    /// Loss notice URL.
     pub lurl: Option<&'a str>,
-    /// 广告主域名列表。
-    pub adomain: &'a [Value],
+    /// Advertiser domain list.
+    pub adomain: &'a [String],
 }
 
-/// 将 OpenRTB `Bid.mtype` 转为 [`MarkupMask`]；未知值 → [`MarkupMask::NONE`]。
-pub fn markup_from_mtype(mtype: i64) -> MarkupMask {
-    match mtype {
-        1 => MarkupMask::BANNER,
-        2 => MarkupMask::VIDEO,
-        3 => MarkupMask::AUDIO,
-        4 => MarkupMask::NATIVE,
-        _ => MarkupMask::NONE,
-    }
-}
-
-/// BidResponse 结构 LightGate（id/cur 必填；有 seatbid 时校验 bid 字段）。
-pub fn light_gate_response(res: &Value) -> std::result::Result<(), String> {
-    let obj = res
-        .as_object()
-        .ok_or_else(|| "view: BidResponse must be a JSON object".to_string())?;
-    let id = obj.get("id").and_then(|v| v.as_str()).unwrap_or("").trim();
-    if id.is_empty() {
-        return Err("view: BidResponse.id is required".into());
-    }
-    let cur = obj.get("cur").and_then(|v| v.as_str()).unwrap_or("").trim();
-    if cur.is_empty() {
-        return Err("view: BidResponse.cur is required".into());
-    }
-    let seatbid_val = match obj.get("seatbid") {
-        None => return Ok(()),
-        Some(v) if v.is_null() => return Ok(()),
-        Some(v) => v,
-    };
-    let Some(seatbids) = seatbid_val.as_array() else {
-        return Err("view: BidResponse.seatbid must be an array".into());
-    };
-    if seatbids.is_empty() {
-        return Ok(());
-    }
-    for (i, sb) in seatbids.iter().enumerate() {
-        let bids = sb
-            .get("bid")
-            .and_then(|v| v.as_array())
-            .ok_or_else(|| format!("view: seatbid[{i}] needs at least one bid"))?;
-        if bids.is_empty() {
-            return Err(format!("view: seatbid[{i}] needs at least one bid"));
-        }
-        for (j, bid) in bids.iter().enumerate() {
-            let id = bid.get("id").and_then(|v| v.as_str()).unwrap_or("").trim();
-            let impid = bid.get("impid").and_then(|v| v.as_str()).unwrap_or("").trim();
-            if id.is_empty() || impid.is_empty() {
-                return Err(format!(
-                    "view: seatbid[{i}].bid[{j}] requires id and impid"
-                ));
+/// Builds SeatBid views and a flattened Bid list.
+fn view_seatbids(res: &BidResponse) -> (Vec<SeatBidView<'_>>, Arc<[BidView<'_>]>) {
+    let flat: Arc<[BidView<'_>]> = res
+        .seatbid
+        .iter()
+        .flat_map(|sb| {
+            sb.bid
+                .iter()
+                .map(move |bid| view_bid(bid, nonempty(&sb.seat)))
+        })
+        .collect();
+    let mut offset = 0;
+    let seats = res
+        .seatbid
+        .iter()
+        .map(|sb| {
+            let range = offset..offset + sb.bid.len();
+            offset = range.end;
+            SeatBidView {
+                seatbid: sb,
+                seat: nonempty(&sb.seat),
+                group: sb.group.unwrap_or(0),
+                bids: Arc::clone(&flat),
+                range,
             }
-            let price = bid.get("price").and_then(|v| v.as_f64()).unwrap_or(0.0);
-            if price <= 0.0 {
-                return Err(format!(
-                    "view: seatbid[{i}].bid[{j}].price must be > 0"
-                ));
-            }
-        }
-    }
-    Ok(())
+        })
+        .collect();
+    (seats, flat)
 }
 
-/// LightGate 之后：构建 [`ResponseSharedView`]。
-pub fn response_shared(res: &Value) -> ResponseSharedView<'_> {
-    let obj = res.as_object().expect("light_gate ensured object");
-    let seatbids = obj.get("seatbid").and_then(|v| v.as_array());
-    ResponseSharedView {
-        res,
-        id: obj.get("id").and_then(|v| v.as_str()).unwrap_or(""),
-        bidid: obj.get("bidid").and_then(|v| v.as_str()),
-        cur: obj.get("cur").and_then(|v| v.as_str()).unwrap_or(""),
-        nbr: obj.get("nbr").and_then(|v| v.as_i64()).unwrap_or(0),
-        customdata: obj.get("customdata").and_then(|v| v.as_str()),
-        no_bid: seatbids.map(|a| a.is_empty()).unwrap_or(true),
-    }
-}
-
-/// 构建 SeatBid 视图列表及扁平 Bid 列表。
-pub fn view_seatbids(
-    res: &Value,
-) -> std::result::Result<(Vec<SeatBidView<'_>>, Vec<BidView<'_>>), String> {
-    let empty: &[Value] = &[];
-    let seatbids = res
-        .get("seatbid")
-        .and_then(|v| v.as_array())
-        .map(|a| a.as_slice())
-        .unwrap_or(empty);
-    let mut seats = Vec::with_capacity(seatbids.len());
-    let mut flat = Vec::new();
-    for sb in seatbids {
-        let seat = sb.get("seat").and_then(|v| v.as_str());
-        let group = sb.get("group").and_then(|v| v.as_i64()).unwrap_or(0);
-        let bids_arr = sb
-            .get("bid")
-            .and_then(|v| v.as_array())
-            .map(|a| a.as_slice())
-            .unwrap_or(empty);
-        let mut bids = Vec::with_capacity(bids_arr.len());
-        for bid in bids_arr {
-            let bv = view_bid(bid, seat)?;
-            bids.push(bv.clone());
-            flat.push(bv);
-        }
-        seats.push(SeatBidView {
-            seatbid: sb,
-            seat,
-            group,
-            bids,
-        });
-    }
-    Ok((seats, flat))
-}
-
-fn view_bid<'a>(bid: &'a Value, seat: Option<&'a str>) -> std::result::Result<BidView<'a>, String> {
-    let obj = bid
-        .as_object()
-        .ok_or_else(|| "view: bid not object".to_string())?;
-    let mtype = obj.get("mtype").and_then(|v| v.as_i64()).unwrap_or(0);
-    let empty: &[Value] = &[];
-    Ok(BidView {
+fn view_bid<'a>(bid: &'a Bid, seat: Option<&'a str>) -> BidView<'a> {
+    BidView {
         bid,
-        id: obj.get("id").and_then(|v| v.as_str()).unwrap_or(""),
-        impid: obj.get("impid").and_then(|v| v.as_str()).unwrap_or(""),
+        id: &bid.id,
+        impid: &bid.impid,
         seat,
-        price: obj.get("price").and_then(|v| v.as_f64()).unwrap_or(0.0),
-        markup: markup_from_mtype(mtype),
-        mtype,
-        crid: obj.get("crid").and_then(|v| v.as_str()),
-        cid: obj.get("cid").and_then(|v| v.as_str()),
-        dealid: obj.get("dealid").and_then(|v| v.as_str()),
-        w: obj.get("w").and_then(|v| v.as_i64()).unwrap_or(0),
-        h: obj.get("h").and_then(|v| v.as_i64()).unwrap_or(0),
-        dur: obj.get("dur").and_then(|v| v.as_i64()).unwrap_or(0),
-        adm: obj.get("adm").and_then(|v| v.as_str()),
-        nurl: obj.get("nurl").and_then(|v| v.as_str()),
-        burl: obj.get("burl").and_then(|v| v.as_str()),
-        lurl: obj.get("lurl").and_then(|v| v.as_str()),
-        adomain: obj
-            .get("adomain")
-            .and_then(|v| v.as_array())
-            .map(|a| a.as_slice())
-            .unwrap_or(empty),
-    })
+        price: bid.price.unwrap_or(0.0),
+        markup: MarkupMask::from_mtype(bid.mtype),
+        mtype: bid.mtype,
+        adomain: &bid.adomain,
+        crid: nonempty(&bid.crid),
+        cid: nonempty(&bid.cid),
+        dealid: nonempty(&bid.dealid),
+        adm: nonempty(&bid.adm),
+        nurl: nonempty(&bid.nurl),
+        burl: nonempty(&bid.burl),
+        lurl: nonempty(&bid.lurl),
+        w: bid.w.unwrap_or(0),
+        h: bid.h.unwrap_or(0),
+        dur: bid.dur.unwrap_or(0),
+    }
 }
 
-/// BidResponse View 流水线：light_gate → shared → bids。
-pub struct ResponsePipeline<'a> {
-    res: &'a Value,
-    shared: Option<ResponseSharedView<'a>>,
+/// Query view borrowing an immutable BidResponse.
+#[derive(Clone, Debug)]
+pub struct ResponseView<'a> {
+    /// Original response.
+    response: &'a BidResponse,
+    /// SeatBid views.
     seatbids: Vec<SeatBidView<'a>>,
-    bids: Vec<BidView<'a>>,
-    gated: bool,
-    pinned: bool,
-    viewed: bool,
-    err: Option<String>,
+    /// All Bids, flattened.
+    bids: Arc<[BidView<'a>]>,
 }
 
-impl<'a> ResponsePipeline<'a> {
-    /// 绑定 BidResponse JSON 引用。
-    pub fn of(res: &'a Value) -> Self {
-        Self {
-            res,
-            shared: None,
-            seatbids: Vec::new(),
-            bids: Vec::new(),
-            gated: false,
-            pinned: false,
-            viewed: false,
-            err: None,
-        }
-    }
-
-    /// 步骤 1：结构 LightGate。
-    pub fn light_gate(mut self) -> Self {
-        if self.err.is_some() {
-            return self;
-        }
-        if let Err(e) = light_gate_response(self.res) {
-            self.err = Some(e);
-            return self;
-        }
-        self.gated = true;
-        self
-    }
-
-    /// 步骤 2：固定响应级共享视图。
-    pub fn shared(mut self) -> Self {
-        if self.err.is_some() {
-            return self;
-        }
-        if self.pinned {
-            return self;
-        }
-        if !self.gated {
-            self.err = Some("pipeline: call lightGate first".into());
-            return self;
-        }
-        self.shared = Some(response_shared(self.res));
-        self.pinned = true;
-        self
-    }
-
-    /// 步骤 3：构建 SeatBid / Bid 视图。
-    pub fn bids(mut self) -> Self {
-        if self.err.is_some() {
-            return self;
-        }
-        if !self.pinned {
-            self.err = Some("pipeline: call shared first".into());
-            return self;
-        }
-        match view_seatbids(self.res) {
-            Ok((seats, bids)) => {
-                self.seatbids = seats;
-                self.bids = bids;
-                self.viewed = true;
-            }
-            Err(e) => self.err = Some(e),
-        }
-        self
-    }
-
-    /// 完成流水线；自动补跑尚未执行的步骤。
-    pub fn snapshot(mut self) -> std::result::Result<ResponseSnapshot<'a>, String> {
-        if let Some(e) = self.err.take() {
-            return Err(e);
-        }
-        if !self.gated {
-            self = self.light_gate();
-            if let Some(e) = self.err.take() {
-                return Err(e);
-            }
-        }
-        if !self.pinned {
-            self = self.shared();
-            if let Some(e) = self.err.take() {
-                return Err(e);
-            }
-        }
-        if !self.viewed {
-            self = self.bids();
-            if let Some(e) = self.err.take() {
-                return Err(e);
-            }
-        }
-        Ok(ResponseSnapshot {
-            shared: self.shared.expect("pinned"),
-            seatbids: self.seatbids,
-            bids: self.bids,
+impl<'a> ResponseView<'a> {
+    /// Borrow an immutable typed response after basic validation.
+    pub fn new(res: &'a BidResponse) -> Result<Self, String> {
+        validation::response(res)?;
+        let (seat_bids, bids) = view_seatbids(res);
+        Ok(Self {
+            response: res,
+            seatbids: seat_bids,
+            bids,
         })
     }
-}
+    pub fn seatbids(&self) -> &[SeatBidView<'a>] {
+        &self.seatbids
+    }
+    pub fn bids(&self) -> &[BidView<'a>] {
+        &self.bids
+    }
+    pub fn bidid(&self) -> Option<&str> {
+        nonempty(&self.response.bidid)
+    }
+    pub fn response(&self) -> &'a BidResponse {
+        self.response
+    }
 
-/// 一次性运行 BidResponse 全部 view 步骤。
-pub fn run_response(res: &Value) -> std::result::Result<ResponseSnapshot<'_>, String> {
-    ResponsePipeline::of(res)
-        .light_gate()
-        .shared()
-        .bids()
-        .snapshot()
-}
-
-/// 流水线完成后的可查询 BidResponse 快照。
-#[derive(Clone, Debug)]
-pub struct ResponseSnapshot<'a> {
-    /// 响应级共享视图。
-    pub shared: ResponseSharedView<'a>,
-    /// 各 SeatBid 视图。
-    pub seatbids: Vec<SeatBidView<'a>>,
-    /// 扁平化的全部 Bid。
-    pub bids: Vec<BidView<'a>>,
-}
-
-impl<'a> ResponseSnapshot<'a> {
-    /// 回显的 BidRequest id。
+    /// Echoed BidRequest ID.
     pub fn request_id(&self) -> &str {
-        self.shared.id
+        &self.response.id
     }
-    /// 响应货币。
+    /// Response currency.
     pub fn currency(&self) -> &str {
-        self.shared.cur
+        &self.response.cur
     }
-    /// 是否无出价。
+    /// Reports whether this is a no-bid.
     pub fn no_bid(&self) -> bool {
-        self.shared.no_bid
+        self.response.seatbid.is_empty()
     }
-    /// No-Bid 原因码。
-    pub fn nbr(&self) -> i64 {
-        self.shared.nbr
+    /// No-bid reason code.
+    pub fn nbr(&self) -> i32 {
+        self.response.nbr.unwrap_or(0)
     }
 
-    /// 按 Bid id 查找。
+    /// Finds a Bid by ID.
     pub fn find_bid(&self, id: &str) -> Option<&BidView<'a>> {
         self.bids.iter().find(|b| b.id == id)
     }
 
-    /// 返回 targeting 指定 Imp 的全部 Bid。
+    /// Returns all Bids targeting the specified Imp.
     pub fn bids_for_imp(&self, impid: &str) -> Vec<&BidView<'a>> {
         self.bids.iter().filter(|b| b.impid == impid).collect()
     }
 
-    /// 返回包含指定 [`MarkupMask`] 类型的 Bid。
+    /// Returns Bids containing the specified [`MarkupMask`] type.
     pub fn bids_with(&self, flag: MarkupMask) -> Vec<&BidView<'a>> {
         self.bids.iter().filter(|b| b.markup.has(flag)).collect()
     }
 
-    /// 将各 Bid 压平为 [`BidFact`]。
+    /// Flattens each Bid into a [`BidFact`].
     pub fn facts(&self) -> Vec<BidFact<'a>> {
         self.bids.iter().map(BidFact::from_view).collect()
     }
 }
 
-/// 单 Bid 的扁平事实结构。
+/// Flattened facts for one Bid.
 #[derive(Clone, Debug)]
 pub struct BidFact<'a> {
-    /// Bid id。
+    /// Bid id.
     pub id: &'a str,
-    /// 目标 Imp id。
+    /// Target Imp ID.
     pub impid: &'a str,
-    /// 所属 seat。
+    /// Owning seat.
     pub seat: Option<&'a str>,
-    /// 出价价格。
+    /// Bid price.
     pub price: f64,
-    /// 展示类型掩码。
+    /// Presentation type mask.
     pub markup: MarkupMask,
-    /// OpenRTB mtype。
-    pub mtype: i64,
-    /// 创意 id。
+    /// OpenRTB mtype.
+    pub mtype: i32,
+    /// Creative ID.
     pub crid: Option<&'a str>,
-    /// Deal id。
+    /// Deal id.
     pub dealid: Option<&'a str>,
-    /// 创意宽。
-    pub w: i64,
-    /// 创意高。
-    pub h: i64,
-    /// 时长。
-    pub dur: i64,
-    /// 是否有非空 adm。
+    /// Creative width.
+    pub w: i32,
+    /// Creative height.
+    pub h: i32,
+    /// Duration.
+    pub dur: i32,
+    /// Whether adm is nonempty.
     pub has_adm: bool,
-    /// 广告主域名。
-    pub adomain: &'a [Value],
+    /// Advertiser domains.
+    pub adomain: &'a [String],
 }
 
 impl<'a> BidFact<'a> {
@@ -1045,19 +609,19 @@ impl<'a> BidFact<'a> {
         }
     }
 
-    /// 是否 Banner 类型。
+    /// Reports whether this is the Banner type.
     pub fn has_banner(&self) -> bool {
         self.markup.has_banner()
     }
-    /// 是否 Video 类型。
+    /// Reports whether this is the Video type.
     pub fn has_video(&self) -> bool {
         self.markup.has_video()
     }
-    /// 是否 Audio 类型。
+    /// Reports whether this is the Audio type.
     pub fn has_audio(&self) -> bool {
         self.markup.has_audio()
     }
-    /// 是否 Native 类型。
+    /// Reports whether this is the Native type.
     pub fn has_native(&self) -> bool {
         self.markup.has_native()
     }
@@ -1066,10 +630,32 @@ impl<'a> BidFact<'a> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::build::{
+    use crate::proto::{BidRequest, BidResponse, Imp};
+    use serde_json::Value;
+    fn model<T: serde::de::DeserializeOwned>(v: Value) -> T {
+        serde_json::from_value(v).unwrap()
+    }
+    use crate::builder::{
         BannerImpBuilder, BidBuilder, BidRequestBuilder, BidResponseBuilder, DeviceBuilder,
         SiteBuilder,
     };
+
+    #[test]
+    fn seat_views_share_flat_storage() {
+        let res: BidResponse = model(serde_json::json!({"id":"a", "cur":"USD", "seatbid":[
+            {"seat":"first","bid":[{"id":"b1","impid":"1","price":1}]},
+            {"seat":"second","bid":[{"id":"b2","impid":"1","price":2}]}
+        ]}));
+        let view = ResponseView::new(&res).unwrap();
+        let cloned = view.clone();
+        assert!(std::ptr::eq(view.response(), &res));
+        for i in 0..2 {
+            assert_eq!(view.seatbids()[i].bids().len(), 1);
+            assert!(std::ptr::eq(&view.seatbids()[i].bids()[0], &view.bids()[i]));
+            assert!(std::ptr::eq(&cloned.bids()[i], &view.bids()[i]));
+        }
+        assert_eq!(view.seatbids()[1].bids()[0].id, "b2");
+    }
 
     #[test]
     fn view_banner_request() {
@@ -1101,13 +687,13 @@ mod tests {
             .build()
             .expect("build");
 
-        let res = run_request(&req).expect("view");
-        assert_eq!(res.shared.id, "auction-1");
-        assert_eq!(res.shared.at, 1);
-        assert_eq!(res.shared.inventory, Inventory::Site);
-        assert!(res.shared.deadline.is_some());
-        assert!(res.shared.site.is_some());
-        assert!(res.shared.device.is_some());
+        let res = RequestView::new(&req).expect("view");
+        assert_eq!(res.auction_id(), "auction-1");
+        assert_eq!(res.auction_type(), 1);
+        assert_eq!(res.inventory(), Inventory::Site);
+        assert!(res.deadline().is_some());
+        assert!(res.request().site.is_some());
+        assert!(res.request().device.is_some());
         assert_eq!(res.imps.len(), 1);
         let iv = &res.imps[0];
         assert!(iv.markup.has_banner());
@@ -1115,12 +701,12 @@ mod tests {
         assert_eq!(iv.markup.mtype(), 1);
         assert_eq!(iv.secure, 1);
         assert!((iv.bidfloor - 0.03).abs() < 1e-9);
-        assert_eq!(iv.banner.unwrap()["w"], 300);
+        assert_eq!(iv.banner.unwrap().w.unwrap(), 300);
     }
 
     #[test]
     fn multi_format_and_mutex() {
-        let mut req = serde_json::json!({
+        let mut req: BidRequest = model(serde_json::json!({
             "id": "m",
             "at": 2,
             "cur": ["USD"],
@@ -1130,20 +716,20 @@ mod tests {
                 "banner": {"w": 320, "h": 50},
                 "video": {"mimes": ["video/mp4"]}
             }]
-        });
-        let res = run_request(&req).expect("view");
-        assert_eq!(res.shared.inventory, Inventory::App);
+        }));
+        let res = RequestView::new(&req).expect("view");
+        assert_eq!(res.inventory(), Inventory::App);
         let f = res.imps[0].markup;
         assert!(f.has_banner() && f.has_video());
         assert_eq!(f.count(), 2);
         assert_eq!(f.mtype(), 0);
 
-        req["site"] = serde_json::json!({"id": "s"});
-        assert!(light_gate_request(&req).is_err());
+        req.site = Some(model(serde_json::json!({"id":"s"})));
+        assert!(RequestView::new(&req).is_err());
     }
 
     #[test]
-    fn pipeline_run_facts() {
+    fn request_view_facts() {
         let req = BidRequestBuilder::new("auction-1")
             .first_price()
             .tmax(120)
@@ -1165,7 +751,7 @@ mod tests {
             .build()
             .expect("build");
 
-        let snap = run_request(&req).expect("run");
+        let snap = RequestView::new(&req).expect("run");
         assert_eq!(snap.auction_id(), "auction-1");
         assert_eq!(snap.inventory(), Inventory::Site);
         assert!(snap.find_imp("1").is_some());
@@ -1179,7 +765,7 @@ mod tests {
     }
 
     #[test]
-    fn response_pipeline_run_facts() {
+    fn response_request_view_facts() {
         let res = BidResponseBuilder::new("auction-1")
             .currency("USD")
             .add_seat_bid(
@@ -1195,7 +781,7 @@ mod tests {
             .build()
             .expect("build");
 
-        let snap = run_response(&res).expect("run_response");
+        let snap = ResponseView::new(&res).expect("response view");
         assert_eq!(snap.request_id(), "auction-1");
         assert!(!snap.no_bid());
         assert_eq!(snap.currency(), "USD");
@@ -1212,12 +798,12 @@ mod tests {
     }
 
     #[test]
-    fn response_pipeline_no_bid() {
+    fn response_view_no_bid() {
         let res = BidResponseBuilder::new("auction-1")
             .no_bid(2)
             .build()
             .expect("build");
-        let snap = run_response(&res).expect("run");
+        let snap = ResponseView::new(&res).expect("run");
         assert!(snap.no_bid());
         assert_eq!(snap.nbr(), 2);
         assert!(snap.bids.is_empty());
@@ -1230,18 +816,18 @@ mod tests {
         assert!(m.has(MarkupMask::BANNER));
         assert_eq!(m.mtype(), 0);
         assert_eq!(MarkupMask::VIDEO.mtype(), 2);
-        assert_eq!(markup_from_mtype(3), MarkupMask::AUDIO);
-        assert_eq!(markup_from_mtype(99), MarkupMask::NONE);
+        assert_eq!(MarkupMask::from_mtype(3), MarkupMask::AUDIO);
+        assert_eq!(MarkupMask::from_mtype(99), MarkupMask::NONE);
     }
 
     #[test]
     fn inventory_dooh_and_as_str() {
-        let req = serde_json::json!({
+        let req: BidRequest = model(serde_json::json!({
             "id": "d", "at": 1, "cur": ["USD"],
             "dooh": {"id": "screen-1"},
             "imp": [{"id": "1", "banner": {"w": 1, "h": 1}}]
-        });
-        let snap = run_request(&req).unwrap();
+        }));
+        let snap = RequestView::new(&req).unwrap();
         assert_eq!(snap.inventory(), Inventory::Dooh);
         assert_eq!(Inventory::Dooh.as_str(), "dooh");
         assert_eq!(Inventory::None.as_str(), "none");
@@ -1249,73 +835,84 @@ mod tests {
 
     #[test]
     fn markup_mask_not_banner_format_array() {
-        let imp = serde_json::json!({
+        let imp: Imp = model(serde_json::json!({
             "id": "1",
             "banner": {"format": [{"w": 300, "h": 250}]}
-        });
-        let mask = markup_mask(&imp);
+        }));
+        let mask = MarkupMask::from_imp(&imp);
         assert!(mask.has_banner());
         assert_eq!(mask.count(), 1);
-        let formats = imp["banner"]["format"].as_array().unwrap();
+        let formats = &imp.banner.as_ref().unwrap().format;
         assert_eq!(formats.len(), 1);
     }
 
     #[test]
-    fn request_pipeline_step_order_error() {
-        let req = serde_json::json!({
+    fn request_factory_validates() {
+        let req: BidRequest = model(serde_json::json!({
             "id": "x", "at": 1, "cur": ["USD"],
             "imp": [{"id": "1", "banner": {"w": 1, "h": 1}}]
-        });
-        let err = RequestPipeline::of(&req).shared().snapshot().unwrap_err();
-        assert!(err.contains("lightGate"));
+        }));
+        assert!(RequestView::new(&req).is_ok());
+        let mut invalid = req.clone();
+        invalid.id.clear();
+        assert!(RequestView::new(&invalid).is_err());
     }
 
     #[test]
-    fn response_pipeline_step_order_error() {
-        let res = serde_json::json!({"id": "r", "cur": "USD"});
-        let err = ResponsePipeline::of(&res).shared().snapshot().unwrap_err();
-        assert!(err.contains("lightGate"));
+    fn response_factory_validates() {
+        let res: BidResponse = model(serde_json::json!({"id": "r", "cur": "USD"}));
+        assert!(ResponseView::new(&res).is_ok());
+        let mut invalid = res.clone();
+        invalid.cur.clear();
+        assert!(ResponseView::new(&invalid).is_err());
     }
 
     #[test]
-    fn light_gate_response_missing_cur() {
-        let res = serde_json::json!({"id": "r"});
-        assert!(light_gate_response(&res).is_err());
+    fn factory_response_missing_cur() {
+        let res: BidResponse = model(serde_json::json!({"id": "r"}));
+        assert!(ResponseView::new(&res).is_err());
     }
 
     #[test]
-    fn light_gate_rejects_blank() {
-        let mut req = serde_json::json!({
+    fn factory_rejects_blank() {
+        let mut req: BidRequest = model(serde_json::json!({
             "id": "x", "at": 1, "cur": ["USD"],
             "imp": [{"id": "1", "banner": {"w": 1, "h": 1}}]
-        });
-        req["id"] = serde_json::json!("   ");
-        assert!(light_gate_request(&req).is_err());
-        req["id"] = serde_json::json!("x");
-        req["cur"] = serde_json::json!(["   "]);
-        assert!(light_gate_request(&req).is_err());
-        req["cur"] = serde_json::json!(["USD"]);
-        req["imp"][0]["id"] = serde_json::json!("	");
-        assert!(light_gate_request(&req).is_err());
+        }));
+        req.id = "   ".into();
+        assert!(RequestView::new(&req).is_err());
+        req.id = "x".into();
+        req.cur = vec!["   ".into()];
+        assert!(RequestView::new(&req).is_err());
+        req.cur = vec!["USD".into()];
+        req.imp[0].id = "\t".into();
+        assert!(RequestView::new(&req).is_err());
     }
 
     #[test]
-    fn light_gate_response_seatbid_non_array() {
-        let res = serde_json::json!({"id": "r", "cur": "USD", "seatbid": {}});
-        assert!(light_gate_response(&res).is_err());
+    fn factory_response_seatbid_non_array() {
+        assert!(
+            crate::codec::parse_bid_response(br#"{"id":"r","cur":"USD","seatbid":{}}"#).is_err()
+        );
     }
 
     #[test]
-    fn shared_pin_once() {
-        let req = serde_json::json!({
+    fn deadline_fixed_at_construction() {
+        let req: BidRequest = model(serde_json::json!({
             "id": "x", "at": 1, "tmax": 200, "cur": ["USD"],
             "imp": [{"id": "1", "banner": {"w": 1, "h": 1}}]
-        });
-        let mut p = RequestPipeline::of(&req).light_gate().shared();
-        let d1 = p.shared.as_ref().unwrap().deadline;
+        }));
+        let p = RequestView::new(&req).unwrap();
+        let d1 = p.deadline();
         std::thread::sleep(std::time::Duration::from_millis(3));
-        p = p.shared();
-        let d2 = p.shared.as_ref().unwrap().deadline;
+        p.facts();
+        let d2 = p.deadline();
         assert_eq!(d1, d2);
+    }
+}
+
+impl<'a> SeatBidView<'a> {
+    pub fn bids(&self) -> &[BidView<'a>] {
+        &self.bids[self.range.clone()]
     }
 }

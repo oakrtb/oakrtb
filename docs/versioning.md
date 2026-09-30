@@ -13,10 +13,12 @@ OakRTB 版本写在 `VERSION`，遵循 SemVer。
 ## 什么算兼容变更
 
 - 新增可选字段或对象
-- 新增枚举值（收发双方必须忽略未知枚举）
+- 文档化既有、已允许的扩展值；新增枚举值需单独评估兼容性
 - 文档澄清
 
 这些只增加 `VERSION` 的 MINOR 或 PATCH，不改 HTTP 路径 `/openrtb/v2/auction`。
+
+模型能解码未知枚举数值，不代表完整 Schema 或 BidCheck 接受它。例如 JSON Schema 将 `Bid.mtype` 限制为 1–4；BidCheck 对厂商值 ≥500 给出 WARN，对其他未知值给出 ERROR。新增枚举值只有在旧接收方的校验与业务处理允许时才可视为兼容。
 
 ## 什么算破坏性变更
 
@@ -25,7 +27,7 @@ OakRTB 版本写在 `VERSION`，遵循 SemVer。
 - 改变字段类型或含义（例如价格单位）
 - `site`/`app`/`dooh` 互斥规则变化
 
-破坏性变更升 MAJOR，并视情况使用新路径（例如 `/openrtb/v3/auction`）。
+稳定版本（1.0 起）的破坏性变更升 MAJOR；当前 0.x 阶段的破坏性变更在 MINOR 版本中发布，并在 CHANGELOG 标记 Breaking、提供迁移说明。SDK API 变更与 HTTP 协议版本分别评估；仅 HTTP 合同需要时才调整路径。
 
 ## Schema / Proto / OpenAPI
 
@@ -43,5 +45,5 @@ OakRTB 版本写在 `VERSION`，遵循 SemVer。
 4. `docs/objects.md` / `docs/spec.md` / `docs/transport.md`
 5. `examples/bid-request|bid-response/` 与 `testdata/invalid/`
 6. `CHANGELOG.md`
-7. 若改了 schema 或 proto：`make sync-schemas`（刷新 Go/Java/Rust vendored 副本）并跑 `make sdk-test`；提交更新后的副本
+7. 若改了 schema 或 proto：`make sync-schemas`（刷新 Go/Java/Rust vendored 副本）；修改 proto 后还需 `make proto-go`，提交 Go 模型及副本，再跑 `make validate proto-check sdk-test`
 8. 发包步骤见 [publishing.md](publishing.md)

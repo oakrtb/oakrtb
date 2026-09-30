@@ -22,7 +22,7 @@ Exchange 与 Bidder 集成时可改路径，但语义不变。
 |---|---|---|
 | `Content-Type: application/json` | 双向 | JSON 线格式（OpenAPI 合同） |
 | `Content-Type: application/x-protobuf` | 双向 | 可选，对应 `proto/oakrtb/v2/openrtb.proto` |
-| `x-openrtb-version: 2.6` | 请求必填建议；响应可选 | 线格式主次版本；对象模型对齐快照 2.6-202606 |
+| `x-openrtb-version: 2.6` | 请求推荐但可省略；响应可选 | 线格式主次版本；对象模型对齐快照 2.6-202606 |
 | `Accept-Encoding` | Exchange → Bidder | 可接受的响应压缩算法，逗号分隔，可带 `q` 权重 |
 | `Content-Encoding` | 双向 | 当前 body 使用的压缩算法（单一 token） |
 
@@ -30,7 +30,7 @@ Exchange 与 Bidder 集成时可改路径，但语义不变。
 
 ## 压缩
 
-Body 压缩与对象 schema 无关，只作用于 HTTP 实体。OakRTB **支持多种**标准 `Content-Encoding`：
+Body 压缩与对象 schema 无关，只作用于 HTTP 实体。协议允许使用以下标准 `Content-Encoding`，具体压缩与解压由 HTTP 服务实现，SDK 不提供传输压缩功能：
 
 | 算法 | `Content-Encoding` / `Accept-Encoding` token | 说明 |
 |---|---|---|
@@ -42,12 +42,12 @@ Body 压缩与对象 schema 无关，只作用于 HTTP 实体。OakRTB **支持�
 
 ### 协商规则
 
-1. Exchange 在请求上发 `Accept-Encoding`，列出自己能解压的算法，例如：  
-   `Accept-Encoding: gzip, br, zstd;q=0.8, deflate;q=0.5`  
-2. Bidder 从该列表中选一种自己也支持的算法压缩响应，并设置对应的 `Content-Encoding`。  
-3. 若请求未带 `Accept-Encoding`，响应默认 **不压缩**；若双方事先约定，也可用 `gzip`。  
-4. 请求 body 也可压缩：Exchange 设置 `Content-Encoding`，Bidder 必须能解压所列算法；**未在集成约定中声明的算法不得使用**。  
-5. `Content-Encoding` 一次只声明一种算法（不链式叠多个）。  
+1. Exchange 在请求上发 `Accept-Encoding`，列出自己能解压的算法，例如：
+   `Accept-Encoding: gzip, br, zstd;q=0.8, deflate;q=0.5`
+2. Bidder 从该列表中选一种自己也支持的算法压缩响应，并设置对应的 `Content-Encoding`。
+3. 若请求未带 `Accept-Encoding`，响应 **不压缩**；需要 gzip 时，请求须显式发送 `Accept-Encoding: gzip`。
+4. 请求 body 也可压缩：Exchange 设置 `Content-Encoding`，Bidder 必须能解压所列算法；**未在集成约定中声明的算法不得使用**。
+5. `Content-Encoding` 一次只声明一种算法（不链式叠多个）。
 6. 压缩作用于完整 body（JSON 或 protobuf 字节），解压后再按 `Content-Type` 解析。
 
 实现方至少支持 **identity（不压缩）+ gzip**；`br` / `zstd` / `deflate` 为可选增强。
@@ -86,7 +86,7 @@ Body 使用统一的 `Report` JSON 形状（对齐 `schema/jsonschema/validation
 | `errors[].path` | JSON Pointer（RFC 6901） |
 | `errors[].message` | 人类可读说明 |
 
-Go / Java / Rust SDK 的 `schema.Request` / `schema.Response`（Java：`Schema.request` / `Schema.response`；Rust：`schema::request` / `schema::response`）返回 `Report`（元素为 `Issue`），形状同上；调用方可直接序列化为 400 响应体。
+Go / Java / Rust SDK 的 `jsonschema.Request` / `jsonschema.Response`（Java：`Schema.request` / `Schema.response`；Rust：`jsonschema::request` / `jsonschema::response`）返回 `Report`（元素为 `Issue`），形状同上；调用方可直接序列化为 400 响应体。
 
 ## 时延
 

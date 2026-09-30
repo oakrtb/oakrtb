@@ -1,10 +1,40 @@
 # Changelog
 
+## Unreleased
+
+- **Breaking（校验）**：三语言基础校验及 JSON Schema 将请求 at 限制为 1、2 或 ≥500，固定价 3 仅用于 Deal；补充共享回归用例。
+- **Breaking（Rust 工具链）**：最低 Rust 版本调整为 1.88，与当前锁定依赖要求一致。
+- 修正文档中的旧模块名、库存可选性、mtype 条件必填、枚举兼容性及 HTTP 压缩约定；补齐 Go 模块标签和模型生成步骤，说明发布工作流的禁用状态。
+
+- 修复 Rust ext 大整数/高精度小数往返丢失及 int32 浮点舍入误接受；使用精确十进制整数校验。
+- 三语言拒绝重复 Imp ID 和歧义 Deal ID，补齐私有交易、Deal 白名单、底价覆盖及固定价检查。
+- Go 模型 Builder 深拷贝构建结果，支持安全复用构建器；删除 Go/Java 编解码转发入口和 Rust ValidatedJson 别名。
+
+- **Breaking（Go/Rust View）**：删除 Pipeline、Snapshot、SharedView 及运行/LightGate 兼容入口；统一主视图工厂与子视图访问方法，Rust 席位与扁平出价列表共享投影存储。
+
+- **Breaking（Java View）**：删除复数 Views 工具类及 Pipeline/Snapshot API；统一通过 RequestView.of / ResponseView.of 构造，子视图独立为 ImpView、BidView、SeatBidView，移除 SharedView 中间层。
+
+- **Breaking（SDK 模块）**：三语言 `build` → `builder`、`fit` → `bidcheck`、`schema` → `jsonschema`；Java `Fit` → `BidCheck`，Rust 同步重命名 `jsonschema` feature。
+- 格式就绪规则统一移到 `validation`，直接接收 Imp 模型，Builder 复用；竞价检查专注请求与响应的关系约束。
+- `FitResult/FitIssue` 改为共享的 `validation.CheckResult/CheckIssue`，诊断码及严重级别也统一归属 validation。导入及迁移方式见 docs/sdk.md。
+
+- 统一三语言为 proto 生成的强类型模型；Rust builder/view/bidcheck 不再使用 JSON Value 业务模型，属于源码破坏性变更。
+- 提取 codec 与 validation，构建器和 View 复用基础校验；JSON ext 对象与 protobuf ext 字符串在 codec 边界适配。
+- 新增 RequestView/ResponseView 一步入口；旧 Go/Java 编码及 Pipeline 入口为兼容适配，核心查询不依赖 Pipeline。
+- Rust jsonschema feature 默认启用，可关闭以移除完整 schema 编译依赖。
+- 共用 conformance 夹具验证 JSON/protobuf 往返、解码类型、基础校验和竞价检查；架构检查约束依赖方向。
+
+- **Breaking（Go/Rust 生成模型 API）**：单值 int32/double 改为 optional，保留 gdpr、坐标、nbr 等显式零值；protobuf 字段编号及 wire 类型不变。构建器接口不变，迁移见 docs/sdk.md。
+- 三语言 bidcheck 校验响应请求 ID（含 no-bid），新增 REQUEST_ID_MISMATCH；非法价格返回 MALFORMED。Go/Java LightGate 与响应构建器拒绝 NaN/Infinity。
+- SDK schema/proto 副本改为 CI 和测试入口只读校验，显式 make sync-schemas 更新副本。
+- Go 新增 RunRequestCopy/RunResponseCopy，明确原有零拷贝视图的只读约定。
+- 三语言 bidcheck 每次调用复用 Imp 索引和屏蔽集合；Go 分组/扁平 Bid 视图共享底层数组。
+
 ## 0.2.0 — 2026-09-07
 
 - 开源基建：双语 README 安装段、CONTRIBUTING / SECURITY、Issue & PR 模板；GitHub Release `v0.2.0`。
 - 发布准备：Java/Rust vendored schema+proto；Maven Central `release` profile；crates.io 元数据；`docs/publishing.md`。
-- **Breaking（SDK API）**：包/模块 `inspect` → `view`（热路径读模型）并精简入口。Java：`com.oakrtb.sdk.view`（`RequestViews`/`ResponseViews`，原 `RequestInspect`/`ResponseInspect`）；步骤 `shared`（原 `pinShared`/`sharedOf`）、`imps`/`bids`（原 `viewImps`/`viewBids`）；一键入口 **仅** `RequestPipeline.run` / `ResponsePipeline.run`（已移除与 Pipeline 重复的 `of` / `viewsAfterGate` 等）。Go：`github.com/oakrtb/openrtb/sdk/go/view`，入口 `RunRequest` / `RunResponse`（已移除 `ViewRequest`/`ViewResponse`）。Rust：`oakrtb_sdk::view`，入口 `run_request` / `run_response`（已移除 `view_request`/`view_response` 及 `*Result`）。`MarkupMask` / `Inventory` / LightGate / Snapshot 保留。文档：`docs/view-usage.md`（原 `inspect-usage.md`）。
+- **Breaking（SDK API）**：包/模块 `inspect` → `view`（热路径读模型）并精简入口。Java：`com.oakrtb.sdk.view`（`RequestViews`/`ResponseViews`，原 `RequestInspect`/`ResponseInspect`）；步骤 `shared`（原 `pinShared`/`sharedOf`）、`imps`/`bids`（原 `viewImps`/`viewBids`）；一键入口 **仅** `RequestPipeline.run` / `ResponsePipeline.run`（已移除与 Pipeline 重复的 `of` / `viewsAfterGate` 等）。Go：`github.com/oakrtb/oakrtb/sdk/go/view`，入口 `RunRequest` / `RunResponse`（已移除 `ViewRequest`/`ViewResponse`）。Rust：`oakrtb_sdk::view`，入口 `run_request` / `run_response`（已移除 `view_request`/`view_response` 及 `*Result`）。`MarkupMask` / `Inventory` / LightGate / Snapshot 保留。文档：`docs/view-usage.md`（原 `inspect-usage.md`）。
 - **Breaking（SDK API）**：Fit：`bidFit`/`responseFit` → `bid`/`response`（Go `Bid`/`Response`，Rust `bid`/`response`）。`ok()`/`OK()` 仅表示无 ERROR；低价/屏蔽/超时等为 WARN，政策拒投须读 `warnings()`/`has()`。
 - Fit / LightGate 一致性：底价仅当响应 `cur` 与 `imp.bidfloorcur` 均非空白且相等才比价（不隐式 USD）；`CUR_NOT_ALLOWED` 与 floor 同 trim/blank 规则；Rust `fit::response` 对非 object / 非 array `seatbid` / 空 bid 列表发 `MALFORMED`；LightGate 拒绝空白 `id`/`cur`/`imp.id` 及空白 `BidRequest.cur[]` 项；Pipeline `shared()` pin-once。
 - 对齐 IAB OpenRTB **2.6-202606**：`Content.realtime` / `firstbroadcast`，并更新 `livestream` 语义（排期/线性 vs VOD）。
@@ -19,18 +49,18 @@
 - Java Schema：`$id` 映射到 classpath，离线校验不再请求 GitHub。
 - Go / Java / Rust SDK：`view` 流水线（LightGate → SharedView + ImpView + format 位掩码），供调用方热路径使用。
 - Go / Java / Rust：对称命名 `RequestPipeline` / `ResponsePipeline`（及 `RequestViews` / `ResponseViews`）；`RunRequest` / `run_request` 等入口对齐。
-- BidResponse 构建器：`noBid` ↔ `addSeatBid` 互斥（后写清对方状态）；Java `ValidatedPayload` 抽到 `com.oakrtb.sdk.build` 公共类型。
+- BidResponse 构建器：`noBid` ↔ `addSeatBid` 互斥（后写清对方状态）；Java `ValidatedPayload` 抽到 `com.oakrtb.sdk.builder` 公共类型。
 - Response pipeline 的 `bids` 不再重算 shared（deadline/时刻稳定）。
 - 文档：`docs/view-usage.md` 三语言 view / Pipeline 端到端使用示例。
 - 文档：`spec.md` 必填与 schema 对齐（`at`/`cur`）；`view-usage.md` 增加与 OpenRTB 2.6 接入对照（204 / OakRTB profile / tmax）。
 - **Breaking（SDK API）**：`inspect.Format` → `MarkupMask`（字段 `formats`→`markup`）；`match`/`bidmatch` → `fit`（`Fit` / `FitResult`）；`inspect.Channel` → `Inventory`（字段 `channel`→`inventory`）。消除与 proto `Banner.Format` / `Content.Channel` 撞名，并明确 fit≠广告匹配引擎。
-- **Breaking（SDK API）**：包/模块 `validate` → `schema`。Java：`com.oakrtb.sdk.schema.Schema.request`/`response`，类型 `Report`/`Issue`（原 `Validator`、`ValidationResult`、`ValidationError`）；Go：`github.com/oakrtb/openrtb/sdk/go/schema` 的 `Request`/`Response`；Rust：`oakrtb_sdk::schema::request`/`response`。HTTP 400 body 仍为 `{"ok":...,"errors":[...]}`（`Report` 形状对齐 `validation-result.schema.json`）；Go embed 路径 `sdk/go/schema/schemas/`。
+- **Breaking（SDK API）**：包/模块 `validate` → `schema`。Java：`com.oakrtb.sdk.jsonschema.Schema.request`/`response`，类型 `Report`/`Issue`（原 `Validator`、`ValidationResult`、`ValidationError`）；Go：`github.com/oakrtb/oakrtb/sdk/go/jsonschema` 的 `Request`/`Response`；Rust：`oakrtb_sdk::schema::request`/`response`。HTTP 400 body 仍为 `{"ok":...,"errors":[...]}`（`Report` 形状对齐 `validation-result.schema.json`）；Go embed 路径 `sdk/go/jsonschema/schemas/`。
 - Go / Java / Rust SDK：可选 **Fit** 层（原 Match）（`impReady` / `bid` / `response`）— 组标前形态就绪与 bid↔imp 一致性；ERROR/WARN 软结果，不进 LightGate。
 - Java SDK 依赖升级到主流稳定线：Protobuf **4.36.1**、Jackson **2.22.2**、networknt json-schema-validator **2.0.7**（Jackson 2 兼容线）、JUnit **5.14.4**；`Schema` 对齐 networknt 2.x `SchemaRegistry` API。
 - Go SDK：`go 1.25`、`jsonschema/v6` **v6.0.3**、`golang.org/x/text` **v0.41.0**（`protobuf` 已为 **v1.36.12**）。
 - Rust SDK：`jsonschema` **0.55.1**、`prost`/`prost-build` **0.14.4**、`serde` **1.0.229**、`serde_json` **1.0.151**、`thiserror` **2.0.20**、`walkdir` **2.5.0**；`schema` 对齐 jsonschema `Registry` API。
 - 一致性：去掉 schema 误挂的 `RefSettings.count`（`count` 仅属 `Refresh`）；澄清 schema / proto / OpenAPI 分层；OpenAPI 标明 JSON-only 合同与 OakRTB `at`/`cur` profile；`Content-Type` 改为可选（缺省 JSON）；proto 为 `private_auction` / `us_privacy` / `gpp_sid` 增加 `json_name`；文档修正最小 Banner 必填说明与 `mtype:0` 语义。
-- SDK：权威 schema 仅 `schema/jsonschema/`；Java/Rust 构建时拷入；Go 提交 `sdk/go/schema/schemas/*.json` 副本（`make sync-schemas`），支持 `go get`。
+- SDK：权威 schema 仅 `schema/jsonschema/`；Java/Rust 构建时拷入；Go 提交 `sdk/go/jsonschema/schemas/*.json` 副本（`make sync-schemas`），支持 `go get`。
 
 ## 0.1.0 — 2026-09-07
 

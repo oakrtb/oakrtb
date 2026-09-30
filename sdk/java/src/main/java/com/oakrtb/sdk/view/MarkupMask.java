@@ -1,23 +1,26 @@
 package com.oakrtb.sdk.view;
 
+import com.oakrtb.openrtb.v2.Imp;
+import com.oakrtb.openrtb.v2.MarkupType;
+
 /**
- * Imp/Bid 的 markup 类型位掩码（banner / video / audio / native）。
+ * Imp/Bid markup type bitmask (banner / video / audio / native).
  *
- * <p>用于在 view 与 fit 流程中快速判断展示位或出价包含哪些广告格式。
+ * <p>Quickly identifies ad formats in impressions or bids during view and bidcheck processing.
  *
- * <p><b>注意：</b>本类型与 proto {@code Banner.Format}（尺寸格式列表）无关；此处 {@code BANNER} 等常量表示
- * OpenRTB 广告格式位，对应 {@code Bid.mtype} 1–4。
+ * <p><b>Note:</b> unrelated to proto {@code Banner.Format} (size format list); constants such as {@code BANNER} represent
+ * OpenRTB ad format bits corresponding to {@code Bid.mtype} 1–4.
  */
 public final class MarkupMask {
-  /** 无任何格式位。 */
+  /** No format bits. */
   public static final int NONE = 0;
-  /** Banner 格式位，对应 Bid.mtype=1。 */
+  /** Banner format bit, corresponding to Bid.mtype=1. */
   public static final int BANNER = 1 << 0;
-  /** Video 格式位，对应 Bid.mtype=2。 */
+  /** Video format bit, corresponding to Bid.mtype=2. */
   public static final int VIDEO = 1 << 1;
-  /** Audio 格式位，对应 Bid.mtype=3。 */
+  /** Audio format bit, corresponding to Bid.mtype=3. */
   public static final int AUDIO = 1 << 2;
-  /** Native 格式位，对应 Bid.mtype=4。 */
+  /** Native format bit, corresponding to Bid.mtype=4. */
   public static final int NATIVE = 1 << 3;
 
   private final int bits;
@@ -27,92 +30,92 @@ public final class MarkupMask {
   }
 
   /**
-   * 由原始位值创建掩码。
+   * Creates a mask from raw bits.
    *
-   * @param bits 位组合（通常为 {@link #BANNER} 等常量的或运算结果）
-   * @return MarkupMask 实例
+   * @param bits bit combination (typically the bitwise OR of constants such as {@link #BANNER})
+   * @return a MarkupMask instance
    */
   public static MarkupMask of(int bits) {
     return new MarkupMask(bits);
   }
 
   /**
-   * 返回原始位值。
+   * Returns the raw bits.
    *
-   * @return 位掩码整数
+   * @return the integer bitmask
    */
   public int bits() {
     return bits;
   }
 
   /**
-   * 判断是否包含指定位标志。
+   * Reports whether the specified bit flag is present.
    *
-   * @param flag {@link #BANNER}、{@link #VIDEO} 等单 bit 常量
-   * @return 包含时为 {@code true}
+   * @param flag single-bit constant such as {@link #BANNER} or {@link #VIDEO}
+   * @return {@code true} if present
    */
   public boolean has(int flag) {
     return (bits & flag) != 0;
   }
 
   /**
-   * 是否包含 Banner 格式。
+   * Reports whether Banner format is present.
    *
-   * @return 包含 Banner 时为 {@code true}
+   * @return {@code true} if Banner is present
    */
   public boolean hasBanner() {
     return has(BANNER);
   }
 
   /**
-   * 是否包含 Video 格式。
+   * Reports whether Video format is present.
    *
-   * @return 包含 Video 时为 {@code true}
+   * @return {@code true} if Video is present
    */
   public boolean hasVideo() {
     return has(VIDEO);
   }
 
   /**
-   * 是否包含 Audio 格式。
+   * Reports whether Audio format is present.
    *
-   * @return 包含 Audio 时为 {@code true}
+   * @return {@code true} if Audio is present
    */
   public boolean hasAudio() {
     return has(AUDIO);
   }
 
   /**
-   * 是否包含 Native 格式。
+   * Reports whether Native format is present.
    *
-   * @return 包含 Native 时为 {@code true}
+   * @return {@code true} if Native is present
    */
   public boolean hasNative() {
     return has(NATIVE);
   }
 
   /**
-   * 统计已置位的格式数量。
+   * Counts the set format bits.
    *
-   * @return 格式个数（0–4）
+   * @return the format count (0–4)
    */
   public int count() {
     return Integer.bitCount(bits);
   }
 
   /**
-   * 当且仅当恰好一种格式时返回该格式的 bit；否则返回 {@link #NONE}。
+   * Returns the format bit only when exactly one format is set; otherwise returns {@link #NONE}.
    *
-   * @return 单一格式 bit 或 NONE
+   * @return a single format bit or NONE
    */
   public int primary() {
     return count() == 1 ? bits : NONE;
   }
 
   /**
-   * 将单一格式映射为 OpenRTB {@code Bid.mtype}（1–4）；多格式或无格式时返回 0。
+   * Maps a single format to OpenRTB {@code Bid.mtype} (1–4); returns 0 for multiple or no formats.
    *
-   * @return mtype 数值
+   * @return the mtype value
    */
   public int mtype() {
     return switch (primary()) {
@@ -135,12 +138,52 @@ public final class MarkupMask {
   }
 
   /**
-   * 返回调试字符串 {@code MarkupMask(bits)}。
+   * Returns the debug string {@code MarkupMask(bits)}.
    *
-   * @return 字符串表示
+   * @return the string representation
    */
   @Override
   public String toString() {
     return "MarkupMask(" + bits + ")";
+  }
+public static MarkupMask fromImp(Imp imp) {
+    if (imp == null) {
+      return MarkupMask.of(MarkupMask.NONE);
+    }
+    int bits = MarkupMask.NONE;
+    if (imp.hasBanner()) {
+      bits |= MarkupMask.BANNER;
+    }
+    if (imp.hasVideo()) {
+      bits |= MarkupMask.VIDEO;
+    }
+    if (imp.hasAudio()) {
+      bits |= MarkupMask.AUDIO;
+    }
+    if (imp.hasNative()) {
+      bits |= MarkupMask.NATIVE;
+    }
+    return MarkupMask.of(bits);
+  }
+public static MarkupMask fromMtype(MarkupType m) {
+    if (m == null) {
+      return MarkupMask.of(MarkupMask.NONE);
+    }
+    return switch (m) {
+      case MARKUP_TYPE_BANNER -> MarkupMask.of(MarkupMask.BANNER);
+      case MARKUP_TYPE_VIDEO -> MarkupMask.of(MarkupMask.VIDEO);
+      case MARKUP_TYPE_AUDIO -> MarkupMask.of(MarkupMask.AUDIO);
+      case MARKUP_TYPE_NATIVE -> MarkupMask.of(MarkupMask.NATIVE);
+      default -> MarkupMask.of(MarkupMask.NONE);
+    };
+  }
+public static MarkupMask fromMtype(int mtype) {
+    return switch (mtype) {
+      case 1 -> MarkupMask.of(MarkupMask.BANNER);
+      case 2 -> MarkupMask.of(MarkupMask.VIDEO);
+      case 3 -> MarkupMask.of(MarkupMask.AUDIO);
+      case 4 -> MarkupMask.of(MarkupMask.NATIVE);
+      default -> MarkupMask.of(MarkupMask.NONE);
+    };
   }
 }

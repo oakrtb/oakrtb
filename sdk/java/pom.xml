@@ -9,8 +9,8 @@
   <version>0.2.0</version>
   <packaging>jar</packaging>
   <name>OakRTB SDK</name>
-  <description>OakRTB OpenRTB models, builders, view/fit, and JSON Schema validation</description>
-  <url>https://github.com/oakrtb/openrtb</url>
+  <description>OakRTB OpenRTB models, builders, query views/bid checks, and JSON Schema validation</description>
+  <url>https://github.com/oakrtb/oakrtb</url>
   <inceptionYear>2026</inceptionYear>
 
   <licenses>
@@ -30,15 +30,15 @@
   </developers>
 
   <scm>
-    <connection>scm:git:https://github.com/oakrtb/openrtb.git</connection>
-    <developerConnection>scm:git:ssh://git@github.com/oakrtb/openrtb.git</developerConnection>
-    <url>https://github.com/oakrtb/openrtb</url>
+    <connection>scm:git:https://github.com/oakrtb/oakrtb.git</connection>
+    <developerConnection>scm:git:ssh://git@github.com/oakrtb/oakrtb.git</developerConnection>
+    <url>https://github.com/oakrtb/oakrtb</url>
     <tag>v0.2.0</tag>
   </scm>
 
   <issueManagement>
     <system>GitHub</system>
-    <url>https://github.com/oakrtb/openrtb/issues</url>
+    <url>https://github.com/oakrtb/oakrtb/issues</url>
   </issueManagement>
 
   <properties>
@@ -46,7 +46,7 @@
     <maven.compiler.release>21</maven.compiler.release>
     <protobuf.version>4.36.1</protobuf.version>
     <jackson.version>2.22.2</jackson.version>
-    <!-- 钉住 2.x（Jackson 2）；3.x 切到 tools.jackson，勿盲目升 -->
+    <!-- Pin to 2.x (Jackson 2); 3.x moves to tools.jackson, so do not upgrade blindly. -->
     <json-schema-validator.version>2.0.7</json-schema-validator.version>
     <junit.version>6.1.3</junit.version>
     <!-- Prefer vendored proto (publishable); monorepo override via -DprotoSourceRoot=... -->

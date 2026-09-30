@@ -3,11 +3,11 @@ package view
 import (
 	"testing"
 
-	openrtb "github.com/oakrtb/openrtb/sdk/go/oakrtb/v2"
+	openrtb "github.com/oakrtb/oakrtb/sdk/go/oakrtb/v2"
 )
 
-func TestMarkupMaskOf(t *testing.T) {
-	if MarkupMaskOf(nil) != MarkupNone {
+func TestMarkupFromImp(t *testing.T) {
+	if MarkupFromImp(nil) != MarkupNone {
 		t.Fatal("nil imp should be MarkupNone")
 	}
 	imp := &openrtb.Imp{
@@ -17,7 +17,7 @@ func TestMarkupMaskOf(t *testing.T) {
 		Audio:  &openrtb.Audio{},
 		Native: &openrtb.Native{},
 	}
-	mask := MarkupMaskOf(imp)
+	mask := MarkupFromImp(imp)
 	if mask.Count() != 4 || !mask.HasBanner() || !mask.HasVideo() || !mask.HasAudio() || !mask.HasNative() {
 		t.Fatalf("expected all four bits, got %v", mask)
 	}

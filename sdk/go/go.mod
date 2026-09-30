@@ -1,4 +1,4 @@
-module github.com/oakrtb/openrtb/sdk/go
+module github.com/oakrtb/oakrtb/sdk/go
 
 go 1.25.0
 
